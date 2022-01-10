@@ -25,12 +25,12 @@ if __name__ == '__main__':
     iv_epoch = [-200/1000, 200/1000]
 
     # Set which to run
-    calc_raw_snr = False
-    calc_PCA_snr = False
-    calc_post_ICA_snr = False
+    calc_raw_snr = True
+    calc_PCA_snr = True
+    calc_post_ICA_snr = True
     calc_ICA_snr = True
     calc_SSP_snr = True
-    reduced_window = True  # STILL NEED TO SET WINDOW IN FUNCTION FILE
+    reduced_window = True  # Smaller window about expected peak
     ant_ref = False  # Use the data that has been anteriorly referenced instead
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline)
+                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline)
+                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -231,7 +231,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline)
+                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -293,7 +293,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline)
+                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -357,7 +357,7 @@ if __name__ == '__main__':
 
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                    snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline)
+                    snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                     # Now have one snr for relevant channel in each subject + condition
                     if cond_name == 'median':

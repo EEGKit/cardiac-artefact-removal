@@ -99,12 +99,16 @@ def calculate_SNR_evoked(evoked, cond_name, iv_baseline):
 
     return snr, peak_channel
 
-def calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline):
+def calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window):
     snr = []
-    # start = -0.02
-    # end = 0.02
-    start = -0.005
-    end = 0.005
+
+    if reduced_window:
+        start = -0.005
+        end = 0.005
+    else:
+        start = -0.02
+        end = 0.02
+
     # Drop TH6 and ECG from channels from average rereferenecd channels
     # For anterior rereference remove those channels instead
     if 'TH6' in evoked.ch_names:
@@ -122,7 +126,7 @@ def calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline):
 
         # Extract positive peaks
         if np.any(data > 0):
-            _, latency, amplitude = evoked_channel.get_peak(ch_type=None, tmin=start, tmax=end, mode='pos',
+            _, latency, amplitude = evoked_channel.get_peak(ch_type=None, tmin=start, tmax=end, mode='abs',
                                                             time_as_index=False, merge_grads=False,
                                                             return_amplitude=True)
         # If there are no positive values, insert dummy
@@ -147,19 +151,24 @@ def calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline):
     return snr_average
 
 
-def calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline):
+def calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline, reduced_window):
     snr = []
-    # start = -0.02
-    # end = 0.02
-    start = -0.005
-    end = 0.005
+
+    if reduced_window:
+        start = -0.005
+        end = 0.005
+    else:
+        start = -0.02
+        end = 0.02
 
     if cond_name == 'tibial':
         channels = ['S23', 'L1', 'S31']
+        mode = 'pos'
     elif cond_name == 'median':
         channels = ['S6', 'SC6', 'S14']
+        mode = 'neg'
 
-    # Drop TH6 and ECG from channels from average rereferenecd channels
+    # Drop TH6 and ECG from channels from average rereferenced channels
     # For anterior rereference remove those channels instead
     if 'TH6' in evoked.ch_names:
         evoked.drop_channels(['TH6', 'ECG'])
@@ -176,7 +185,7 @@ def calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline):
 
         # Extract positive peaks
         if np.any(data > 0):
-            _, latency, amplitude = evoked_channel.get_peak(ch_type=None, tmin=start, tmax=end, mode='pos',
+            _, latency, amplitude = evoked_channel.get_peak(ch_type=None, tmin=start, tmax=end, mode=mode,
                                                             time_as_index=False, merge_grads=False,
                                                             return_amplitude=True)
         # If there are no positive values, insert dummy

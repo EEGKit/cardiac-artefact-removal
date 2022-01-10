@@ -22,8 +22,8 @@ if __name__ == '__main__':
     calc_post_ICA_snr = True
     calc_ICA_snr = True
     calc_SSP_snr = True
-    reduced_epochs = True
-    reduced_window = True  # Still need to SET WINDOW IN FUNCTION FILE FOR THIS TO WORK
+    reduced_epochs = False
+    reduced_window = True  # Smaller window about expected peak
     ant_ref = False  # Use the data that has been anteriorly referenced instead
 
     # Testing with just subject 1 at the moment

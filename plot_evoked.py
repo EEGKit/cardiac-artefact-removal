@@ -43,7 +43,6 @@ if __name__ == '__main__':
                     trigger_name = 'Median - Stimulation'
                     channels = ['S6', 'SC6', 'S14']
 
-                # Want the SNR
                 # Load epochs resulting from PCA OBS cleaning - the raw data in this folder has not been rereferenced
                 # which is why I instead load the epoched data
                 input_path = "/data/pt_02569/tmp_data/epoched_py/" + subject_id + "/esg/prepro/"
@@ -86,9 +85,7 @@ if __name__ == '__main__':
                     trigger_name = 'Median - Stimulation'
                     channels = ['S6', 'SC6', 'S14']
 
-                # Want the SNR
-                # Load epochs resulting from PCA OBS cleaning - the raw data in this folder has not been rereferenced
-                # which is why I instead load the epoched data
+                # Load epochs resulting from ICA cleaning
                 input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
                 raw = mne.io.read_raw_fif(f"{input_path}clean_baseline_ica_auto_{cond_name}.fif")
 
@@ -125,9 +122,7 @@ if __name__ == '__main__':
                     trigger_name = 'Median - Stimulation'
                     channels = ['S6', 'SC6', 'S14']
 
-                # Want the SNR
-                # Load epochs resulting from PCA OBS cleaning - the raw data in this folder has not been rereferenced
-                # which is why I instead load the epoched data
+                # Load epochs resulting from post ICA cleaning
                 input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
                 raw = mne.io.read_raw_fif(f"{input_path}clean_ica_auto_{cond_name}.fif")
 
@@ -165,9 +160,7 @@ if __name__ == '__main__':
                     channels = ['S6', 'SC6', 'S14']
 
                 for n in np.arange(5, 21):
-                    # Want the SNR
-                    # Load epochs resulting from PCA OBS cleaning - the raw data in this folder has not been rereferenced
-                    # which is why I instead load the epoched data
+                    # Load epochs resulting from SSP cleaning
                     input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
                     raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif")
 
