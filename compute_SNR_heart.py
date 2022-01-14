@@ -21,7 +21,12 @@ if __name__ == '__main__':
     subjects = np.arange(1, 37) # (1, 2) # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
+    # Pattern of results is the same with the wider period - so looking specifically at the R-peak is retained
+    # Baseline is the 100ms period before the artefact occurs
+    # iv_baseline = [-300/1000, -200/1000]
     iv_baseline = [-150/1000, -50/1000]
+    # Want 200ms before and 200ms after the R-peak - we know where peak should be so can look pretty specifically
+    # iv_epoch = [-300/1000, 400/1000]
     iv_epoch = [-200/1000, 200/1000]
 
     # Set which to run
@@ -30,7 +35,7 @@ if __name__ == '__main__':
     calc_post_ICA_snr = True
     calc_ICA_snr = True
     calc_SSP_snr = True
-    reduced_window = True  # Smaller window about expected peak
+    reduced_window = False  # Smaller window about expected peak
     ant_ref = False  # Use the data that has been anteriorly referenced instead
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 

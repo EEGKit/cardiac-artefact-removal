@@ -20,7 +20,7 @@ def evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs):
 
 
 # Takes an evoked response and calculates the SNR
-def calculate_SNR_evoked(evoked, cond_name, iv_baseline):
+def calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window):
     # Drop TH6 and ECG from channels from average rereferenecd channels
     # For anterior rereference remove those channels instead
     if 'TH6' in evoked.ch_names:
@@ -36,16 +36,21 @@ def calculate_SNR_evoked(evoked, cond_name, iv_baseline):
     # Trying smaller window as per Falk's suggestion - 2ms on either end
     if cond_name == 'tibial':
         channels = ['S23', 'L1', 'S31']
-        # start = 12/1000
-        # end = 32/1000
-        start = 20/1000
-        end = 24/1000
+        if reduced_window:
+            start = 20/1000
+            end = 24/1000
+        else:
+            start = 12 / 1000
+            end = 32 / 1000
+
     elif cond_name == 'median':
         channels = ['S6', 'SC6', 'S14']
-        # start = 8/1000
-        # end = 18/1000
-        start = 11/1000
-        end = 15/1000
+        if reduced_window:
+            start = 11/1000
+            end = 15/1000
+        else:
+            start = 8 / 1000
+            end = 18 / 1000
 
     # Want to select the channel with the maximal signal evoked in the correct time window out of the relevant channels
     peak_amplitude = 0

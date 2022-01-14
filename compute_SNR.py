@@ -22,9 +22,9 @@ if __name__ == '__main__':
     calc_post_ICA_snr = True
     calc_ICA_snr = True
     calc_SSP_snr = True
-    reduced_epochs = False
-    reduced_window = True  # Smaller window about expected peak
-    ant_ref = False  # Use the data that has been anteriorly referenced instead
+    reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR
+    reduced_window = False  # Smaller window about expected peak
+    ant_ref = True  # Use the data that has been anteriorly referenced instead
 
     # Testing with just subject 1 at the moment
     subjects = np.arange(1, 37) # (1, 37) # 1 through 36 to access subject data
@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
 
-                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline)
+                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
                 evoked = epochs.average()
 
-                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline)
+                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -251,7 +251,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
 
-                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline)
+                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have an snr for each channel - want to average these to have one per subject and condition
                 # Want to get average and stick it in correct matrix
@@ -331,7 +331,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
 
-                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline)
+                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have an snr for each channel - want to average these to have one per subject and condition
                 # Want to get average and stick it in correct matrix
@@ -414,7 +414,7 @@ if __name__ == '__main__':
 
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
 
-                    snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline)
+                    snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                     # Now have one snr for relevant channel in each subject + condition
                     if cond_name == 'median':
