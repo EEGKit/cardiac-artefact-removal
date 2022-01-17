@@ -406,8 +406,12 @@ if __name__ == '__main__':
 
     # Axis = 0 gives shape (39, ) - one value for each channel
     # Axis = 1 gives shape (36, ) - one value for each subject
-    residual_med_pca = (np.mean(res_med_pca, axis=tuple([0, 1]))/np.mean(res_med_prep, axis=tuple([0, 1])))*100
-    residual_tib_pca = (np.mean(res_tib_pca, axis=tuple([0, 1]))/np.mean(res_tib_prep, axis=tuple([0, 1])))*100
+    # residual_med_pca = (np.mean(res_med_pca, axis=tuple([0, 1]))/np.mean(res_med_prep, axis=tuple([0, 1])))*100
+    # residual_tib_pca = (np.mean(res_tib_pca, axis=tuple([0, 1]))/np.mean(res_tib_prep, axis=tuple([0, 1])))*100
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_pca = (np.mean(res_med_pca / res_med_prep, axis=tuple([0, 1]))) * 100
+    residual_tib_pca = (np.mean(res_tib_pca / res_tib_prep, axis=tuple([0, 1]))) * 100
 
     print(f"Residual PCA Medial: {residual_med_pca:.4f}%")
     print(f"Residual PCA Tibial: {residual_tib_pca:.4f}%")
@@ -421,8 +425,11 @@ if __name__ == '__main__':
 
     # Axis = 0 gives shape (39, ) - one value for each channel
     # Axis = 1 gives shape (36, ) - one value for each subject
-    residual_med_ica = (np.mean(res_med_ica, axis=tuple([0, 1])) / np.mean(res_med_prep, axis=tuple([0, 1]))) * 100
-    residual_tib_ica = (np.mean(res_tib_ica, axis=tuple([0, 1])) / np.mean(res_tib_prep, axis=tuple([0, 1]))) * 100
+    # residual_med_ica = (np.mean(res_med_ica, axis=tuple([0, 1])) / np.mean(res_med_prep, axis=tuple([0, 1]))) * 100
+    # residual_tib_ica = (np.mean(res_tib_ica, axis=tuple([0, 1])) / np.mean(res_tib_prep, axis=tuple([0, 1]))) * 100
+
+    residual_med_ica = (np.mean(res_med_ica / res_med_prep, axis=tuple([0, 1]))) * 100
+    residual_tib_ica = (np.mean(res_tib_ica / res_tib_prep, axis=tuple([0, 1]))) * 100
 
     print(f"Residual ICA Medial: {residual_med_ica:.4f}%")
     print(f"Residual ICA Tibial: {residual_tib_ica:.4f}%")
@@ -436,8 +443,11 @@ if __name__ == '__main__':
 
     # Axis = 0 gives shape (39, ) - one value for each channel
     # Axis = 1 gives shape (36, ) - one value for each subject
-    residual_med_post_ica = (np.mean(res_med_post_ica, axis=tuple([0, 1])) / np.mean(res_med_prep, axis=tuple([0, 1]))) * 100
-    residual_tib_post_ica = (np.mean(res_tib_post_ica, axis=tuple([0, 1])) / np.mean(res_tib_prep, axis=tuple([0, 1]))) * 100
+    # residual_med_post_ica = (np.mean(res_med_post_ica, axis=tuple([0, 1])) / np.mean(res_med_prep, axis=tuple([0, 1]))) * 100
+    # residual_tib_post_ica = (np.mean(res_tib_post_ica, axis=tuple([0, 1])) / np.mean(res_tib_prep, axis=tuple([0, 1]))) * 100
+
+    residual_med_post_ica = (np.mean(res_med_post_ica / res_med_prep, axis=tuple([0, 1]))) * 100
+    residual_tib_post_ica = (np.mean(res_tib_post_ica / res_tib_prep, axis=tuple([0, 1]))) * 100
 
     print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4f}%")
     print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4f}%")
@@ -452,8 +462,11 @@ if __name__ == '__main__':
 
         # Axis = 0 gives shape (39, ) - one value for each channel
         # Axis = 1 gives shape (36, ) - one value for each subject
-        residual_med_ssp = (np.mean(res_med_ssp, axis=tuple([0, 1])) / np.mean(res_med_prep, axis=tuple([0, 1]))) * 100
-        residual_tib_ssp = (np.mean(res_tib_ssp, axis=tuple([0, 1])) / np.mean(res_tib_prep, axis=tuple([0, 1]))) * 100
+        # residual_med_ssp = (np.mean(res_med_ssp, axis=tuple([0, 1])) / np.mean(res_med_prep, axis=tuple([0, 1]))) * 100
+        # residual_tib_ssp = (np.mean(res_tib_ssp, axis=tuple([0, 1])) / np.mean(res_tib_prep, axis=tuple([0, 1]))) * 100
+
+        residual_med_ssp = (np.mean(res_med_ssp / res_med_prep, axis=tuple([0, 1]))) * 100
+        residual_tib_ssp = (np.mean(res_tib_ssp / res_tib_prep, axis=tuple([0, 1]))) * 100
 
         print(f"Residual SSP Medial {n}: {residual_med_ssp:.4f}%")
         print(f"Residual SSP Tibial {n}: {residual_tib_ssp:.4f}%")
@@ -466,15 +479,13 @@ if __name__ == '__main__':
     #     elif cond_name == 'median':
     #         channels = ['S6', 'SC6', 'S14']
     ###########################################################################################
+    print('\n')
     median_pos = []
     tibial_pos = []
     for channel in ['S23', 'L1', 'S31']:
         tibial_pos.append(esg_chans.index(channel))
     for channel in ['S6', 'SC6', 'S14']:
         median_pos.append(esg_chans.index(channel))
-
-    print(tibial_pos)
-    print(median_pos)
 
     # All files are 36x39 dimensions - n_subjects x n_channels
     keywords = ['res_med', 'res_tib']
@@ -493,8 +504,11 @@ if __name__ == '__main__':
 
     # Axis = 0 gives shape (39, ) - one value for each channel
     # Axis = 1 gives shape (36, ) - one value for each subject
-    residual_med_pca = (np.mean(res_med_pca[:, median_pos], axis=tuple([0, 1])) / np.mean(res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
-    residual_tib_pca = (np.mean(res_tib_pca[:, tibial_pos], axis=tuple([0, 1])) / np.mean(res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+    # residual_med_pca = (np.mean(res_med_pca[:, median_pos], axis=tuple([0, 1])) / np.mean(res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+    # residual_tib_pca = (np.mean(res_tib_pca[:, tibial_pos], axis=tuple([0, 1])) / np.mean(res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+
+    residual_med_pca = (np.mean(res_med_pca[:, median_pos] / res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+    residual_tib_pca = (np.mean(res_tib_pca[:, tibial_pos] / res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
 
     print(f"Residual PCA Medial: {residual_med_pca:.4f}%")
     print(f"Residual PCA Tibial: {residual_tib_pca:.4f}%")
@@ -508,8 +522,11 @@ if __name__ == '__main__':
 
     # Axis = 0 gives shape (39, ) - one value for each channel
     # Axis = 1 gives shape (36, ) - one value for each subject
-    residual_med_ica = (np.mean(res_med_ica[:, median_pos], axis=tuple([0, 1])) / np.mean(res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
-    residual_tib_ica = (np.mean(res_tib_ica[:, tibial_pos], axis=tuple([0, 1])) / np.mean(res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+    # residual_med_ica = (np.mean(res_med_ica[:, median_pos], axis=tuple([0, 1])) / np.mean(res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+    # residual_tib_ica = (np.mean(res_tib_ica[:, tibial_pos], axis=tuple([0, 1])) / np.mean(res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+
+    residual_med_ica = (np.mean(res_med_ica[:, median_pos] / res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+    residual_tib_ica = (np.mean(res_tib_ica[:, tibial_pos] / res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
 
     print(f"Residual ICA Medial: {residual_med_ica:.4f}%")
     print(f"Residual ICA Tibial: {residual_tib_ica:.4f}%")
@@ -523,10 +540,13 @@ if __name__ == '__main__':
 
     # Axis = 0 gives shape (39, ) - one value for each channel
     # Axis = 1 gives shape (36, ) - one value for each subject
-    residual_med_post_ica = (np.mean(res_med_post_ica[:, median_pos], axis=tuple([0, 1])) / np.mean(res_med_prep[:, median_pos],
-                                                                                     axis=tuple([0, 1]))) * 100
-    residual_tib_post_ica = (np.mean(res_tib_post_ica[:, tibial_pos], axis=tuple([0, 1])) / np.mean(res_tib_prep[:, tibial_pos],
-                                                                                     axis=tuple([0, 1]))) * 100
+    # residual_med_post_ica = (np.mean(res_med_post_ica[:, median_pos], axis=tuple([0, 1])) / np.mean(res_med_prep[:, median_pos],
+    #                                                                                  axis=tuple([0, 1]))) * 100
+    # residual_tib_post_ica = (np.mean(res_tib_post_ica[:, tibial_pos], axis=tuple([0, 1])) / np.mean(res_tib_prep[:, tibial_pos],
+    #                                                                                  axis=tuple([0, 1]))) * 100
+
+    residual_med_post_ica = (np.mean(res_med_post_ica[:, median_pos] / res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+    residual_tib_post_ica = (np.mean(res_tib_post_ica[:, tibial_pos] / res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
 
     print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4f}%")
     print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4f}%")
@@ -541,8 +561,11 @@ if __name__ == '__main__':
 
         # Axis = 0 gives shape (39, ) - one value for each channel
         # Axis = 1 gives shape (36, ) - one value for each subject
-        residual_med_ssp = (np.mean(res_med_ssp[:, median_pos], axis=tuple([0, 1])) / np.mean(res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
-        residual_tib_ssp = (np.mean(res_tib_ssp[:, tibial_pos], axis=tuple([0, 1])) / np.mean(res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+        # residual_med_ssp = (np.mean(res_med_ssp[:, median_pos], axis=tuple([0, 1])) / np.mean(res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+        # residual_tib_ssp = (np.mean(res_tib_ssp[:, tibial_pos], axis=tuple([0, 1])) / np.mean(res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+
+        residual_med_ssp = (np.mean(res_med_ssp[:, median_pos] / res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+        residual_tib_ssp = (np.mean(res_tib_ssp[:, tibial_pos] / res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
 
         print(f"Residual SSP Medial {n}: {residual_med_ssp:.4f}%")
         print(f"Residual SSP Tibial {n}: {residual_tib_ssp:.4f}%")
