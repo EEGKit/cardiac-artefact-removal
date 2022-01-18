@@ -13,7 +13,6 @@
 # Need to compute the heartrate in bpm, convert then to Hz
 # Compute the first 4 harmonics of this frequency
 # Compute the power at the fundamental freq and first 4 harmonics and sum them
-# Will first try compute power with bandpower function, then will try goertzel.py (more complex)
 # When we have all these saved, as with residual_intensity.py we can compute the ratios
 
 from scipy.io import loadmat
@@ -73,11 +72,11 @@ def power_at_harmonics(raw_data, channels, fs, harmonics):
 
 if __name__ == '__main__':
 
-    calc_prepared = True  # Should always be true as this is the baseline we get the ratio with
-    calc_PCA = True
-    calc_post_ICA = True
-    calc_ICA = True
-    calc_SSP = True
+    calc_prepared = False  # Should always be true as this is the baseline we get the ratio with
+    calc_PCA = False
+    calc_post_ICA = False
+    calc_ICA = False
+    calc_SSP = False
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
     # Define the channel names so they come out of each dataset the same
@@ -308,7 +307,7 @@ if __name__ == '__main__':
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
                 # Want the RMS of the data
-                # Load epochs resulting from ICA the data - the raw data in this folder has not been rereferenced
+                # Load epochs resulting from ICA the data
                 input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
                 fname = f"clean_ica_auto_{cond_name}.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
@@ -398,3 +397,143 @@ if __name__ == '__main__':
     ##########################################################################
     # Calculate INPS for each - Prepared divided by clean
     ##########################################################################
+    # All being read in have have n_subjects x n_channels (36, 39)
+    keywords = ['pow_med', 'pow_tib']
+    fn = f"/data/pt_02569/tmp_data/prepared_py/inps.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_prep = infile[keywords[0]][()]
+        pow_tib_prep = infile[keywords[1]][()]
+
+    # PCA
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_pca = infile[keywords[0]][()]
+        pow_tib_pca = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_pca = (np.mean(pow_med_prep / pow_med_pca, axis=tuple([0, 1])))
+    residual_tib_pca = (np.mean(pow_tib_prep / pow_tib_pca, axis=tuple([0, 1])))
+
+    print(f"Residual PCA Medial: {residual_med_pca:.4e}")
+    print(f"Residual PCA Tibial: {residual_tib_pca:.4e}")
+
+    # ICA
+    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_ica = infile[keywords[0]][()]
+        pow_tib_ica = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_ica = (np.mean(pow_med_prep / pow_med_ica, axis=tuple([0, 1])))
+    residual_tib_ica = (np.mean(pow_tib_prep / pow_tib_ica, axis=tuple([0, 1])))
+
+    print(f"Residual ICA Medial: {residual_med_ica:.4e}")
+    print(f"Residual ICA Tibial: {residual_tib_ica:.4e}")
+
+    # Post ICA
+    fn = f"/data/pt_02569/tmp_data/ica_py/inps.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_post_ica = infile[keywords[0]][()]
+        pow_tib_post_ica = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_post_ica = (np.mean(pow_med_prep / pow_med_post_ica, axis=tuple([0, 1])))
+    residual_tib_post_ica = (np.mean(pow_tib_prep / pow_tib_post_ica, axis=tuple([0, 1])))
+
+    print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4e}")
+    print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4e}")
+
+    # Post SSP
+    for n in np.arange(5, 21):
+        fn = f"/data/p_02569/SSP/inps_{n}.h5"
+        with h5py.File(fn, "r") as infile:
+            # Get the data
+            pow_med_ssp = infile[keywords[0]][()]
+            pow_tib_ssp = infile[keywords[1]][()]
+
+        # Changing to mean of means after ratio is already calculated
+        residual_med_ssp = (np.mean(pow_med_prep / pow_med_ssp, axis=tuple([0, 1])))
+        residual_tib_ssp = (np.mean(pow_tib_prep / pow_tib_ssp, axis=tuple([0, 1])))
+
+        print(f"Residual SSP Medial {n}: {residual_med_ssp:.4e}")
+        print(f"Residual SSP Tibial {n}: {residual_tib_ssp:.4e}")
+
+    ############################################################################################
+    # Now look at INPS for just our channels of interest
+    #     if cond_name == 'tibial':
+    #         channels = ['S23', 'L1', 'S31']
+    #     elif cond_name == 'median':
+    #         channels = ['S6', 'SC6', 'S14']
+    ###########################################################################################
+    print('\n')
+    median_pos = []
+    tibial_pos = []
+    for channel in ['S23', 'L1', 'S31']:
+        tibial_pos.append(esg_chans.index(channel))
+    for channel in ['S6', 'SC6', 'S14']:
+        median_pos.append(esg_chans.index(channel))
+
+    # All files are 36x39 dimensions - n_subjects x n_channels
+    keywords = ['pow_med', 'pow_tib']
+    fn = f"/data/pt_02569/tmp_data/prepared_py/inps.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_prep = infile[keywords[0]][()]
+        pow_tib_prep = infile[keywords[1]][()]
+
+    # PCA
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_pca = infile[keywords[0]][()]
+        pow_tib_pca = infile[keywords[1]][()]
+
+    residual_med_pca = (np.mean(pow_med_prep[:, median_pos] / pow_med_pca[:, median_pos], axis=tuple([0, 1])))
+    residual_tib_pca = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_pca[:, tibial_pos], axis=tuple([0, 1])))
+
+    print(f"Residual PCA Medial: {residual_med_pca:.4e}")
+    print(f"Residual PCA Tibial: {residual_tib_pca:.4e}")
+
+    # ICA
+    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_ica = infile[keywords[0]][()]
+        pow_tib_ica = infile[keywords[1]][()]
+
+    residual_med_ica = (np.mean(pow_med_prep[:, median_pos] / pow_med_ica[:, median_pos], axis=tuple([0, 1])))
+    residual_tib_ica = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_ica[:, tibial_pos], axis=tuple([0, 1])))
+
+    print(f"Residual ICA Medial: {residual_med_ica:.4e}")
+    print(f"Residual ICA Tibial: {residual_tib_ica:.4e}")
+
+    # Post-ICA
+    fn = f"/data/pt_02569/tmp_data/ica_py/inps.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_post_ica = infile[keywords[0]][()]
+        pow_tib_post_ica = infile[keywords[1]][()]
+
+    residual_med_post_ica = (np.mean(pow_med_prep[:, median_pos] / pow_med_post_ica[:, median_pos], axis=tuple([0, 1])))
+    residual_tib_post_ica = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_post_ica[:, tibial_pos], axis=tuple([0, 1])))
+
+    print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4e}")
+    print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4e}")
+
+    # SSP
+    for n in np.arange(5, 21):
+        fn = f"/data/p_02569/SSP/inps_{n}.h5"
+        with h5py.File(fn, "r") as infile:
+            # Get the data
+            pow_med_ssp = infile[keywords[0]][()]
+            pow_tib_ssp = infile[keywords[1]][()]
+
+        residual_med_ssp = (np.mean(pow_med_prep[:, median_pos] / pow_med_ssp[:, median_pos],axis=tuple([0, 1])))
+        residual_tib_ssp = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_ssp[:, tibial_pos],axis=tuple([0, 1])))
+
+        print(f"Residual SSP Medial {n}: {residual_med_ssp:.4e}")
+        print(f"Residual SSP Tibial {n}: {residual_tib_ssp:.4e}")
