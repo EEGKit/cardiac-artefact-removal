@@ -75,19 +75,25 @@ import mne
 # epochs_p['Median - Stimulation'].plot_image(picks=channelNames, vmin=-5, vmax=5)
 
 # Read in file with qrs events added, epoch around the heart peaks and plot to see how it does
-folder = '/data/pt_02569/tmp_data/prepared_py/sub-001/esg/prepro/'
-file = 'noStimart_sr1000_median_withqrs.fif'
+# folder = '/data/pt_02569/tmp_data/prepared_py/sub-001/esg/prepro/'
+# file = 'noStimart_sr1000_median_withqrs.fif'
+#
+# raw = mne.io.read_raw_fif(folder+file)
+#
+# events, event_ids = mne.events_from_annotations(raw)
+# event_id_dict = {key: value for key, value in event_ids.items() if key == 'qrs'}
+# epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=-200/1000, tmax=200/1000)
+#
+# evoked = epochs.average()
+#
+# raw.plot()
+# evoked.plot()
+# plt.show()
+#
 
-raw = mne.io.read_raw_fif(folder+file)
+fn = f"/data/pt_02569/tmp_data/fit_end_timings.h5"
+with h5py.File(fn, 'r') as f:
+   data = f['median_timings_1']
 
-events, event_ids = mne.events_from_annotations(raw)
-event_id_dict = {key: value for key, value in event_ids.items() if key == 'qrs'}
-epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=-200/1000, tmax=200/1000)
-
-evoked = epochs.average()
-
-raw.plot()
-evoked.plot()
-plt.show()
-
-
+print(data)
+# print(np.shape(data))

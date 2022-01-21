@@ -42,6 +42,7 @@ def get_harmonics(raw1, trigger, sample_rate):
 
 def power_at_harmonics(raw_data, channels, fs, harmonics):
     # Pick channels
+    raw_data.reorder_channels(channels)  # Force the order of the channels to be as I want
     rel_data = raw_data.get_data(picks=channels)
     N_samp = raw_data.n_times
 
@@ -56,8 +57,10 @@ def power_at_harmonics(raw_data, channels, fs, harmonics):
 
     p = []
     for i in np.arange(0, 5):
-        first = np.where(x_f > harmonics[i] - 0.005)
-        last = np.where(x_f < harmonics[i] + 0.005)
+        # first = np.where(x_f > harmonics[i] - 0.005)
+        # last = np.where(x_f < harmonics[i] + 0.005)
+        first = np.where(x_f > harmonics[i] - 0.001)
+        last = np.where(x_f < harmonics[i] + 0.001)
         indices = np.intersect1d(first, last)
         # power.append(np.sum(p_spec[:, indices]))  # Gets the sum across all channels at those indices
         # Gets the sum over the indices of interest in this harmonic
@@ -72,11 +75,11 @@ def power_at_harmonics(raw_data, channels, fs, harmonics):
 
 if __name__ == '__main__':
 
-    calc_prepared = False  # Should always be true as this is the baseline we get the ratio with
-    calc_PCA = False
-    calc_post_ICA = False
-    calc_ICA = False
-    calc_SSP = False
+    calc_prepared = True  # Should always be true as this is the baseline we get the ratio with
+    calc_PCA = True
+    calc_post_ICA = True
+    calc_ICA = True
+    calc_SSP = True
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
     # Define the channel names so they come out of each dataset the same

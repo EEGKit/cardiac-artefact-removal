@@ -11,6 +11,7 @@ from scipy.io import loadmat
 
 
 def compute_rms_snr(Evoked, ivb, ivh, channels):
+    Evoked.reorder_channels(channels)  # Force order of channels
     iv_baseline = Evoked.time_as_index(ivb)
     iv_heart = Evoked.time_as_index(ivh)
     # evoked.data = data array of shape(n_channels, n_times)
@@ -28,11 +29,11 @@ def compute_rms_snr(Evoked, ivb, ivh, channels):
 
 if __name__ == '__main__':
     # Set which to run
-    calc_raw = False
-    calc_PCA = False
-    calc_ICA = False
-    calc_post_ICA = False
-    calc_SSP = False
+    calc_raw = True
+    calc_PCA = True
+    calc_ICA = True
+    calc_post_ICA = True
+    calc_SSP = True
 
     # Testing with just subject 1 at the moment
     subjects = np.arange(1, 37)  # (1, 2) # 1 through 36 to access subject data
