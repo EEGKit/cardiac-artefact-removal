@@ -1,27 +1,10 @@
-# Script to compute the improved normalised power spectrum
-# Formula is the sum of the power in the first n harmonics of the contaminated signal, divided by the same of the
-# reconstructed signal
-# The INPS ratio is widely used in existing studies for assessing the residuals of the BCG artefact in
-# reconstructed EEG data [50]. In our study, the fundamental frequency of the BCG (calculated using the
-# ECG signal, which is approximately 1 Hz) and its four harmonics have been used for computing the INPS
-# Javed paper 2017
-
-# The  lower  the  value  of  the  INPS  ratio,  the  more  the  residuals  of  the  BCG  are present in
-# the reconstructed dataset
-# WANT A HIGHER INPS RATIO
-
-# Need to compute the heartrate in bpm, convert then to Hz
-# Compute the first 4 harmonics of this frequency
-# Compute the power at the fundamental freq and first 4 harmonics and sum them
-# When we have all these saved, as with residual_intensity.py we can compute the ratios
+# File to compute the inps in a different way - using the bandpower functionality of the yasa package
 
 from scipy.io import loadmat
 import numpy as np
 import mne
-from scipy.fft import fft, fftfreq, rfft, rfftfreq
-import matplotlib.pyplot as plt
+import yasa
 import h5py
-from SNR_functions import evoked_from_raw
 
 
 def get_harmonics(raw1, trigger, sample_rate):
@@ -36,39 +19,6 @@ def get_harmonics(raw1, trigger, sample_rate):
         freqs.append(nq*f_0)
 
     return freqs
-
-
-def power_at_harmonics(raw_data, channels, fs, harmonics):
-    # Pick channels
-    raw_data.reorder_channels(channels)  # Force the order of the channels to be as I want
-    rel_data = raw_data.get_data(picks=channels)
-    N_samp = raw_data.n_times
-
-    # Output an array of shape n_channels x n_frequencies
-    y_f = rfft(rel_data, workers=len(channels))  # This allows the computation of all channels concurrently
-    # Calculates the frequencies in the center of each bin in the output of rfft()
-    x_f = rfftfreq(N_samp, 1 / fs)
-
-    # Get power spectrum from fft
-    abs_ft = np.abs(y_f)
-    p_spec = np.square(abs_ft)
-
-    p = []
-    for i in np.arange(0, 5):
-        # first = np.where(x_f > harmonics[i] - 0.005)
-        # last = np.where(x_f < harmonics[i] + 0.005)
-        first = np.where(x_f > harmonics[i] - 0.001)
-        last = np.where(x_f < harmonics[i] + 0.001)
-        indices = np.intersect1d(first, last)
-        # power.append(np.sum(p_spec[:, indices]))  # Gets the sum across all channels at those indices
-        # Gets the sum over the indices of interest in this harmonic
-        p.append(np.sum(p_spec[:, indices], axis=1))
-
-    # Gets the total power over all harmonics for this subject
-    # Still have one value per channel
-    p = np.sum(p, axis=0)
-
-    return p
 
 
 if __name__ == '__main__':
@@ -130,7 +80,7 @@ if __name__ == '__main__':
                 raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif",
                                           preload=True)
 
-                frequencies = get_harmonics(raw, trigger_name, sampling_rate)
+                freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
 
@@ -139,10 +89,27 @@ if __name__ == '__main__':
 
                 raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
-                # Now we have the raw data in the filtered form
-                # We have the fundamental frequency and harmonics for this subject
-                # Compute power at the frequencies
-                power = power_at_harmonics(raw, esg_chans, sampling_rate, frequencies)
+                # Compute power at the harmonics
+                # Rounding to 1 decimal place - want to keep frequency resolution as high as possible
+                freq = np.around(freq, decimals=1)
+                data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
+                # PSD will have units uV^2 now
+                # Need a frequency resolution of 0.1Hz - win set to 10 seconds
+                # This outputs a dataframe
+                bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
+                                    bandpass=False,
+                                    bands=[(freq[0]-0.1, freq[0]+0.1, 'f0'),
+                                           (freq[1]-0.1, freq[1]+0.1, 'f1'),
+                                           (freq[2]-0.1, freq[2]+0.1, 'f2'),
+                                           (freq[3]-0.1, freq[3]+0.1, 'f3'),
+                                           (freq[4]-0.1, freq[4]+0.1, 'f4')],
+                                    kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                # Extract the absolute power from the relative powers output above
+                bands = ['f0', 'f1', 'f2', 'f3', 'f4']
+                bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
+                bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
+                power = bp_abs['Sum'].values  # Extract value of interest
 
                 # Now have power for each subject, insert it into the correct condition array
                 if cond_name == 'median':
@@ -155,7 +122,7 @@ if __name__ == '__main__':
         savepow.pow_tib = pow_tib_prep
         dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
-        fn = f"/data/pt_02569/tmp_data/prepared_py/inps.h5"
+        fn = f"/data/pt_02569/tmp_data/prepared_py/inps_yasa.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
@@ -193,7 +160,7 @@ if __name__ == '__main__':
                 fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                 raw = mne.io.read_raw_fif(input_path+fname, preload=True)
 
-                frequencies = get_harmonics(raw, trigger_name, sampling_rate)
+                freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
 
@@ -205,7 +172,25 @@ if __name__ == '__main__':
                 # Now we have the raw data in the filtered form
                 # We have the fundamental frequency and harmonics for this subject
                 # Compute power at the frequencies
-                power = power_at_harmonics(raw, esg_chans, sampling_rate, frequencies)
+                freq = np.around(freq, decimals=1)
+                data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
+                # PSD will have units uV^2 now
+                # Need a frequency resolution of 0.1Hz - win set to 10 seconds
+                # This outputs a dataframe
+                bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
+                                    bandpass=False,
+                                    bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                                           (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                                           (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                                           (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                                           (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                                    kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                # Extract the absolute power from the relative powers output above
+                bands = ['f0', 'f1', 'f2', 'f3', 'f4']
+                bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
+                bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
+                power = bp_abs['Sum'].values  # Extract value of interest
 
                 # Now have power for each subject, insert it into the correct condition array
                 if cond_name == 'median':
@@ -218,7 +203,7 @@ if __name__ == '__main__':
         savepow.pow_tib = pow_tib_pca
         dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
-        fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps.h5"
+        fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps_yasa.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
@@ -256,12 +241,30 @@ if __name__ == '__main__':
                 fname = f"clean_baseline_ica_auto_{cond_name}.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
-                frequencies = get_harmonics(raw, trigger_name, sampling_rate)
+                freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                 # Now we have the raw data in the filtered form
                 # We have the fundamental frequency and harmonics for this subject
                 # Compute power at the frequencies
-                power = power_at_harmonics(raw, esg_chans, sampling_rate, frequencies)
+                freq = np.around(freq, decimals=1)
+                data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
+                # PSD will have units uV^2 now
+                # Need a frequency resolution of 0.1Hz - win set to 10 seconds
+                # This outputs a dataframe
+                bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
+                                    bandpass=False,
+                                    bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                                           (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                                           (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                                           (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                                           (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                                    kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                # Extract the absolute power from the relative powers output above
+                bands = ['f0', 'f1', 'f2', 'f3', 'f4']
+                bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
+                bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
+                power = bp_abs['Sum'].values  # Extract value of interest
 
                 # Now have power for each subject, insert it into the correct condition array
                 if cond_name == 'median':
@@ -274,7 +277,7 @@ if __name__ == '__main__':
         savepow.pow_tib = pow_tib_ica
         dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
-        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps.h5"
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
@@ -313,12 +316,30 @@ if __name__ == '__main__':
                 fname = f"clean_ica_auto_{cond_name}.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
-                frequencies = get_harmonics(raw, trigger_name, sampling_rate)
+                freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                 # Now we have the raw data in the filtered form
                 # We have the fundamental frequency and harmonics for this subject
                 # Compute power at the frequencies
-                power = power_at_harmonics(raw, esg_chans, sampling_rate, frequencies)
+                freq = np.around(freq, decimals=1)
+                data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
+                # PSD will have units uV^2 now
+                # Need a frequency resolution of 0.1Hz - win set to 10 seconds
+                # This outputs a dataframe
+                bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
+                                    bandpass=False,
+                                    bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                                           (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                                           (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                                           (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                                           (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                                    kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                # Extract the absolute power from the relative powers output above
+                bands = ['f0', 'f1', 'f2', 'f3', 'f4']
+                bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
+                bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
+                power = bp_abs['Sum'].values  # Extract value of interest
 
                 # Now have power for each subject, insert it into the correct condition array
                 if cond_name == 'median':
@@ -331,7 +352,7 @@ if __name__ == '__main__':
         savepow.pow_tib = pow_tib_post_ica
         dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
-        fn = f"/data/pt_02569/tmp_data/ica_py/inps.h5"
+        fn = f"/data/pt_02569/tmp_data/ica_py/inps_yasa.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
@@ -370,12 +391,30 @@ if __name__ == '__main__':
                     savename = input_path + "/" + str(n) + " projections/"
                     raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}.fif")
 
-                    frequencies = get_harmonics(raw, trigger_name, sampling_rate)
+                    freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                     # Now we have the raw data in the filtered form
                     # We have the fundamental frequency and harmonics for this subject
                     # Compute power at the frequencies
-                    power = power_at_harmonics(raw, esg_chans, sampling_rate, frequencies)
+                    freq = np.around(freq, decimals=1)
+                    data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
+                    # PSD will have units uV^2 now
+                    # Need a frequency resolution of 0.1Hz - win set to 10 seconds
+                    # This outputs a dataframe
+                    bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
+                                        bandpass=False,
+                                        bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                                               (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                                               (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                                               (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                                               (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                                        kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                    # Extract the absolute power from the relative powers output above
+                    bands = ['f0', 'f1', 'f2', 'f3', 'f4']
+                    bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
+                    bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
+                    power = bp_abs['Sum'].values  # Extract value of interest
 
                     # Now have power for each subject, insert it into the correct condition array
                     if cond_name == 'median':
@@ -388,26 +427,25 @@ if __name__ == '__main__':
             savepow.pow_tib = pow_tib_ssp
             dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
-            fn = f"/data/p_02569/SSP/inps_{n}.h5"
+            fn = f"/data/p_02569/SSP/inps_yasa_{n}.h5"
 
             with h5py.File(fn, "w") as outfile:
                 for keyword in dataset_keywords:
                     outfile.create_dataset(keyword, data=getattr(savepow, keyword))
-
 
     ##########################################################################
     # Calculate INPS for each - Prepared divided by clean
     ##########################################################################
     # All being read in have have n_subjects x n_channels (36, 39)
     keywords = ['pow_med', 'pow_tib']
-    fn = f"/data/pt_02569/tmp_data/prepared_py/inps.h5"
+    fn = f"/data/pt_02569/tmp_data/prepared_py/inps_yasa.hf"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_prep = infile[keywords[0]][()]
         pow_tib_prep = infile[keywords[1]][()]
 
     # PCA
-    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps.h5"
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps_yasa.hf"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_pca = infile[keywords[0]][()]
@@ -417,11 +455,11 @@ if __name__ == '__main__':
     residual_med_pca = (np.mean(pow_med_prep / pow_med_pca, axis=tuple([0, 1])))
     residual_tib_pca = (np.mean(pow_tib_prep / pow_tib_pca, axis=tuple([0, 1])))
 
-    print(f"Residual PCA Medial: {residual_med_pca:.4e}")
-    print(f"Residual PCA Tibial: {residual_tib_pca:.4e}")
+    print(f"Residual PCA Medial: {residual_med_pca:.4f}")
+    print(f"Residual PCA Tibial: {residual_tib_pca:.4f}")
 
     # ICA
-    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps.h5"
+    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.hf"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_ica = infile[keywords[0]][()]
@@ -431,11 +469,11 @@ if __name__ == '__main__':
     residual_med_ica = (np.mean(pow_med_prep / pow_med_ica, axis=tuple([0, 1])))
     residual_tib_ica = (np.mean(pow_tib_prep / pow_tib_ica, axis=tuple([0, 1])))
 
-    print(f"Residual ICA Medial: {residual_med_ica:.4e}")
-    print(f"Residual ICA Tibial: {residual_tib_ica:.4e}")
+    print(f"Residual ICA Medial: {residual_med_ica:.4f}")
+    print(f"Residual ICA Tibial: {residual_tib_ica:.4f}")
 
     # Post ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/inps.h5"
+    fn = f"/data/pt_02569/tmp_data/ica_py/inps_yasa.hf"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_post_ica = infile[keywords[0]][()]
@@ -445,12 +483,12 @@ if __name__ == '__main__':
     residual_med_post_ica = (np.mean(pow_med_prep / pow_med_post_ica, axis=tuple([0, 1])))
     residual_tib_post_ica = (np.mean(pow_tib_prep / pow_tib_post_ica, axis=tuple([0, 1])))
 
-    print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4e}")
-    print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4e}")
+    print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4f}")
+    print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4f}")
 
     # Post SSP
     for n in np.arange(5, 21):
-        fn = f"/data/p_02569/SSP/inps_{n}.h5"
+        fn = f"/data/p_02569/SSP/inps_yasa_{n}.h5"
         with h5py.File(fn, "r") as infile:
             # Get the data
             pow_med_ssp = infile[keywords[0]][()]
@@ -460,8 +498,8 @@ if __name__ == '__main__':
         residual_med_ssp = (np.mean(pow_med_prep / pow_med_ssp, axis=tuple([0, 1])))
         residual_tib_ssp = (np.mean(pow_tib_prep / pow_tib_ssp, axis=tuple([0, 1])))
 
-        print(f"Residual SSP Medial {n}: {residual_med_ssp:.4e}")
-        print(f"Residual SSP Tibial {n}: {residual_tib_ssp:.4e}")
+        print(f"Residual SSP Medial {n}: {residual_med_ssp:.4f}")
+        print(f"Residual SSP Tibial {n}: {residual_tib_ssp:.4f}")
 
     ############################################################################################
     # Now look at INPS for just our channels of interest
@@ -480,14 +518,14 @@ if __name__ == '__main__':
 
     # All files are 36x39 dimensions - n_subjects x n_channels
     keywords = ['pow_med', 'pow_tib']
-    fn = f"/data/pt_02569/tmp_data/prepared_py/inps.h5"
+    fn = f"/data/pt_02569/tmp_data/prepared_py/inps_yasa.hf"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_prep = infile[keywords[0]][()]
         pow_tib_prep = infile[keywords[1]][()]
 
     # PCA
-    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps.h5"
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps_yasa.hf"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_pca = infile[keywords[0]][()]
@@ -496,11 +534,11 @@ if __name__ == '__main__':
     residual_med_pca = (np.mean(pow_med_prep[:, median_pos] / pow_med_pca[:, median_pos], axis=tuple([0, 1])))
     residual_tib_pca = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_pca[:, tibial_pos], axis=tuple([0, 1])))
 
-    print(f"Residual PCA Medial: {residual_med_pca:.4e}")
-    print(f"Residual PCA Tibial: {residual_tib_pca:.4e}")
+    print(f"Residual PCA Medial: {residual_med_pca:.4f}")
+    print(f"Residual PCA Tibial: {residual_tib_pca:.4f}")
 
     # ICA
-    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps.h5"
+    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.hf"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_ica = infile[keywords[0]][()]
@@ -509,11 +547,11 @@ if __name__ == '__main__':
     residual_med_ica = (np.mean(pow_med_prep[:, median_pos] / pow_med_ica[:, median_pos], axis=tuple([0, 1])))
     residual_tib_ica = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_ica[:, tibial_pos], axis=tuple([0, 1])))
 
-    print(f"Residual ICA Medial: {residual_med_ica:.4e}")
-    print(f"Residual ICA Tibial: {residual_tib_ica:.4e}")
+    print(f"Residual ICA Medial: {residual_med_ica:.4f}")
+    print(f"Residual ICA Tibial: {residual_tib_ica:.4f}")
 
     # Post-ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/inps.h5"
+    fn = f"/data/pt_02569/tmp_data/ica_py/inps_yasa.hf"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_post_ica = infile[keywords[0]][()]
@@ -522,12 +560,12 @@ if __name__ == '__main__':
     residual_med_post_ica = (np.mean(pow_med_prep[:, median_pos] / pow_med_post_ica[:, median_pos], axis=tuple([0, 1])))
     residual_tib_post_ica = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_post_ica[:, tibial_pos], axis=tuple([0, 1])))
 
-    print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4e}")
-    print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4e}")
+    print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4f}")
+    print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4f}")
 
     # SSP
     for n in np.arange(5, 21):
-        fn = f"/data/p_02569/SSP/inps_{n}.h5"
+        fn = f"/data/p_02569/SSP/inps_yasa_{n}.h5"
         with h5py.File(fn, "r") as infile:
             # Get the data
             pow_med_ssp = infile[keywords[0]][()]
@@ -536,5 +574,5 @@ if __name__ == '__main__':
         residual_med_ssp = (np.mean(pow_med_prep[:, median_pos] / pow_med_ssp[:, median_pos],axis=tuple([0, 1])))
         residual_tib_ssp = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_ssp[:, tibial_pos],axis=tuple([0, 1])))
 
-        print(f"Residual SSP Medial {n}: {residual_med_ssp:.4e}")
-        print(f"Residual SSP Tibial {n}: {residual_tib_ssp:.4e}")
+        print(f"Residual SSP Medial {n}: {residual_med_ssp:.4f}")
+        print(f"Residual SSP Tibial {n}: {residual_tib_ssp:.4f}")
