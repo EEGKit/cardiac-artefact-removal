@@ -25,10 +25,10 @@ def compute_rms(Evoked, iv, channels):
 
 if __name__ == '__main__':
     # Set which to run
-    calc_raw = True
-    calc_PCA = True
-    calc_ICA = True
-    calc_post_ICA = True
+    calc_raw = False
+    calc_PCA = False
+    calc_ICA = False
+    calc_post_ICA = False
     calc_SSP = True
 
     # Testing with just subject 1 at the moment

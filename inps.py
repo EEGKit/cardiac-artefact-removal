@@ -73,10 +73,10 @@ def power_at_harmonics(raw_data, channels, fs, harmonics):
 
 if __name__ == '__main__':
 
-    calc_prepared = True  # Should always be true as this is the baseline we get the ratio with
-    calc_PCA = True
-    calc_post_ICA = True
-    calc_ICA = True
+    calc_prepared = False  # Should always be true as this is the baseline we get the ratio with
+    calc_PCA = False
+    calc_post_ICA = False
+    calc_ICA = False
     calc_SSP = True
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
