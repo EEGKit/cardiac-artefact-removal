@@ -14,22 +14,24 @@ from epoch_data import *
 from Post_ICA import *
 from add_qrs_asevent import *
 from ICA import run_ica
+from run_CCA import run_CCA
 
 if __name__ == '__main__':
 
     ## Pick which scripts you want to run ##
-    import_d = False # Prep work
-    heart_removal = False # Heart artefact removal
+    import_d = False  # Prep work
+    heart_removal = False  # Heart artefact removal
     cut_epochs = False  # Epoch the data according to relevant event
-    SSP_flag = True # Heart artefact removal by SSP
-    post_ica = False # Run ICA after already running PCA_OBS
-    ica = False # Run ICA on the 'dirty' data as a baseline comparison
+    SSP_flag = False  # Heart artefact removal by SSP
+    post_ica = False  # Run ICA after already running PCA_OBS
+    ica = False  # Run ICA on the 'dirty' data as a baseline comparison
+    CCA_flag = True  # Run CCA on data (from all methods)
 
-    n_subjects = 36 # Number of subjects
+    n_subjects = 36  # Number of subjects
     # Testing with just subject 1 at the moment
-    subjects = np.arange(1, 37) # (1, 2) # 1 through 36 to access subject data
-    srmr_nr = 1 # Experiment Number
-    conditions = [2, 3] # Conditions of interest
+    subjects = np.arange(1, 37)  # (1, 2) # 1 through 36 to access subject data
+    srmr_nr = 1  # Experiment Number
+    conditions = [2, 3]  # Conditions of interest
     sampling_rate = 1000
 
     ############################################
@@ -76,3 +78,21 @@ if __name__ == '__main__':
         for subject in subjects:
             for condition in conditions:
                 apply_SSP(subject, condition, srmr_nr, sampling_rate)
+
+
+    ## To run CCA on the data, will run CCA on the outputs from all above methods
+    ## Change WITHIN that script if this is no longer desired
+    data_strings = ['Post-ICA']  # 'PCA', 'ICA' - ICA not working due to how decimated the signal is
+    n = 5
+    if CCA_flag:
+        for data_string in data_strings:
+            for subject in subjects:
+                for condition in conditions:
+                    run_CCA(subject, condition, srmr_nr, data_string, n)
+
+        # Treat SSP separately
+        data_string = 'SSP'
+        for n in np.arange(5, 21):
+            for subject in subjects:
+                for condition in conditions:
+                    run_CCA(subject, condition, srmr_nr, data_string, n)

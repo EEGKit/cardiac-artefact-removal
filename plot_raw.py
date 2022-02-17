@@ -1,3 +1,5 @@
+# Script to plot evoked potential about certain expected R-peaks - just for visual inspection
+
 from scipy.io import loadmat
 import mne
 import matplotlib.pyplot as plt

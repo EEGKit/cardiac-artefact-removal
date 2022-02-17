@@ -117,5 +117,4 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
 
     # Save the new mne structure with the cleaned data
     # Save data without stim artefact and downsampled to 1000
-    raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'),
-             fmt='double', overwrite=True)
+    raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double', overwrite=True)
