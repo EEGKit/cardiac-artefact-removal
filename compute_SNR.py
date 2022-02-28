@@ -20,11 +20,13 @@ if __name__ == '__main__':
     calc_prepared_snr = True
     calc_PCA_snr = True
     calc_post_ICA_snr = True
-    calc_ICA_snr = True
+    calc_ICA_snr = False
     calc_SSP_snr = True
+    cca_flag = True  # Compute SNR for final CCA corrected data
+    selected_components = 2
     reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR
     reduced_window = False  # Smaller window about expected peak
-    ant_ref = True  # Use the data that has been anteriorly referenced instead
+    ant_ref = False  # Use the data that has been anteriorly referenced instead
 
     # Testing with just subject 1 at the moment
     subjects = np.arange(1, 37) # (1, 37) # 1 through 36 to access subject data
@@ -33,6 +35,8 @@ if __name__ == '__main__':
 
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
     cfg = loadmat(cfg_path + 'cfg.mat')
+    notch_freq = cfg['notch_freq'][0]
+    esg_bp_freq = cfg['esg_bp_freq'][0]
     iv_epoch = cfg['iv_epoch'][0] / 1000
     iv_baseline = cfg['iv_baseline'][0] / 1000
 
@@ -64,31 +68,29 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Load epochs resulting from PCA OBS cleaning - the raw data in this folder has not been rereferenced
-                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
-                raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}.fif", preload=True)
-
-                # add reference channel to data
-                if ant_ref:
-                    # anterior reference
-                    if nerve == 1:
-                        raw = rereference_data(raw, 'AC')
-                    elif nerve == 2:
-                        raw = rereference_data(raw, 'AL')
+                if cca_flag:
+                    input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + "/esg/prepro/"
+                    epochs = mne.read_epochs(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
+                                             , preload=True)
+                    evoked = epochs.average()
+                    snr, chan = calculate_SNR_evoked_cca(evoked, cond_name, iv_baseline, reduced_window, selected_components)
                 else:
-                    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
-                cfg_path = "/data/pt_02569/"  # Contains important info about experiment
-                cfg = loadmat(cfg_path + 'cfg.mat')
-                notch_freq = cfg['notch_freq'][0]
-                esg_bp_freq = cfg['esg_bp_freq'][0]
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-
-                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
-
-                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                    raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}.fif", preload=True)
+                    # add reference channel to data
+                    if ant_ref:
+                        # anterior reference
+                        if nerve == 1:
+                            raw = rereference_data(raw, 'AC')
+                        elif nerve == 2:
+                            raw = rereference_data(raw, 'AL')
+                    else:
+                        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+                    evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+                    snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -124,6 +126,8 @@ if __name__ == '__main__':
             else:
                 if ant_ref:
                     fn = f"/data/pt_02569/tmp_data/prepared_py/snr_ant.h5"
+                elif cca_flag:
+                    fn = f"/data/pt_02569/tmp_data/prepared_py_cca/snr.h5"
                 else:
                     fn = f"/data/pt_02569/tmp_data/prepared_py/snr.h5"
         with h5py.File(fn, "w") as outfile:
@@ -158,20 +162,24 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Load epochs resulting from PCA OBS cleaning - has been rereferenced and filtered
-                input_path = "/data/pt_02569/tmp_data/epoched_py/" + subject_id + "/esg/prepro/"
-                if ant_ref:
-                    epochs = mne.read_epochs(f"{input_path}epo_antRef_clean_{cond_name}.fif")
+                if cca_flag:
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + "/esg/prepro/"
+                    fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
+                    epochs = mne.read_epochs(input_path + fname, preload=True)
+                    evoked = epochs.average()
+                    snr, chan = calculate_SNR_evoked_cca(evoked, cond_name, iv_baseline, reduced_window, selected_components)
                 else:
-                    epochs = mne.read_epochs(f"{input_path}epo_clean_{cond_name}.fif")
-
-                if reduced_epochs and trigger_name == 'Median - Stimulation':
-                    epochs = epochs[900:1100]
-                elif reduced_epochs and trigger_name == 'Tibial - Stimulation':
-                    epochs = epochs[800:1200]
-
-                evoked = epochs.average()
-
-                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                    input_path = "/data/pt_02569/tmp_data/epoched_py/" + subject_id + "/esg/prepro/"
+                    if ant_ref:
+                        epochs = mne.read_epochs(f"{input_path}epo_antRef_clean_{cond_name}.fif")
+                    else:
+                        epochs = mne.read_epochs(f"{input_path}epo_clean_{cond_name}.fif")
+                    if reduced_epochs and trigger_name == 'Median - Stimulation':
+                        epochs = epochs[900:1100]
+                    elif reduced_epochs and trigger_name == 'Tibial - Stimulation':
+                        epochs = epochs[800:1200]
+                    evoked = epochs.average()
+                    snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -207,6 +215,8 @@ if __name__ == '__main__':
             else:
                 if ant_ref:
                     fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_ant.h5"
+                elif cca_flag:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_cca/snr.h5"
                 else:
                     fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr.h5"
         with h5py.File(fn, "w") as outfile:
@@ -243,15 +253,20 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Load epoched data resulting from post ICA cleaning
-                input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                if ant_ref:
-                    raw = mne.io.read_raw_fif(f"{input_path}clean_ica_auto_antRef_{cond_name}.fif")
+                if cca_flag:
+                    input_path = "/data/pt_02569/tmp_data/ica_py_cca/" + subject_id + "/esg/prepro/"
+                    fname = f"clean_ica_auto_{cond_name}.fif"
+                    epochs = mne.read_epochs(input_path + fname, preload=True)
+                    evoked = epochs.average()
+                    snr, chan = calculate_SNR_evoked_cca(evoked, cond_name, iv_baseline, reduced_window, selected_components)
                 else:
-                    raw = mne.io.read_raw_fif(f"{input_path}clean_ica_auto_{cond_name}.fif")
-
-                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
-
-                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                    input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
+                    if ant_ref:
+                        raw = mne.io.read_raw_fif(f"{input_path}clean_ica_auto_antRef_{cond_name}.fif")
+                    else:
+                        raw = mne.io.read_raw_fif(f"{input_path}clean_ica_auto_{cond_name}.fif")
+                    evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+                    snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have an snr for each channel - want to average these to have one per subject and condition
                 # Want to get average and stick it in correct matrix
@@ -289,6 +304,8 @@ if __name__ == '__main__':
             else:
                 if ant_ref:
                     fn = f"/data/pt_02569/tmp_data/ica_py/snr_ant.h5"
+                elif cca_flag:
+                    fn = f"/data/pt_02569/tmp_data/ica_py_cca/snr.h5"
                 else:
                     fn = f"/data/pt_02569/tmp_data/ica_py/snr.h5"
         with h5py.File(fn, "w") as outfile:
@@ -405,16 +422,20 @@ if __name__ == '__main__':
                 # Want the SNR for each projection tried from 5 to 20
                 for n in np.arange(5, 21):  # (5, 21):
                     # Load SSP projection data
-                    input_path = "/data/p_02569/SSP/" + subject_id
-                    savename = input_path + "/" + str(n) + " projections/"
-                    if ant_ref:
-                        raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}_antRef.fif")
+                    if cca_flag:
+                        input_path = f"/data/p_02569/SSP_cca/{subject_id}/{n} projections/"
+                        epochs = mne.read_epochs(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
+                        evoked = epochs.average()
+                        snr, chan = calculate_SNR_evoked_cca(evoked, cond_name, iv_baseline, reduced_window, selected_components)
                     else:
-                        raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}.fif")
-
-                    evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
-
-                    snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                        input_path = "/data/p_02569/SSP/" + subject_id
+                        savename = input_path + "/" + str(n) + " projections/"
+                        if ant_ref:
+                            raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}_antRef.fif")
+                        else:
+                            raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}.fif")
+                        evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+                        snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                     # Now have one snr for relevant channel in each subject + condition
                     if cond_name == 'median':
@@ -450,6 +471,8 @@ if __name__ == '__main__':
             else:
                 if ant_ref:
                     fn = f"/data/p_02569/SSP/snr_ant.h5"
+                elif cca_flag:
+                    fn = f"/data/p_02569/SSP_cca/snr.h5"
                 else:
                     fn = f"/data/p_02569/SSP/snr.h5"
 
@@ -461,3 +484,34 @@ if __name__ == '__main__':
         # print(snr_tib)
         # print(chan_med)
         # print(chan_tib)
+
+    ############### Print to Screen CCA numbers #################
+    keywords = ['snr_med', 'snr_tib']
+    input_paths = ["/data/pt_02569/tmp_data/prepared_py_cca/",
+                   "/data/pt_02569/tmp_data/ecg_rm_py_cca/",
+                   "/data/pt_02569/tmp_data/baseline_ica_py/",
+                   "/data/pt_02569/tmp_data/ica_py_cca/",
+                   "/data/p_02569/SSP_cca/"]
+
+    names = ['Prepared', 'PCA', 'ICA', 'Post-ICA', 'SSP']
+    print("\n")
+    for i in np.arange(0, 5):
+        input_path = input_paths[i]
+        name = names[i]
+        fn = f"{input_path}snr.h5"
+        # All have shape (24, 1) bar SSP which is (24, 16)
+        with h5py.File(fn, "r") as infile:
+            # Get the data
+            snr_med = infile[keywords[0]][()]
+            snr_tib = infile[keywords[1]][()]
+
+        average_med = np.nanmean(snr_med, axis=0)
+        average_tib = np.nanmean(snr_tib, axis=0)
+
+        if name == 'SSP':
+            for n in np.arange(0, 16):
+                print(f'SNR {name} Median {n + 5}: {average_med[n]:.4f}')
+                print(f'SNR {name} Tibial {n + 5}: {average_tib[n]:.4f}')
+        else:
+            print(f'SNR {name} Median: {average_med[0]:.4f}')
+            print(f'SNR {name} Tibial: {average_tib[0]:.4f}')

@@ -9,6 +9,7 @@ import numpy as np
 from meet import spatfilt
 from scipy.io import loadmat
 from get_conditioninfo import get_conditioninfo
+import matplotlib.pyplot as plt
 
 
 def run_CCA(subject, condition, srmr_nr, data_string, n):
@@ -30,6 +31,12 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
         fname = f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'
         save_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + "/esg/prepro/"
+        os.makedirs(save_path, exist_ok=True)
+
+    elif data_string == 'Prep':
+        input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+        fname = f'noStimart_sr1000_{cond_name}_withqrs.fif'
+        save_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + "/esg/prepro/"
         os.makedirs(save_path, exist_ok=True)
 
     elif data_string == 'ICA':
@@ -63,7 +70,7 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
     # PCA data has to be filtered before running CCA, all others have been filtered previously
-    if data_string == 'PCA':
+    if data_string == 'PCA' or data_string == 'Prep':
         mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
         raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -115,8 +122,12 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
     # Run CCA
     W_avg, W_st, r = spatfilt.CCA_data(avg_matrix, st_matrix)  # Getting the same shapes as matlab so far
 
-    if cond_name == 'median':
-        W_st = W_st * -1  # Need to invert the weighting matrices to get the correct pattern, but not for tibial
+    # if cond_name == 'median':
+    #     if data_string == 'SSP':
+    #         W_st = W_st
+    #     else:
+    #         W_st = W_st * -1  # Need to invert the weighting matrices to get the correct pattern, but not for tibial,
+    #         # Also not for median in the SSP condition
     all_components = len(r)
 
     # Apply obtained weights to the long dataset (dimensions 40x9) - matrix multiplication
