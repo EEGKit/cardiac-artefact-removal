@@ -9,6 +9,7 @@ import numpy as np
 from meet import spatfilt
 from scipy.io import loadmat
 from get_conditioninfo import get_conditioninfo
+from get_esg_channels import get_esg_channels
 import matplotlib.pyplot as plt
 
 
@@ -19,12 +20,18 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
     esg_bp_freq = cfg['esg_bp_freq'][0]
     iv_epoch = cfg['iv_epoch'][0] / 1000
     iv_baseline = cfg['iv_baseline'][0] / 1000
+    # New
+    # Birgit uses custom interpolation windows for each subject - I don't
+    interpol_window_esg = cfg['interpol_window_esg'][0]  # In ms
 
     # Set variables
     cond_info = get_conditioninfo(condition, srmr_nr)
     cond_name = cond_info.cond_name
     trigger_name = cond_info.trigger_name
     subject_id = f'sub-{str(subject).zfill(3)}'
+
+    # New
+    potential_path = f"/data/p_02068/SRMR1_experiment/analyzed_data/esg/{subject_id}/"
 
     # Select the right files based on the data_string
     if data_string == 'PCA':
@@ -67,6 +74,9 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23', 'TH6']
 
+    # New
+    brainstem_chans, cervical_chans, lumbar_chans, ref_chan = get_esg_channels()
+
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
     # PCA data has to be filtered before running CCA, all others have been filtered previously
@@ -82,17 +92,41 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
     event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
     epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1]-1/1000,
                         baseline=tuple(iv_baseline), preload=True)
-    epochs = epochs.pick_channels(esg_chans, ordered=True)
+
+    # New
+    # cca window size - Birgit have individual potential latencies for each subject
+    halfwindow_size = 10/2
+    fname_pot = 'potential_latency.mat'
+    matdata = loadmat(potential_path + fname_pot)
 
     if cond_name == 'median':
-        window_times = [8/1000, 18/1000]
-        window = epochs.time_as_index(window_times)
+        # New
+        epochs = epochs.pick_channels(cervical_chans, ordered=True)
+        esg_chans = cervical_chans
+        sep_latency = matdata['med_potlatency']
+        # window_times = [8/1000, 18/1000]
     elif cond_name == 'tibial':
-        window_times = [18/1000, 28/1000]
-        window = epochs.time_as_index(window_times)
+        # New
+        epochs = epochs.pick_channels(lumbar_chans, ordered=True)
+        esg_chans = lumbar_chans
+        sep_latency = matdata['tib_potlatency']
+        # window_times = [18/1000, 28/1000]
     else:
         print('Invalid condition name attempted for use')
         exit()
+
+    # New
+    window_times = [(sep_latency - halfwindow_size), (sep_latency + halfwindow_size)]
+
+    # New
+    # Make sure interpolation window is not included in the potential window
+    if window_times[0] < interpol_window_esg[1]:
+        window_times = [interpol_window_esg[1], interpol_window_esg[1] + 2 * halfwindow_size + 1]
+    window_times = np.array(window_times)
+    window_times /= 1000
+    window_times = window_times.reshape(-1)
+
+    window = epochs.time_as_index(window_times)
 
     # Crop the epochs
     epo_cca = epochs.copy().crop(tmin=window_times[0], tmax=window_times[1], include_tmax=False)
@@ -122,12 +156,6 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
     # Run CCA
     W_avg, W_st, r = spatfilt.CCA_data(avg_matrix, st_matrix)  # Getting the same shapes as matlab so far
 
-    # if cond_name == 'median':
-    #     if data_string == 'SSP':
-    #         W_st = W_st
-    #     else:
-    #         W_st = W_st * -1  # Need to invert the weighting matrices to get the correct pattern, but not for tibial,
-    #         # Also not for median in the SSP condition
     all_components = len(r)
 
     # Apply obtained weights to the long dataset (dimensions 40x9) - matrix multiplication

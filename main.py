@@ -79,9 +79,9 @@ if __name__ == '__main__':
             for condition in conditions:
                 apply_SSP(subject, condition, srmr_nr, sampling_rate)
 
-
-    ## To run CCA on the data, will run CCA on the outputs from all above methods
-    ## Change WITHIN that script if this is no longer desired
+    ## Run CCA on the data
+    # The functionality of CCA is different in dataset 1 versus dataset 2
+    # These scripts DO NOT work the same - be wary when applying which run_cca.py you wish to use
     data_strings = ['Prep', 'Post-ICA', 'PCA']  #, 'ICA' - ICA not working due to how decimated the signal is
     n = 5
     if CCA_flag:
@@ -90,9 +90,9 @@ if __name__ == '__main__':
                 for condition in conditions:
                     run_CCA(subject, condition, srmr_nr, data_string, n)
 
-        # # Treat SSP separately
-        # data_string = 'SSP'
-        # for n in np.arange(5, 21):
-        #     for subject in subjects:
-        #         for condition in conditions:
-        #             run_CCA(subject, condition, srmr_nr, data_string, n)
+        # Treat SSP separately
+        data_string = 'SSP'
+        for n in np.arange(5, 21):
+            for subject in subjects:
+                for condition in conditions:
+                    run_CCA(subject, condition, srmr_nr, data_string, n)
