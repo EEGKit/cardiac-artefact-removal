@@ -192,6 +192,7 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
         if np.abs(max) > np.abs(min):
             is_inverted[icomp] = True
             CCA_comps[:, icomp, :] *= -1
+            # For manual correction - noticed some that should've/shouldn't be inverted - correct here
 
     #######################  Epoch data class to store the information ####################
     data = CCA_comps[:, 0:selected_components, :]
