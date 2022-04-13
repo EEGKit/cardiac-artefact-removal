@@ -68,7 +68,7 @@ def run_post_ica(subject, condition, srmr_nr, sampling_rate):
     # find which ICs match the EOG pattern
     ecg_indices, ecg_scores = ica.find_bads_ecg(raw, ch_name='ECG')
     ica.exclude = ecg_indices
-    # ica.plot_scores(ecg_scores)
+    ica.plot_scores(ecg_scores)
 
     # Apply the ica we got from the filtered data onto the unfiltered raw
     ica.apply(raw)

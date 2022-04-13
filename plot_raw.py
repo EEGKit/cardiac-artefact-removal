@@ -8,7 +8,7 @@ from SNR_functions import evoked_from_raw
 # Testing with random subjects atm
 subjects = [11]
 # subjects = np.arange(1, 2)  # (1, 37) # 1 through 36 to access subject data
-cond_names = ['tibial', 'median']
+cond_names = ['tibial']  #, 'median']
 sampling_rate = 1000
 
 cfg_path = "/data/pt_02569/"  # Contains important info about experiment
@@ -19,7 +19,7 @@ notch_freq = cfg['notch_freq'][0]
 esg_bp_freq = cfg['esg_bp_freq'][0]
 prepared = False
 PCA = True
-SSP = True
+SSP = False
 
 for subject in subjects:
     subject_id = f'sub-{str(subject).zfill(3)}'
@@ -45,8 +45,10 @@ for subject in subjects:
 
             raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
-            # raw.pick_channels(channels)
-            raw.plot(n_channels=1)
+            raw.pick_channels(channels)
+            # raw.plot(n_channels=5)
+            raw.plot(duration=2, start=518.5, clipping=6, scalings=80e-5)  # 40e-5 looks good for median
+            # raw.plot(duration=2, start=784, clipping=6, scalings=80e-5)
             # raw.plot(duration=5, start=500)
             plt.show()
 
@@ -59,10 +61,11 @@ for subject in subjects:
                        iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
 
             raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-            # raw.pick_channels(channels)
+            raw.pick_channels(channels)
             # raw.plot()
-            raw.plot(duration=1, start=518, n_channels=1)
-            raw.plot(duration=1, start=784, n_channels=1)
+            raw.plot(duration=2, start=518.5, clipping=6, scalings=60e-6)
+            # raw.plot(duration=2, start=784, clipping=6, scalings=40e-5)
+
 
         if SSP:
             input_path = "/data/p_02569/SSP/" + subject_id

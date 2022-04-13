@@ -23,7 +23,7 @@ if __name__ == '__main__':
     calc_ICA_snr = False
     calc_SSP_snr = True
     cca_flag = True  # Compute SNR for final CCA corrected data
-    selected_components = 2
+    selected_components = 2  # CCA_flag is redundant in this file - DONT used cca data to compute any SNRs
     reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR
     reduced_window = False  # Smaller window about expected peak
     ant_ref = False  # Use the data that has been anteriorly referenced instead

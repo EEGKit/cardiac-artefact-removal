@@ -43,17 +43,19 @@ def run_ica(subject, condition, srmr_nr, sampling_rate):
 
     # ICA
     ica = mne.preprocessing.ICA(n_components=len(raw_filtered.ch_names), max_iter='auto', random_state=97)
-    # ica = mne.preprocessing.ICA(n_components=len(raw_filtered.ch_names), max_iter='auto', random_state=97)
+    # ica = mne.preprocessing.ICA(n_components=20, max_iter='auto', random_state=97)
     ica.fit(raw_filtered)
 
     raw.load_data()
+    # ica.plot_sources(raw)  # Just for visualising
 
     # Automatically choose ICA components
     ica.exclude = []
-    # find which ICs match the EOG pattern
+    # find which ICs match the ECG pattern
     ecg_indices, ecg_scores = ica.find_bads_ecg(raw, ch_name='ECG')
     ica.exclude = ecg_indices
-    # ica.plot_scores(ecg_scores)
+    ica.plot_overlay(raw.copy().drop_channels(['ECG']), exclude=ecg_indices, picks='eeg')
+    ica.plot_scores(ecg_scores)  # Just for visualising
 
     # Apply the ica we got from the filtered data onto the unfiltered raw
     ica.apply(raw)

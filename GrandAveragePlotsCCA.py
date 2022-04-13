@@ -144,7 +144,7 @@ if __name__ == '__main__':
             average = np.mean(evoked_list, axis=0)
             plt.plot(epochs.times, average[0, :],
                      label='Evoked Grand Average')
-            plt.ylabel('Amplitude [a.u.]')
+            plt.ylabel('Amplitude [A.U.]')
 
             plt.xlabel('Time [s]')
             plt.xlim([-0.1, 0.3])

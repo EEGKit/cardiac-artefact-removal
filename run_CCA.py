@@ -275,7 +275,7 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
             line_label = f"{sep_latency[0][0] / 1000}s"
             plt.axvline(x=sep_latency[0][0] / 1000, color='r', linewidth='0.6', label=line_label)
             plt.xlabel('Time [s]')
-            plt.ylabel('Amplitude [V]')
+            plt.ylabel('Amplitude [A.U.]')
             plt.legend()
             if data_string == 'SSP':
                 # plt.suptitle(f'{data_string}_{n}_{cond_name_mixed}')
