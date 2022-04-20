@@ -14,7 +14,8 @@ if __name__ == '__main__':
     calc_prepared = False  # Should always be true as this is the baseline we get the ratio with
     calc_PCA = False
     calc_post_ICA = False
-    calc_ICA = False
+    calc_ICA = True
+    choose_limited = False  # If true, use data where only top 4 components chosen - use FALSE, see main
     calc_SSP = False
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
@@ -216,7 +217,10 @@ if __name__ == '__main__':
                 # Want the RMS of the data
                 # Load epochs resulting from baseline ica - the raw data in this folder has not been rereferenced
                 input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
-                fname = f"clean_baseline_ica_auto_{cond_name}.fif"
+                if choose_limited:
+                    fname = f"clean_baseline_ica_auto_{cond_name}_lim.fif"
+                else:
+                    fname = f"clean_baseline_ica_auto_{cond_name}.fif"
                 raw = mne.io.read_raw_fif(input_path+fname, preload=True)
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
@@ -247,7 +251,10 @@ if __name__ == '__main__':
         saveres.res_tib = res_tib_ica
         dataset_keywords = [a for a in dir(saveres) if not a.startswith('__')]
 
-        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res.h5"
+        if choose_limited:
+            fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res_lim.h5"
+        else:
+            fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
@@ -417,7 +424,10 @@ if __name__ == '__main__':
     print(f"Residual PCA Tibial: {residual_tib_pca:.4f}%")
 
     # ICA
-    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res.h5"
+    if choose_limited:
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res_lim.h5"
+    else:
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res.h5"
     with h5py.File(fn, "r") as infile:
         # Get the data
         res_med_ica = infile[keywords[0]][()]
@@ -514,7 +524,10 @@ if __name__ == '__main__':
     print(f"Residual PCA Tibial: {residual_tib_pca:.4f}%")
 
     # ICA
-    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res.h5"
+    if choose_limited:
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res_lim.h5"
+    else:
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res.h5"
     with h5py.File(fn, "r") as infile:
         # Get the data
         res_med_ica = infile[keywords[0]][()]

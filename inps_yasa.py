@@ -26,7 +26,8 @@ if __name__ == '__main__':
     calc_prepared = False
     calc_PCA = False
     calc_post_ICA = False
-    calc_ICA = False
+    calc_ICA = True
+    choose_limited = False  # If true use ICA data with top 4 components chosen - use FALSE, see main
     calc_SSP = False
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
@@ -238,7 +239,10 @@ if __name__ == '__main__':
                 # Want the RMS of the data
                 # Load epochs resulting from ICA
                 input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
-                fname = f"clean_baseline_ica_auto_{cond_name}.fif"
+                if choose_limited:
+                    fname = f"clean_baseline_ica_auto_{cond_name}_lim.fif"
+                else:
+                    fname = f"clean_baseline_ica_auto_{cond_name}.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
                 freq = get_harmonics(raw, trigger_name, sampling_rate)
@@ -277,7 +281,10 @@ if __name__ == '__main__':
         savepow.pow_tib = pow_tib_ica
         dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
-        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.h5"
+        if choose_limited:
+            fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa_lim.h5"
+        else:
+            fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
@@ -459,7 +466,10 @@ if __name__ == '__main__':
     print(f"Residual PCA Tibial: {residual_tib_pca:.4e}")
 
     # ICA
-    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.h5"
+    if choose_limited:
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa_lim.h5"
+    else:
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.h5"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_ica = infile[keywords[0]][()]
@@ -538,7 +548,10 @@ if __name__ == '__main__':
     print(f"Residual PCA Tibial: {residual_tib_pca:.4e}")
 
     # ICA
-    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.h5"
+    if choose_limited:
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa_lim.h5"
+    else:
+        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa.h5"
     with h5py.File(fn, "r") as infile:
         # Get the data
         pow_med_ica = infile[keywords[0]][()]

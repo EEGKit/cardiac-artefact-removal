@@ -8,7 +8,8 @@ from get_conditioninfo import *
 from epoch_data import rereference_data
 
 
-def run_ica(subject, condition, srmr_nr, sampling_rate):
+def run_ica(subject, condition, srmr_nr, sampling_rate, choose_limited):
+
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
     save_path = "../tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"  # Saving to baseline_ica_py
@@ -47,15 +48,20 @@ def run_ica(subject, condition, srmr_nr, sampling_rate):
     ica.fit(raw_filtered)
 
     raw.load_data()
-    # ica.plot_sources(raw)  # Just for visualising
 
     # Automatically choose ICA components
     ica.exclude = []
     # find which ICs match the ECG pattern
     ecg_indices, ecg_scores = ica.find_bads_ecg(raw, ch_name='ECG')
-    ica.exclude = ecg_indices
-    ica.plot_overlay(raw.copy().drop_channels(['ECG']), exclude=ecg_indices, picks='eeg')
-    ica.plot_scores(ecg_scores)  # Just for visualising
+    if choose_limited:
+        ica.exclude = ecg_indices[0:4]
+    else:
+        ica.exclude = ecg_indices
+
+    # Just for visualising
+    # ica.plot_overlay(raw.copy().drop_channels(['ECG']), exclude=ecg_indices, picks='eeg')
+    print(ica.exclude)
+    ica.plot_scores(ecg_scores)
 
     # Apply the ica we got from the filtered data onto the unfiltered raw
     ica.apply(raw)
@@ -63,31 +69,35 @@ def run_ica(subject, condition, srmr_nr, sampling_rate):
     # add reference channel to data - average rereferencing
     mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
 
-    # Fz reference
-    raw_FzRef = rereference_data(raw, 'Fz-TH6')
-
-    # anterior reference
-    if nerve == 1:
-        raw_antRef = rereference_data(raw, 'AC')
-    elif nerve == 2:
-        raw_antRef = rereference_data(raw, 'AL')
+    # # Fz reference
+    # raw_FzRef = rereference_data(raw, 'Fz-TH6')
+    #
+    # # anterior reference
+    # if nerve == 1:
+    #     raw_antRef = rereference_data(raw, 'AC')
+    # elif nerve == 2:
+    #     raw_antRef = rereference_data(raw, 'AL')
 
     raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    raw_FzRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_FzRef.ch_names), method='iir',
-                     iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
-                      iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+    # raw_FzRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_FzRef.ch_names), method='iir',
+    #                  iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+    # raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
+    #                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
 
     raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-    raw_FzRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_FzRef.ch_names), method='fir', phase='zero')
-    raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
+    # raw_FzRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_FzRef.ch_names), method='fir', phase='zero')
+    # raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
 
     # Save raw data - not epoched
-    fname = 'clean_baseline_ica_auto_' + cond_name + '.fif'
-    raw.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
-    fname = 'clean_baseline_ica_auto_antRef_' + cond_name + '.fif'
-    raw_antRef.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
-    fname = 'clean_baseline_ica_auto_FzRef_' + cond_name + '.fif'
-    raw_FzRef.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
+    if choose_limited:
+        fname = 'clean_baseline_ica_auto_' + cond_name + '_lim.fif'
+        raw.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
+    else:
+        fname = 'clean_baseline_ica_auto_' + cond_name + '.fif'
+        raw.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
+    # fname = 'clean_baseline_ica_auto_antRef_' + cond_name + '.fif'
+    # raw_antRef.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
+    # fname = 'clean_baseline_ica_auto_FzRef_' + cond_name + '.fif'
+    # raw_FzRef.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
 

@@ -24,8 +24,10 @@ if __name__ == '__main__':
     cut_epochs = False  # Epoch the data according to relevant event
     SSP_flag = False  # Heart artefact removal by SSP
     post_ica = False  # Run ICA after already running PCA_OBS
-    ica = False  # Run ICA on the 'dirty' data as a baseline comparison
-    CCA_flag = True  # Run CCA on data (from all methods)
+    ica = True  # Run ICA on the 'dirty' data as a baseline comparison
+    # choose_limited should be false - SNR is worse if it's true, over 95% residual intensity and inps under 1.4
+    choose_limited = False  # If true only take the top 4 ICA components from find_bads_ecg
+    CCA_flag = False  # Run CCA on data (from all methods)
 
     n_subjects = 36  # Number of subjects
     # Testing with just subject 1 at the moment
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     if ica:
         for subject in subjects:
             for condition in conditions:
-                run_ica(subject, condition, srmr_nr, sampling_rate)
+                run_ica(subject, condition, srmr_nr, sampling_rate, choose_limited)
 
     ## To remove heart artifact using SSP method in MNE ##
     if SSP_flag:

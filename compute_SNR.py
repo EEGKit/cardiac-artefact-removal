@@ -17,12 +17,13 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    calc_prepared_snr = True
-    calc_PCA_snr = True
-    calc_post_ICA_snr = True
-    calc_ICA_snr = False
-    calc_SSP_snr = True
-    cca_flag = True  # Compute SNR for final CCA corrected data
+    calc_prepared_snr = False
+    calc_PCA_snr = False
+    calc_post_ICA_snr = False
+    calc_ICA_snr = True
+    choose_limited = True  # If true compute SNR from ICA processed with limited components chosen
+    calc_SSP_snr = False
+    cca_flag = False  # Compute SNR for final CCA corrected data
     selected_components = 2  # CCA_flag is redundant in this file - DONT used cca data to compute any SNRs
     reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR
     reduced_window = False  # Smaller window about expected peak
@@ -339,12 +340,15 @@ if __name__ == '__main__':
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
                 # Want the SNR
-                # Load epoched data resulting from baseline ICA cleaning
+                # Load data resulting from baseline ICA cleaning
                 input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
                 if ant_ref:
                     raw = mne.io.read_raw_fif(f"{input_path}clean_baseline_ica_auto_antRef_{cond_name}.fif")
                 else:
-                    raw = mne.io.read_raw_fif(f"{input_path}clean_baseline_ica_auto_{cond_name}.fif")
+                    if choose_limited:
+                        raw = mne.io.read_raw_fif(f"{input_path}clean_baseline_ica_auto_{cond_name}_lim.fif")
+                    else:
+                        raw = mne.io.read_raw_fif(f"{input_path}clean_baseline_ica_auto_{cond_name}.fif")
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
 
@@ -386,7 +390,10 @@ if __name__ == '__main__':
                 if ant_ref:
                     fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_ant.h5"
                 else:
-                    fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr.h5"
+                    if choose_limited:
+                        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_lim.h5"
+                    else:
+                        fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr.h5"
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -485,20 +492,24 @@ if __name__ == '__main__':
         # print(chan_med)
         # print(chan_tib)
 
-    ############### Print to Screen CCA numbers #################
+
+    ############### Print to Screen numbers #################
     keywords = ['snr_med', 'snr_tib']
-    input_paths = ["/data/pt_02569/tmp_data/prepared_py_cca/",
-                   "/data/pt_02569/tmp_data/ecg_rm_py_cca/",
+    input_paths = ["/data/pt_02569/tmp_data/prepared_py/",
+                   "/data/pt_02569/tmp_data/ecg_rm_py/",
                    "/data/pt_02569/tmp_data/baseline_ica_py/",
-                   "/data/pt_02569/tmp_data/ica_py_cca/",
-                   "/data/p_02569/SSP_cca/"]
+                   "/data/pt_02569/tmp_data/ica_py/",
+                   "/data/p_02569/SSP/"]
 
     names = ['Prepared', 'PCA', 'ICA', 'Post-ICA', 'SSP']
     print("\n")
     for i in np.arange(0, 5):
         input_path = input_paths[i]
         name = names[i]
-        fn = f"{input_path}snr.h5"
+        if name == 'ICA' and choose_limited:
+            fn = f"{input_path}snr_lim.h5"
+        else:
+            fn = f"{input_path}snr.h5"
         # All have shape (24, 1) bar SSP which is (24, 16)
         with h5py.File(fn, "r") as infile:
             # Get the data
