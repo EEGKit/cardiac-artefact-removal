@@ -21,7 +21,7 @@ if __name__ == '__main__':
     calc_PCA_snr = False
     calc_post_ICA_snr = False
     calc_ICA_snr = True
-    choose_limited = True  # If true compute SNR from ICA processed with limited components chosen
+    choose_limited = False  # If true compute SNR from ICA processed with limited components chosen
     calc_SSP_snr = False
     cca_flag = False  # Compute SNR for final CCA corrected data
     selected_components = 2  # CCA_flag is redundant in this file - DONT used cca data to compute any SNRs
