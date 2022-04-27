@@ -13,7 +13,7 @@ from get_esg_channels import get_esg_channels
 
 if __name__ == '__main__':
     # Numbers currently optimised for Prepared data
-    spinal = True  # If true plots SEPs, if false plots QRS
+    spinal = False  # If true plots SEPs, if false plots QRS
     subjects = np.arange(1, 37)  # 1 through 24 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
@@ -113,7 +113,7 @@ if __name__ == '__main__':
                 averaged = mne.grand_average(evoked_list, interpolate_bads=False, drop_bads=False)
                 relevant_channel = averaged.pick_channels(channel)
 
-                freqs = np.arange(5., 150., 3.)
+                freqs = np.arange(5., 100., 3.)
                 fmin, fmax = freqs[[0, -1]]
                 if spinal:
                     tmin = -0.02
@@ -190,20 +190,11 @@ if __name__ == '__main__':
 
                 averaged = mne.grand_average(evoked_list, interpolate_bads=False, drop_bads=False)
                 relevant_channel = averaged.pick_channels(channel)
-                freqs = np.arange(5., 150., 3.)
+                freqs = np.arange(5., 100., 3.)
                 fmin, fmax = freqs[[0, -1]]
                 if spinal:
                     tmin = -0.02
                     tmax = 0.04
-                #     if method == 'Prep':
-                #         vmin = -1 * 10 ** -14
-                #         vmax = 1 * 10 ** -14
-                #     elif method == 'PCA' or 'Post-ICA':
-                #         vmin = -4 * 10 ** -15
-                #         vmax = 4 * 10 ** -15
-                #     else:
-                #         vmin = -2*10**-15
-                #         vmax = 2*10**-15
                 else:  # Letting it autoset the limits for the spinal triggers - too hard to guess
                     if method == 'Prep':
                         vmin = -2 * 10 ** -9

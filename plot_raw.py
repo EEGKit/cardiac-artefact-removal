@@ -3,6 +3,7 @@
 from scipy.io import loadmat
 import mne
 import matplotlib.pyplot as plt
+import numpy as np
 from SNR_functions import evoked_from_raw
 
 # Testing with random subjects atm
@@ -17,8 +18,8 @@ iv_epoch = cfg['iv_epoch'][0] / 1000
 iv_baseline = cfg['iv_baseline'][0] / 1000
 notch_freq = cfg['notch_freq'][0]
 esg_bp_freq = cfg['esg_bp_freq'][0]
-prepared = False
-PCA = True
+prepared = True
+PCA = False
 SSP = False
 
 for subject in subjects:
@@ -47,12 +48,13 @@ for subject in subjects:
 
             raw.pick_channels(channels)
             # raw.plot(n_channels=5)
-            raw.plot(duration=2, start=518.5, clipping=6, scalings=80e-5)  # 40e-5 looks good for median
+            raw.plot(duration=2, start=518.75, clipping=6, scalings=80e-5)  # 40e-5 looks good for median
             # raw.plot(duration=2, start=784, clipping=6, scalings=80e-5)
             # raw.plot(duration=5, start=500)
             plt.show()
 
         if PCA:
+            # Some editing here to avoid plotting fit_end and fit_start
             input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
             fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
             raw = mne.io.read_raw_fif(input_path + fname, preload=True)
@@ -63,7 +65,8 @@ for subject in subjects:
             raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
             raw.pick_channels(channels)
             # raw.plot()
-            raw.plot(duration=2, start=518.5, clipping=6, scalings=60e-6)
+            # events = mne.pick_events(events, include=[1, 4])
+            raw.plot(duration=2, start=518.75, clipping=6, scalings=60e-6)
             # raw.plot(duration=2, start=784, clipping=6, scalings=40e-5)
 
 
