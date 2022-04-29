@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    reduced_trials = False
+    reduced_trials = False  # Should always be false in this script
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     # Now deal with SSP plots - Just doing 5 to 10 for now
     if ssp:
-        for n in np.arange(5, 11):  # Methods Applied
+        for n in np.arange(5, 7):  # Methods Applied
             for cond_name in cond_names:  # Conditions (median, tibial)
                 evoked_list = []
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
                 for subject in subjects:  # All subjects
                     subject_id = f'sub-{str(subject).zfill(3)}'
 
-                    input_path = f"/data/pt_02569/SSP/{subject_id}/{n} projections/"
+                    input_path = f"/data/p_02569/SSP/{subject_id}/{n} projections/"
                     raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
                     evoked.reorder_channels(esg_chans)

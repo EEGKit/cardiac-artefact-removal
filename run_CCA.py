@@ -23,7 +23,7 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
     esg_bp_freq = cfg['esg_bp_freq'][0]
     iv_epoch = cfg['iv_epoch'][0] / 1000
     iv_baseline = cfg['iv_baseline'][0] / 1000
-    # New
+
     # Birgit uses custom interpolation windows for each subject - I don't
     interpol_window_esg = cfg['interpol_window_esg'][0]  # In ms
 
@@ -95,7 +95,6 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
     epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1]-1/1000,
                         baseline=tuple(iv_baseline), preload=True)
 
-    # New
     # cca window size - Birgit have individual potential latencies for each subject
     halfwindow_size = 10/2
     fname_pot = 'potential_latency.mat'

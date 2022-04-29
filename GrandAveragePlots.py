@@ -8,8 +8,8 @@ from SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    reduced_trials = True  # If true, generate images with fewer triggers
-    subjects = np.arange(1, 25)   # 1 through 24 to access subject data
+    reduced_trials = False  # If true, generate images with fewer triggers
+    subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 
@@ -107,8 +107,7 @@ if __name__ == '__main__':
 
                 plt.xlabel('Time [s]')
                 plt.xlim([-0.1, 0.3])
-                if cond_name == 'tibial':                    fname = f"SSP_{n}_{trigger_name}_{channel}_shorter.png"
-
+                if cond_name == 'tibial':
                     plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
                 elif cond_name == 'median':
                     plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
@@ -164,7 +163,3 @@ if __name__ == '__main__':
             plt.legend(loc='upper right')
             plt.savefig(image_path + fname)
             plt.clf()
-
-
-
-
