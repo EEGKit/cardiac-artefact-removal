@@ -15,9 +15,10 @@ if __name__ == '__main__':
     freqs = np.arange(5., 250., 3.)
     fmin, fmax = freqs[[0, -1]]
 
-    spinal = False  # If true plots SEPs, if false plots QRS
+    spinal = True  # If true plots SEPs, if false plots QRS
     subjects = np.arange(1, 37)
     cond_names = ['median', 'tibial']
+    # cond_names = ['tibial']
     sampling_rate = 1000
 
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
@@ -41,9 +42,9 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/TimeFrequencyPlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [True, False, False, False]  # No need to do ICA - can't perform CCA on data
+    methods = [True, True, True, True]  # No need to do ICA - can't perform CCA on data
     method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
-    ssp = False  # Using files from merging mixed nerve with digits
+    ssp = True  # Using files from merging mixed nerve with digits
 
     # To use mne grand_average method, need to generate a list of evoked potentials for each subject
     for i in np.arange(0, len(methods)):  # Methods Applied
@@ -81,7 +82,7 @@ if __name__ == '__main__':
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel)
-                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0)
+                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                         # evoked_list.append(evoked)
                         evoked_list.append(power)
 
@@ -97,7 +98,7 @@ if __name__ == '__main__':
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel)
-                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0)
+                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                         # evoked_list.append(evoked)
                         evoked_list.append(power)
 
@@ -108,7 +109,7 @@ if __name__ == '__main__':
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel)
-                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0)
+                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                         # evoked_list.append(evoked)
                         evoked_list.append(power)
 
@@ -119,7 +120,7 @@ if __name__ == '__main__':
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel)
-                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0)
+                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                         # evoked_list.append(evoked)
                         evoked_list.append(power)
 
@@ -127,29 +128,38 @@ if __name__ == '__main__':
                 # relevant_channel = averaged.pick_channels(channel)
 
                 if spinal:
-                    tmin = -0.02
-                    tmax = 0.04
+                    tmin = -0.1
+                    tmax = 0.1
                 else:  # Letting it autoset the limits for the spinal triggers - too hard to guess
+                    tmin = -0.2
+                    tmax = 0.2
                     if method == 'Prep':
-                        # vmin = -2*10**-9
-                        # vmax = 2*10**-9
-                        tmin = -0.2
-                        tmax = 0.2
-                    else:
-                        # vmin = -2 * 10 ** -14
-                        # vmax = 2 * 10 ** -14
-                        tmin = -0.2
-                        tmax = 0.2
+                        vmin = -4*10**-10
+                        vmax = 4*10**-10
+                    elif method == 'PCA':
+                        if cond_name == 'median':
+                            vmin = -4 * 10 ** -14
+                            vmax = 4 * 10 ** -14
+                        else:
+                            vmin = -8 * 10 ** -13
+                            vmax = 8 * 10 ** -13
+                    elif method == 'ICA':
+                        if cond_name == 'median':
+                            vmin = -6 * 10 ** -15
+                            vmax = 6 * 10 ** -15
+                        else:
+                            vmin = -6 * 10 ** -12
+                            vmax = 6 * 10 ** -12
                 fig, ax = plt.subplots(1, 1)
-                # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.0)
-                # if spinal:
-                averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                           axes=ax, show=False, colorbar=True,
-                           tmin=tmin, tmax=tmax)
-                # else:
-                #     power.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                #                axes=ax, show=False, colorbar=True, vmin=vmin, vmax=vmax,
-                #                tmin=tmin, tmax=tmax)
+                # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
+                if spinal:
+                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                               axes=ax, show=False, colorbar=True,
+                               tmin=tmin, tmax=tmax)
+                else:
+                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                               axes=ax, show=False, colorbar=True, vmin=vmin, vmax=vmax,
+                               tmin=tmin, tmax=tmax)
 
                 plt.title(f"Method: {method}, Condition: {trigger_name}")
                 if spinal:
@@ -189,36 +199,30 @@ if __name__ == '__main__':
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                     evoked.reorder_channels(esg_chans)
                     evoked = evoked.pick_channels(channel)
-                    power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0)
+                    power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                     # evoked_list.append(evoked)
                     evoked_list.append(power)
 
                 averaged = mne.grand_average(evoked_list, interpolate_bads=False, drop_bads=False)
                 # relevant_channel = averaged.pick_channels(channel)
                 if spinal:
-                    tmin = -0.02
-                    tmax = 0.04
+                    tmin = -0.1
+                    tmax = 0.1
                 else:  # Letting it autoset the limits for the spinal triggers - too hard to guess
-                    if method == 'Prep':
-                        # vmin = -2 * 10 ** -9
-                        # vmax = 2 * 10 ** -9
-                        tmin = -0.2
-                        tmax = 0.2
-                    else:
-                        # vmin = -2 * 10 ** -14
-                        # vmax = 2 * 10 ** -14
-                        tmin = -0.2
-                        tmax = 0.2
+                    vmin = -1.5 * 10 ** -14
+                    vmax = 1.5 * 10 ** -14
+                    tmin = -0.2
+                    tmax = 0.2
                 fig, ax = plt.subplots(1, 1)
                 # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.1)
-                # if spinal:
-                averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                           axes=ax, show=False, colorbar=True,
-                           tmin=tmin, tmax=tmax)
-                # else:
-                #     averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                #                axes=ax, show=False, colorbar=True, vmin=vmin, vmax=vmax,
-                #                tmin=tmin, tmax=tmax)
+                if spinal:
+                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                               axes=ax, show=False, colorbar=True,
+                               tmin=tmin, tmax=tmax)
+                else:
+                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                               axes=ax, show=False, colorbar=True, vmin=vmin, vmax=vmax,
+                               tmin=tmin, tmax=tmax)
 
                 plt.title(f"Method: {method}, Condition: {trigger_name}")
                 if spinal:

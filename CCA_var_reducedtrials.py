@@ -74,10 +74,10 @@ if __name__ == '__main__':
                     # Now we have epochs for correct channel, want to find peak-peak in potential window for each epoch
                     epochs = epochs.crop(tmin=potential_window[0], tmax=potential_window[1])
                     data = epochs.get_data(picks=channel)  # n_epochs, n_channels, n_times
-                    data = np.squeeze(data)  # Remove channel dimension as we only select one
+                    data = np.squeeze(data)  # Remove channel dimension as we only select one (n_epochs, n_times)
                     peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
                     # Then get variance of these peak-peak vals
-                    var = variation(peak_peak_amp, axis=0)[0]  # Just one number
+                    var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
 
                     # Now have one snr related to each subject and condition
                     if cond_name == 'median':
@@ -138,7 +138,7 @@ if __name__ == '__main__':
                     data = np.squeeze(data)  # Remove channel dimension as we only select one
                     peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
                     # Then get variance of these peak-peak vals
-                    var = variation(peak_peak_amp, axis=0)[0]  # Just one number
+                    var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
 
                     # Now have one snr related to each subject and condition
                     if cond_name == 'median':
@@ -200,7 +200,7 @@ if __name__ == '__main__':
                     data = np.squeeze(data)  # Remove channel dimension as we only select one
                     peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
                     # Then get variance of these peak-peak vals
-                    var = variation(peak_peak_amp, axis=0)[0]  # Just one number
+                    var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
 
                     # Now have one snr related to each subject and condition
                     if cond_name == 'median':
@@ -262,7 +262,7 @@ if __name__ == '__main__':
                         peak_peak_amp = np.ptp(data, axis=1,
                                                keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
                         # Then get variance of these peak-peak vals
-                        var = variation(peak_peak_amp, axis=0)[0]  # Just one number
+                        var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
 
                         # Now have one snr related to each subject and condition
                         if cond_name == 'median':
