@@ -96,6 +96,7 @@ if __name__ == '__main__':
 
                 # add reference channel to data
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                            iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -167,6 +168,7 @@ if __name__ == '__main__':
 
                 # add reference channel to data
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                            iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')

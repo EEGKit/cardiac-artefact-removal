@@ -19,14 +19,15 @@ import glob
 
 
 def import_data(subject, condition, srmr_nr, sampling_rate):
-    # Set this to true if working with only esg data
+    # Set this to true if working with only esg data, otherwise will deal with only eeg data
     esg_flag = True
 
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
     save_path = "../tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Saving to prepared_py
     input_path = "/data/p_02068/SRMR1_experiment/bids/" + subject_id + "/eeg/"  # Taking data from the bids folder
-    cfg_path = "/data/pt_02569/scripts/"  # Contains important info about experiment
+    # cfg_path = "/data/pt_02569/"  # Contains important info about experiment
+    montage_path = '/data/pt_02068/cfg/'
     montage_name = 'standard-10-5-cap385_added_mastoids.elp'
     os.makedirs(save_path, exist_ok=True)
 
@@ -63,17 +64,19 @@ def import_data(subject, condition, srmr_nr, sampling_rate):
         raw = mne.io.read_raw_eeglab(fname, eog=(), preload=True, uint16_codec=None, verbose=None)
 
         # If you only want to look at esg channels, drop the rest
-        if esg_flag == True:
+        if esg_flag:
             raw.pick_channels(esg_chans)
+        else:
+            raw.pick_channels(eeg_chans)
 
         # Interpolate required channels
         # Only interpolate tibial, medial and alternating (conditions 2, 3, 4 ; stimulation 1, 2, 3)
         if stimulation != 0:
-            srate_basic = 1000 # Perform all analysis at 1000Hz
+            srate_basic = 1000  # Perform all analysis at 1000Hz
 
-            if esg_flag == False:
+            if not esg_flag:
                 # Read in the array of electrodes from file
-                montage = mne.channels.read_custom_montage(cfg_path + montage_name)
+                montage = mne.channels.read_custom_montage(montage_path + montage_name)
 
                 # fits channel locations to data
                 raw.set_montage(montage, on_missing="ignore")
@@ -90,11 +93,11 @@ def import_data(subject, condition, srmr_nr, sampling_rate):
             # Acts in place to edit raw via linear interpolation to remove stimulus artefact
             # Need to loop as for alternating, there are 2 trigger names and event_ids at play
             for j in trigger_name:
-                if esg_flag==True:
+                if esg_flag:
                     mne.preprocessing.fix_stim_artifact(raw, events=events, event_id=event_dict[j], tmin=tstart_esg,
                                                         tmax=tmax_esg, mode='linear', stim_channel=None)
 
-                elif esg_flag==False:
+                elif not esg_flag:
                     mne.preprocessing.fix_stim_artifact(raw, events=events, event_id=event_dict[j], tmin=tstart_eeg,
                                                         tmax=tmax_eeg, mode='linear', stim_channel=None)
 
@@ -129,15 +132,21 @@ def import_data(subject, condition, srmr_nr, sampling_rate):
     qrs_event = [x / sampling_rate for x in QRSevents_m]  # Divide by sampling rate to make times
     duration = np.repeat(0.0, len(QRSevents_m))
     description = ['qrs'] * len(QRSevents_m)
-    raw_concat.annotations.append(qrs_event, duration, description, ch_names=[esg_chans] * len(QRSevents_m))
-    fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
+
+    if esg_flag:
+        raw_concat.annotations.append(qrs_event, duration, description, ch_names=[esg_chans] * len(QRSevents_m))
+        fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
+    else:
+        raw_concat.annotations.append(qrs_event, duration, description, ch_names=[eeg_chans] * len(QRSevents_m))
+        fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif'
 
     # Should have a single file name per condition now (just medial/tibial)
     # Save data without stim artefact and downsampled to 1000
     raw_concat.save(os.path.join(save_path, fname_save), fmt='double', overwrite=True)
 
-    # Save detected QRS events
-    dataset_keyword = 'QRS'
-    fn = save_path + 'noStimart_sr%s_%s_withqrs.h5' % (srate_basic, cond_name)
-    with h5py.File(fn, "w") as outfile:
-        outfile.create_dataset(dataset_keyword, data=ecg_events[:, 0])
+    # Save detected QRS events if we're looking at correcting spinal data
+    if esg_flag:
+        dataset_keyword = 'QRS'
+        fn = save_path + 'noStimart_sr%s_%s_withqrs.h5' % (srate_basic, cond_name)
+        with h5py.File(fn, "w") as outfile:
+            outfile.create_dataset(dataset_keyword, data=ecg_events[:, 0])

@@ -73,9 +73,6 @@ def run_post_ica(subject, condition, srmr_nr, sampling_rate):
     # Apply the ica we got from the filtered data onto the unfiltered raw
     ica.apply(raw)
 
-    # add reference channel to data - average rereferencing
-    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
     # Fz reference
     raw_FzRef = rereference_data(raw, 'Fz-TH6')
 
@@ -84,6 +81,10 @@ def run_post_ica(subject, condition, srmr_nr, sampling_rate):
         raw_antRef = rereference_data(raw, 'AC')
     elif nerve == 2:
         raw_antRef = rereference_data(raw, 'AL')
+
+    # add reference channel to data - average rereferencing
+    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+    raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
     raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')

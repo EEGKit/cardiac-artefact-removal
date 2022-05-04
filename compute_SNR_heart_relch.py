@@ -73,6 +73,7 @@ if __name__ == '__main__':
                         raw = rereference_data(raw, 'AL')
                 else:
                     mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                    raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 cfg_path = "/data/pt_02569/"  # Contains important info about experiment
                 cfg = loadmat(cfg_path + 'cfg.mat')
@@ -153,6 +154,7 @@ if __name__ == '__main__':
                         raw = rereference_data(raw, 'AL')
                 else:
                     mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                    raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 cfg_path = "/data/pt_02569/"  # Contains important info about experiment
                 cfg = loadmat(cfg_path + 'cfg.mat')

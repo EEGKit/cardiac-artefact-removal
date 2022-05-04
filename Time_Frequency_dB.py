@@ -1,5 +1,4 @@
-# Script to plot the time-frequency decomposition about the heartbeat
-# Uses the grand averaged evoked response across all participants
+# Script to plot the time-frequency decomposition in dB about the heartbeat
 # Can't do this for CCA corrected data as it is already epoched about the spinal triggers
 # https://mne.tools/stable/auto_examples/time_frequency/time_frequency_simulated.html#morlet-wavelets
 
@@ -15,10 +14,9 @@ if __name__ == '__main__':
     freqs = np.arange(5., 250., 3.)
     fmin, fmax = freqs[[0, -1]]
 
-    spinal = True  # If true plots SEPs, if false plots QRS
+    spinal = False  # If true plots SEPs, if false plots QRS
     subjects = np.arange(1, 37)
     cond_names = ['median', 'tibial']
-    # cond_names = ['tibial']
     sampling_rate = 1000
 
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
@@ -133,41 +131,29 @@ if __name__ == '__main__':
                     tmin = -0.1
                     tmax = 0.1
                 else:  # Letting it autoset the limits for the spinal triggers - too hard to guess
+                    if method == 'Prep':
+                        vmin=-400
+                        vmax=-175
+                    else:
+                        if cond_name == 'tibial':
+                            vmin=-400
+                            vmax=-225
+                        else:
+                            vmin=-400
+                            vmax=-250
                     tmin = -0.2
                     tmax = 0.2
-                    if method == 'Prep':
-                        vmin = -4*10**-10
-                        vmax = 4*10**-10
-                    elif method == 'PCA':
-                        if cond_name == 'median':
-                            vmin = -4 * 10 ** -14
-                            vmax = 4 * 10 ** -14
-                        else:
-                            vmin = -8 * 10 ** -13
-                            vmax = 8 * 10 ** -13
-                    elif method == 'ICA':
-                        if cond_name == 'median':
-                            vmin = -6 * 10 ** -15
-                            vmax = 6 * 10 ** -15
-                        else:
-                            vmin = -6 * 10 ** -12
-                            vmax = 6 * 10 ** -12
                 fig, ax = plt.subplots(1, 1)
                 # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
-                if spinal:
-                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                               axes=ax, show=False, colorbar=True,
-                               tmin=tmin, tmax=tmax)
-                else:
-                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                               axes=ax, show=False, colorbar=True, vmin=vmin, vmax=vmax,
-                               tmin=tmin, tmax=tmax)
+                averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                              axes=ax, show=False, colorbar=True, dB=True,
+                              tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
 
                 plt.title(f"Method: {method}, Condition: {trigger_name}")
                 if spinal:
-                    fname = f"{method}_{trigger_name}_{cond_name}.png"
+                    fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
                 else:
-                    fname = f"{method}_{trigger_name}_{cond_name}.png"
+                    fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
 
                 plt.savefig(image_path+fname)
                 plt.clf()
@@ -210,27 +196,26 @@ if __name__ == '__main__':
                 if spinal:
                     tmin = -0.1
                     tmax = 0.1
-                else:  # Letting it autoset the limits for the spinal triggers - too hard to guess
-                    vmin = -1.5 * 10 ** -14
-                    vmax = 1.5 * 10 ** -14
+                else:
                     tmin = -0.2
                     tmax = 0.2
+                    if cond_name == 'tibial':
+                        vmin = -400
+                        vmax = -225
+                    else:
+                        vmin = -400
+                        vmax = -250
                 fig, ax = plt.subplots(1, 1)
                 # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.1)
-                if spinal:
-                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                               axes=ax, show=False, colorbar=True,
-                               tmin=tmin, tmax=tmax)
-                else:
-                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                               axes=ax, show=False, colorbar=True, vmin=vmin, vmax=vmax,
-                               tmin=tmin, tmax=tmax)
+                averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                              axes=ax, show=False, colorbar=True, dB=True,
+                              tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
 
                 plt.title(f"Method: {method}, Condition: {trigger_name}")
                 if spinal:
-                    fname = f"{method}_{trigger_name}_{cond_name}.png"
+                    fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
                 else:
-                    fname = f"{method}_{trigger_name}_{cond_name}.png"
+                    fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
 
                 plt.savefig(image_path + fname)
                 plt.clf()

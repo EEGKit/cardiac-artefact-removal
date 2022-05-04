@@ -26,9 +26,9 @@ if __name__ == '__main__':
     calc_prepared = False
     calc_PCA = False
     calc_post_ICA = False
-    calc_ICA = True
+    calc_ICA = False
     choose_limited = False  # If true use ICA data with top 4 components chosen - use FALSE, see main
-    calc_SSP = False
+    calc_SSP = True
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
     # Define the channel names so they come out of each dataset the same
@@ -84,6 +84,7 @@ if __name__ == '__main__':
                 freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                            iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -164,6 +165,7 @@ if __name__ == '__main__':
                 freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                            iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -250,6 +252,8 @@ if __name__ == '__main__':
                 # Now we have the raw data in the filtered form
                 # We have the fundamental frequency and harmonics for this subject
                 # Compute power at the frequencies
+                # freq = np.around(freq, decimals=1)
+                # data = raw.get_data(esg_chans) * 1e6  # Both give same answer
                 freq = np.around(freq, decimals=1)
                 data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
                 # PSD will have units uV^2 now
@@ -405,6 +409,7 @@ if __name__ == '__main__':
                     # Compute power at the frequencies
                     freq = np.around(freq, decimals=1)
                     data = raw.get_data(esg_chans) * 1e6
+
                     # PSD will have units uV^2 now
                     # Need a frequency resolution of 0.1Hz - win set to 10 seconds
                     # This outputs a dataframe

@@ -18,8 +18,8 @@ iv_epoch = cfg['iv_epoch'][0] / 1000
 iv_baseline = cfg['iv_baseline'][0] / 1000
 notch_freq = cfg['notch_freq'][0]
 esg_bp_freq = cfg['esg_bp_freq'][0]
-prepared = True
-PCA = False
+prepared = False
+PCA = True
 SSP = False
 
 for subject in subjects:
@@ -40,6 +40,7 @@ for subject in subjects:
             raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr1000_{cond_name}_withqrs.fif", preload=True)
             # add reference channel to data
             mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+            raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
             raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                        iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -48,7 +49,7 @@ for subject in subjects:
 
             raw.pick_channels(channels)
             # raw.plot(n_channels=5)
-            raw.plot(duration=2, start=518.75, clipping=6, scalings=80e-5)  # 40e-5 looks good for median
+            raw.plot(duration=4, start=518.75, clipping=6, scalings=80e-5)  # 40e-5 looks good for median
             # raw.plot(duration=2, start=784, clipping=6, scalings=80e-5)
             # raw.plot(duration=5, start=500)
             plt.show()
@@ -59,6 +60,7 @@ for subject in subjects:
             fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
             raw = mne.io.read_raw_fif(input_path + fname, preload=True)
             mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+            raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
             raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                        iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
 
@@ -66,7 +68,7 @@ for subject in subjects:
             raw.pick_channels(channels)
             # raw.plot()
             # events = mne.pick_events(events, include=[1, 4])
-            raw.plot(duration=2, start=518.75, clipping=6, scalings=60e-6)
+            raw.plot(duration=4, start=518.75, clipping=6, scalings=60e-6)
             # raw.plot(duration=2, start=784, clipping=6, scalings=40e-5)
 
 

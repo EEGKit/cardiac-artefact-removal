@@ -53,6 +53,7 @@ if __name__ == '__main__':
                 raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr1000_{cond_name}_withqrs.fif", preload=True)
                 # add reference channel to data
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 cfg = loadmat(cfg_path + 'cfg.mat')
                 notch_freq = cfg['notch_freq'][0]
@@ -96,6 +97,7 @@ if __name__ == '__main__':
                 raw = mne.io.read_raw_fif(f"{input_path}data_clean_ecg_spinal_{cond_name}_withqrs.fif", preload=True)
                 # add reference channel to data
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 cfg = loadmat(cfg_path + 'cfg.mat')
                 notch_freq = cfg['notch_freq'][0]
