@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    calc_prepared_snr = False
-    calc_PCA_snr = False
-    calc_post_ICA_snr = False
+    calc_prepared_snr = True
+    calc_PCA_snr = True
+    calc_post_ICA_snr = True
     calc_ICA_snr = True
     choose_limited = False  # If true compute SNR from ICA processed with limited components chosen
-    calc_SSP_snr = False
+    calc_SSP_snr = True
     cca_flag = False  # Compute SNR for final CCA corrected data
     selected_components = 2  # CCA_flag is redundant in this file - DONT used cca data to compute any SNRs
     reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     ant_ref = False  # Use the data that has been anteriorly referenced instead
 
     # Testing with just subject 1 at the moment
-    subjects = np.arange(1, 37) # (1, 37) # 1 through 36 to access subject data
+    subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
                             raw = rereference_data(raw, 'AL')
                     else:
                         mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                        raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
+
                     raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                                iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
                     raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')

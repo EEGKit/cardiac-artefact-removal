@@ -125,7 +125,6 @@ def PCA_OBS(data, **kwargs):
     pca_info.nComponents = 4
 
     # Creates plots - handy to compare with MATLAB
-    # Something funny happening - my evecs don't look similar to MATLAB
     if debug_mode:
         # plot pca variables figure
         comp2plot = pca_info.nComponents

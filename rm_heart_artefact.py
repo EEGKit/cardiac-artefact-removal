@@ -34,7 +34,6 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
     _, esg_chans, _ = get_channels(subject, False, False, srmr_nr) # Ignoring ECG and EOG channels
 
     # Dyanmically set filename
-    # Changed as I now have added qrs events to prepared_py data
     fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs"
 
     # Read .fif file from the previous step (import_data)

@@ -68,7 +68,7 @@ def run_post_ica(subject, condition, srmr_nr, sampling_rate):
     # find which ICs match the EOG pattern
     ecg_indices, ecg_scores = ica.find_bads_ecg(raw, ch_name='ECG')
     ica.exclude = ecg_indices
-    ica.plot_scores(ecg_scores)
+    # ica.plot_scores(ecg_scores)
 
     # Apply the ica we got from the filtered data onto the unfiltered raw
     ica.apply(raw)
@@ -84,7 +84,6 @@ def run_post_ica(subject, condition, srmr_nr, sampling_rate):
 
     # add reference channel to data - average rereferencing
     mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-    raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
     raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')

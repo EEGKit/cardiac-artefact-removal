@@ -71,7 +71,6 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
 
         # add reference channel to data
         mne.add_reference_channels(clean_raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-        clean_raw.set_eeg_reference(ref_channels='average')
 
         ########################### Filtering ############################################
 

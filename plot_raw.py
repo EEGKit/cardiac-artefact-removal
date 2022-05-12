@@ -7,9 +7,9 @@ import numpy as np
 from SNR_functions import evoked_from_raw
 
 # Testing with random subjects atm
-subjects = [11]
+subjects = [20]
 # subjects = np.arange(1, 2)  # (1, 37) # 1 through 36 to access subject data
-cond_names = ['tibial']  #, 'median']
+cond_names = ['tibial']  # ['median']
 sampling_rate = 1000
 
 cfg_path = "/data/pt_02569/"  # Contains important info about experiment
@@ -20,6 +20,7 @@ notch_freq = cfg['notch_freq'][0]
 esg_bp_freq = cfg['esg_bp_freq'][0]
 prepared = False
 PCA = True
+ICA = False
 SSP = False
 
 for subject in subjects:
@@ -40,7 +41,6 @@ for subject in subjects:
             raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr1000_{cond_name}_withqrs.fif", preload=True)
             # add reference channel to data
             mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-            raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
             raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                        iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -60,7 +60,6 @@ for subject in subjects:
             fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
             raw = mne.io.read_raw_fif(input_path + fname, preload=True)
             mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-            raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
             raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                        iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
 
@@ -71,6 +70,16 @@ for subject in subjects:
             raw.plot(duration=4, start=518.75, clipping=6, scalings=60e-6)
             # raw.plot(duration=2, start=784, clipping=6, scalings=40e-5)
 
+        if ICA:
+            # Some editing here to avoid plotting fit_end and fit_start
+            input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+            fname = f"clean_baseline_ica_auto_{cond_name}.fif"
+            raw = mne.io.read_raw_fif(input_path + fname, preload=True)
+            raw.pick_channels(channels)
+            # raw.plot()
+            # events = mne.pick_events(events, include=[1, 4])
+            # raw.plot(duration=4, start=518.75, clipping=6, scalings=60e-6)
+            raw.plot(duration=4, start=518.75, clipping=6, scalings=20e-6)
 
         if SSP:
             input_path = "/data/p_02569/SSP/" + subject_id

@@ -15,7 +15,7 @@ if __name__ == '__main__':
     freqs = np.arange(5., 250., 3.)
     fmin, fmax = freqs[[0, -1]]
 
-    spinal = True  # If true plots SEPs, if false plots QRS
+    spinal = False  # If true plots SEPs, if false plots QRS
     subjects = np.arange(1, 37)
     cond_names = ['median', 'tibial']
     # cond_names = ['tibial']
@@ -75,7 +75,6 @@ if __name__ == '__main__':
                         input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
                         raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif", preload=True)
                         mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                        raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
                         raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
                                    method='iir',
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -92,7 +91,6 @@ if __name__ == '__main__':
                         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                        raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
                         raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
                                    method='iir',
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -136,21 +134,21 @@ if __name__ == '__main__':
                     tmin = -0.2
                     tmax = 0.2
                     if method == 'Prep':
-                        vmin = -4*10**-10
+                        vmin = 0  # -4*10**-10
                         vmax = 4*10**-10
                     elif method == 'PCA':
                         if cond_name == 'median':
-                            vmin = -4 * 10 ** -14
+                            vmin = 0  # -4 * 10 ** -14
                             vmax = 4 * 10 ** -14
                         else:
-                            vmin = -8 * 10 ** -13
+                            vmin = 0 #-8 * 10 ** -13
                             vmax = 8 * 10 ** -13
                     elif method == 'ICA':
                         if cond_name == 'median':
-                            vmin = -6 * 10 ** -15
+                            vmin = 0  # -6 * 10 ** -15
                             vmax = 6 * 10 ** -15
                         else:
-                            vmin = -6 * 10 ** -12
+                            vmin = 0  # -6 * 10 ** -12
                             vmax = 6 * 10 ** -12
                 fig, ax = plt.subplots(1, 1)
                 # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
@@ -167,7 +165,7 @@ if __name__ == '__main__':
                 if spinal:
                     fname = f"{method}_{trigger_name}_{cond_name}.png"
                 else:
-                    fname = f"{method}_{trigger_name}_{cond_name}.png"
+                    fname = f"{method}_{trigger_name}_{cond_name}_from0.png"
 
                 plt.savefig(image_path+fname)
                 plt.clf()
@@ -211,7 +209,7 @@ if __name__ == '__main__':
                     tmin = -0.1
                     tmax = 0.1
                 else:  # Letting it autoset the limits for the spinal triggers - too hard to guess
-                    vmin = -1.5 * 10 ** -14
+                    vmin = 0  # -1.5 * 10 ** -14
                     vmax = 1.5 * 10 ** -14
                     tmin = -0.2
                     tmax = 0.2
@@ -230,7 +228,7 @@ if __name__ == '__main__':
                 if spinal:
                     fname = f"{method}_{trigger_name}_{cond_name}.png"
                 else:
-                    fname = f"{method}_{trigger_name}_{cond_name}.png"
+                    fname = f"{method}_{trigger_name}_{cond_name}_from0.png"
 
                 plt.savefig(image_path + fname)
                 plt.clf()

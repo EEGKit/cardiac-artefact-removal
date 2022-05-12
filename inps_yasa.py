@@ -14,6 +14,7 @@ def get_harmonics(raw1, trigger, sample_rate):
     heart_rate = max(np.shape(relevant_events))/minutes  # This gives the number of R-peaks divided by time in min
     freqs = []
     f_0 = heart_rate/60
+    f_0 = np.around(f_0, decimals=1)
     freqs.append(f_0)
     for nq in np.arange(2, 6):
         freqs.append(nq*f_0)
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     calc_post_ICA = False
     calc_ICA = False
     choose_limited = False  # If true use ICA data with top 4 components chosen - use FALSE, see main
-    calc_SSP = True
+    calc_SSP = False
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
     # Define the channel names so they come out of each dataset the same
@@ -84,7 +85,6 @@ if __name__ == '__main__':
                 freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                            iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -165,7 +165,6 @@ if __name__ == '__main__':
                 freq = get_harmonics(raw, trigger_name, sampling_rate)
 
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
                 raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                            iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -176,10 +175,20 @@ if __name__ == '__main__':
                 # We have the fundamental frequency and harmonics for this subject
                 # Compute power at the frequencies
                 freq = np.around(freq, decimals=1)
+
                 data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
                 # PSD will have units uV^2 now
                 # Need a frequency resolution of 0.1Hz - win set to 10 seconds
                 # This outputs a dataframe
+                # bp1 = yasa.bandpower(raw, win_sec=10, relative=True,
+                #                      bandpass=False,
+                #                      bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                #                             (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                #                             (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                #                             (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                #                             (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                #                      kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
                 bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
                                     bandpass=False,
                                     bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
@@ -255,10 +264,20 @@ if __name__ == '__main__':
                 # freq = np.around(freq, decimals=1)
                 # data = raw.get_data(esg_chans) * 1e6  # Both give same answer
                 freq = np.around(freq, decimals=1)
+
                 data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
                 # PSD will have units uV^2 now
                 # Need a frequency resolution of 0.1Hz - win set to 10 seconds
                 # This outputs a dataframe
+                # bp1 = yasa.bandpower(raw, win_sec=10, relative=True,
+                #                      bandpass=False,
+                #                      bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                #                             (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                #                             (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                #                             (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                #                             (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                #                      kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
                 bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
                                     bandpass=False,
                                     bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),

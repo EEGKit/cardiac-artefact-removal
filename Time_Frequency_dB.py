@@ -11,8 +11,13 @@ import matplotlib.pyplot as plt
 from get_esg_channels import get_esg_channels
 
 if __name__ == '__main__':
-    freqs = np.arange(5., 250., 3.)
-    fmin, fmax = freqs[[0, -1]]
+    low_freq_flag = True
+    if low_freq_flag:
+        freqs = np.arange(5., 250., 3.)
+        fmin, fmax = freqs[[0, -1]]
+    else:
+        freqs = np.arange(0., 250., 3.)
+        fmin, fmax = freqs[[0, -1]]
 
     spinal = False  # If true plots SEPs, if false plots QRS
     subjects = np.arange(1, 37)
@@ -73,7 +78,6 @@ if __name__ == '__main__':
                         input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
                         raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif", preload=True)
                         mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                        raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
                         raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
                                    method='iir',
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -90,7 +94,6 @@ if __name__ == '__main__':
                         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                        raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
                         raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
                                    method='iir',
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -145,16 +148,23 @@ if __name__ == '__main__':
                     tmax = 0.2
                 fig, ax = plt.subplots(1, 1)
                 # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
-                averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                              axes=ax, show=False, colorbar=True, dB=True,
-                              tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
+                if low_freq_flag:
+                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                                  axes=ax, show=False, colorbar=True, dB=True, fmin=0, fmax=20,
+                                  tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
+                else:
+                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                                  axes=ax, show=False, colorbar=True, dB=True,
+                                  tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
 
                 plt.title(f"Method: {method}, Condition: {trigger_name}")
                 if spinal:
                     fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
                 else:
-                    fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
-
+                    if low_freq_flag:
+                        fname = f"{method}_{trigger_name}_{cond_name}_dB_low.png"
+                    else:
+                        fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
                 plt.savefig(image_path+fname)
                 plt.clf()
 
@@ -207,15 +217,23 @@ if __name__ == '__main__':
                         vmax = -250
                 fig, ax = plt.subplots(1, 1)
                 # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.1)
-                averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
-                              axes=ax, show=False, colorbar=True, dB=True,
-                              tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
+                if low_freq_flag:
+                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                                  axes=ax, show=False, colorbar=True, dB=True, fmin=0, fmax=20,
+                                  tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
+                else:
+                    averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+                                  axes=ax, show=False, colorbar=True, dB=True,
+                                  tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
 
                 plt.title(f"Method: {method}, Condition: {trigger_name}")
                 if spinal:
                     fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
                 else:
-                    fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
+                    if low_freq_flag:
+                        fname = f"{method}_{trigger_name}_{cond_name}_dB_low.png"
+                    else:
+                        fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
 
                 plt.savefig(image_path + fname)
                 plt.clf()

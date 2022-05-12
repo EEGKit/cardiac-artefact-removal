@@ -39,6 +39,9 @@ def epoch_data(subject, condition, srmr_nr, sampling_rate):
     # trigger_name = set(raw.annotations.description)
 
     ########################### Re - Reference ####################################
+    # add reference channel to data
+    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+
     # Fz reference
     raw_FzRef = rereference_data(raw, 'Fz-TH6')
 
@@ -47,10 +50,6 @@ def epoch_data(subject, condition, srmr_nr, sampling_rate):
         raw_antRef = rereference_data(raw, 'AC')
     elif nerve == 2:
         raw_antRef = rereference_data(raw, 'AL')
-
-    # average reference channel to data
-    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-    raw.set_eeg_reference(ref_channels='average')  # Perform rereferencing
 
     ########################### Filtering ############################################
     cfg = loadmat(cfg_path+'cfg.mat')

@@ -21,8 +21,8 @@ from run_CCA_variabletrials import run_CCA_variabletrials
 if __name__ == '__main__':
 
     ## Pick which scripts you want to run ##
-    import_d = False  # Prep work
-    heart_removal = False  # Heart artefact removal
+    import_d = True  # Prep work
+    heart_removal = True  # Heart artefact removal
     cut_epochs = True  # Epoch the data according to relevant event
     SSP_flag = True  # Heart artefact removal by SSP
     post_ica = True  # Run ICA after already running PCA_OBS
@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     n_subjects = 36  # Number of subjects
     # Testing with just subject 1 at the moment
-    subjects = np.arange(1, 37)  # (1, 2) # 1 through 36 to access subject data
+    subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
     srmr_nr = 1  # Experiment Number
     conditions = [2, 3]  # Conditions of interest
     sampling_rate = 1000
