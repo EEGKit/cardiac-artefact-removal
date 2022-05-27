@@ -30,9 +30,9 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/GrandAveragePlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [True, True, False, False]
+    methods = [False, True, True, True]
     method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
-    SSP = False
+    SSP = True
 
     # To use mne grand_average method, need to generate a list of evoked potentials for each subject
     for i in np.arange(0, len(methods)):  # Methods Applied
@@ -107,16 +107,19 @@ if __name__ == '__main__':
                 plt.ylabel('Amplitude [\u03BCV]')
 
                 plt.xlabel('Time [s]')
-                plt.xlim([-0.1, 0.3])
+                # plt.xlim([-0.1, 0.3])
+                plt.xlim([-0.025, 0.065])
                 if cond_name == 'tibial':
                     plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
+                    plt.ylim([-0.5, 1.3])
                 elif cond_name == 'median':
                     plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
+                    plt.ylim([-0.8, 0.8])
                 plt.title(f"Method: {method}, Condition: {trigger_name} CCA: False")
                 if reduced_trials:
                     fname = f"{method}_{trigger_name}_reducedtrials.png"
                 else:
-                    fname = f"{method}_{trigger_name}.png"
+                    fname = f"{method}_{trigger_name}_samescale.png"
                 plt.legend(loc='upper right')
                 plt.savefig(image_path+fname)
                 plt.clf()
@@ -152,16 +155,19 @@ if __name__ == '__main__':
                 plt.ylabel('Amplitude [\u03BCV]')
 
                 plt.xlabel('Time [s]')
-                plt.xlim([-0.1, 0.3])
+                # plt.xlim([-0.1, 0.3])
+                plt.xlim([-0.025, 0.065])
                 if cond_name == 'tibial':
                     plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
+                    plt.ylim([-0.5, 1.3])
                 elif cond_name == 'median':
                     plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
+                    plt.ylim([-0.8, 0.8])
                 plt.title(f"Method: SSP {n} proj., Condition: {trigger_name}, CCA: False")
                 if reduced_trials:
                     fname = f"SSP_{n}_{trigger_name}_reducedtrials.png"
                 else:
-                    fname = f"SSP_{n}_{trigger_name}.png"
+                    fname = f"SSP_{n}_{trigger_name}_samescale.png"
                 plt.legend(loc='upper right')
                 plt.savefig(image_path + fname)
                 plt.clf()

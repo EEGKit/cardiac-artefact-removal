@@ -8,8 +8,8 @@ from SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    plot_time = False
-    plot_image = True
+    plot_time = True
+    plot_image = False
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000

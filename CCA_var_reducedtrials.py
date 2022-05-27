@@ -12,6 +12,7 @@ from invert import invert
 from scipy.stats import variation
 
 if __name__ == '__main__':
+    std = False  # If true, use the STD and not the coeff of variation
     calc_prepared = True
     calc_PCA = True
     calc_post_ICA = True
@@ -75,9 +76,13 @@ if __name__ == '__main__':
                     epochs = epochs.crop(tmin=potential_window[0], tmax=potential_window[1])
                     data = epochs.get_data(picks=channel)  # n_epochs, n_channels, n_times
                     data = np.squeeze(data)  # Remove channel dimension as we only select one (n_epochs, n_times)
-                    peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
-                    # Then get variance of these peak-peak vals
-                    var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
+                    if std:
+                        var = np.std(data, axis=1)  # Gets the standard deviation in each potential window
+                        var = np.mean(var)  # Average across the epochs
+                    else:
+                        peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
+                        # Then get variance of these peak-peak vals
+                        var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
 
                     # Now have one snr related to each subject and condition
                     if cond_name == 'median':
@@ -90,7 +95,10 @@ if __name__ == '__main__':
             savesnr.var_tib = var_tib
             dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
 
-            fn = f"/data/pt_02569/tmp_data/prepared_py_cca/variance{no}.h5"
+            if std:
+                fn = f"/data/pt_02569/tmp_data/prepared_py_cca/variance{no}_std.h5"
+            else:
+                fn = f"/data/pt_02569/tmp_data/prepared_py_cca/variance{no}.h5"
             with h5py.File(fn, "w") as outfile:
                 for keyword in dataset_keywords:
                     outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -136,9 +144,14 @@ if __name__ == '__main__':
                     epochs = epochs.crop(tmin=potential_window[0], tmax=potential_window[1])
                     data = epochs.get_data(picks=channel)  # n_epochs, n_channels, n_times
                     data = np.squeeze(data)  # Remove channel dimension as we only select one
-                    peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
-                    # Then get variance of these peak-peak vals
-                    var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
+                    if std:
+                        var = np.std(data, axis=1)  # Gets the standard deviation in each potential window
+                        var = np.mean(var)  # Average across the epochs
+                    else:
+                        peak_peak_amp = np.ptp(data, axis=1,
+                                               keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
+                        # Then get variance of these peak-peak vals
+                        var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
 
                     # Now have one snr related to each subject and condition
                     if cond_name == 'median':
@@ -151,7 +164,10 @@ if __name__ == '__main__':
             savesnr.var_tib = var_tib
             dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
 
-            fn = f"/data/pt_02569/tmp_data/ecg_rm_py_cca/variance{no}.h5"
+            if std:
+                fn = f"/data/pt_02569/tmp_data/ecg_rm_py_cca/variance{no}_std.h5"
+            else:
+                fn = f"/data/pt_02569/tmp_data/ecg_rm_py_cca/variance{no}.h5"
             with h5py.File(fn, "w") as outfile:
                 for keyword in dataset_keywords:
                     outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -198,9 +214,14 @@ if __name__ == '__main__':
                     epochs = epochs.crop(tmin=potential_window[0], tmax=potential_window[1])
                     data = epochs.get_data(picks=channel)  # n_epochs, n_channels, n_times
                     data = np.squeeze(data)  # Remove channel dimension as we only select one
-                    peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
-                    # Then get variance of these peak-peak vals
-                    var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
+                    if std:
+                        var = np.std(data, axis=1)  # Gets the standard deviation in each potential window
+                        var = np.mean(var)  # Average across the epochs
+                    else:
+                        peak_peak_amp = np.ptp(data, axis=1,
+                                               keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
+                        # Then get variance of these peak-peak vals
+                        var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
 
                     # Now have one snr related to each subject and condition
                     if cond_name == 'median':
@@ -213,7 +234,10 @@ if __name__ == '__main__':
             savesnr.var_tib = var_tib
             dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
 
-            fn = f"/data/pt_02569/tmp_data/ica_py_cca/variance{no}.h5"
+            if std:
+                fn = f"/data/pt_02569/tmp_data/ica_py_cca/variance{no}_std.h5"
+            else:
+                fn = f"/data/pt_02569/tmp_data/ica_py_cca/variance{no}.h5"
             with h5py.File(fn, "w") as outfile:
                 for keyword in dataset_keywords:
                     outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -259,10 +283,14 @@ if __name__ == '__main__':
                         epochs = epochs.crop(tmin=potential_window[0], tmax=potential_window[1])
                         data = epochs.get_data(picks=channel)  # n_epochs, n_channels, n_times
                         data = np.squeeze(data)  # Remove channel dimension as we only select one
-                        peak_peak_amp = np.ptp(data, axis=1,
-                                               keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
-                        # Then get variance of these peak-peak vals
-                        var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
+                        if std:
+                            var = np.std(data, axis=1)  # Gets the standard deviation in each potential window
+                            var = np.mean(var)  # Average across the epochs
+                        else:
+                            peak_peak_amp = np.ptp(data, axis=1,
+                                                   keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
+                            # Then get variance of these peak-peak vals
+                            var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
 
                         # Now have one snr related to each subject and condition
                         if cond_name == 'median':
@@ -275,7 +303,10 @@ if __name__ == '__main__':
             savesnr.var_tib = var_tib
             dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
 
-            fn = f"/data/p_02569/SSP_cca/variance{no}.h5"
+            if std:
+                fn = f"/data/p_02569/SSP_cca/variance{no}_std.h5"
+            else:
+                fn = f"/data/p_02569/SSP_cca/variance{no}.h5"
             with h5py.File(fn, "w") as outfile:
                 for keyword in dataset_keywords:
                     outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -294,7 +325,10 @@ if __name__ == '__main__':
         for i in np.arange(0, 4):
             input_path = input_paths[i]
             name = names[i]
-            fn = f"{input_path}variance{no}.h5"
+            if std:
+                fn = f"{input_path}variance{no}_std.h5"
+            else:
+                fn = f"{input_path}variance{no}.h5"
             # All have shape (24, 1) bar SSP which is (24, 16)
             with h5py.File(fn, "r") as infile:
                 # Get the data

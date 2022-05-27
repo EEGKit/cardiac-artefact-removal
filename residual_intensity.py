@@ -12,9 +12,9 @@ from SNR_functions import evoked_from_raw
 
 if __name__ == '__main__':
     calc_prepared = False  # Should always be true as this is the baseline we get the ratio with
-    calc_PCA = False
+    calc_PCA = True
     calc_post_ICA = False
-    calc_ICA = True
+    calc_ICA = False
     choose_limited = False  # If true, use data where only top 4 components chosen - use FALSE, see main
     calc_SSP = False
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
@@ -143,9 +143,13 @@ if __name__ == '__main__':
 
                 # Want the RMS of the data
                 # Load epochs resulting from ecg_rm_py - the raw data in this folder has not been rereferenced
-                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
-                fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
-                raw = mne.io.read_raw_fif(input_path+fname, preload=True)
+                # input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                # fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
+                # raw = mne.io.read_raw_fif(input_path+fname, preload=True)
+
+                input_path = "/data/pt_02569/tmp_data/ecg_rm/" + subject_id + "/esg/prepro/"
+                fname = f"cnt_clean_ecg_spinal_{cond_name}.set"
+                raw = mne.io.read_raw_eeglab(input_path + fname, preload=True)
 
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
 
@@ -155,12 +159,15 @@ if __name__ == '__main__':
                 raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+                print(evoked.ch_names)
+                print(esg_chans)
 
                 # Now we have an evoked potential about the heartbeat
                 # Want to compute the RMS for each channel
                 res_chan_pca = []
                 for ch in esg_chans:
                     # Pick a single channel
+                    print(ch)
                     evoked_ch = evoked.copy().pick_channels([ch], ordered=False)
                     data = evoked_ch.data[0, 0:]  # Format n_channels x n_times
                     rms = np.sqrt(np.mean(data ** 2))

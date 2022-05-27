@@ -55,8 +55,9 @@ def PCA_OBS(data, **kwargs):
     peakplot = np.zeros(data.shape)
 
     # Extract QRS events
-    # If statement to avoid indexing out of bounds - problem first noticed with subject 31
     # qrs is a list of lists due to how matdata is loaded into python
+    # For sub 31, last qrs peak is at 1560399 but last sample is 1560397
+    # Just testing the -3 to see
     # Original code: peakplot[0, qrs] = 1
     for idx in qrs[0]:
         if idx < len(peakplot[0, :]):
@@ -96,8 +97,11 @@ def PCA_OBS(data, **kwargs):
     pcamat = np.zeros((peak_count - 1, 2*peak_range+1)) # [epoch x time]
     # dpcamat = pcamat # [epoch x time]
     # picking out heartbeat epochs
+    # Changing this indexing makes no difference
     for p in range(1, peak_count):
         pcamat[p-1, :] = eegchan[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range+1]
+    # for p in range(1, peak_count-1):
+    #     pcamat[p-1, :-1] = eegchan[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range]
 
     # detrending matrix(twice - why?)
     pcamat = detrend(pcamat, type='constant', axis=1) # [epoch x time] - detrended along the epoch
@@ -148,7 +152,7 @@ def PCA_OBS(data, **kwargs):
 
         fig.suptitle(f"{sub_nr} thresholds PCA vars channel {current_channel}")
         plt.tight_layout()
-        fig.savefig(f"{savename}_{condition}.jpg")
+        fig.savefig(f"{savename}_{condition}_test.jpg")
 
     if debug_mode:
         pca_info.chan = current_channel
@@ -173,7 +177,7 @@ def PCA_OBS(data, **kwargs):
         plt.legend(['std effect', 'mean effect', 'PCA_1', 'PCA_2', 'PCA_3', 'PCA_4'])
         fig.suptitle(f"{sub_nr} papc channel {current_channel}")
         plt.tight_layout()
-        fig.savefig(f"{savename}_templateVars_{condition}.jpg")
+        fig.savefig(f"{savename}_templateVars_{condition}_test.jpg")
 
     ###################################################################################
     # Data Fitting
@@ -181,7 +185,7 @@ def PCA_OBS(data, **kwargs):
     window_start_idx = []
     window_end_idx = []
     for p in range(0, peak_count):
-        # Deals with start portion of data
+        # Deals with start portion of data, might not be possible to fit due to window length
         if p == 0:
             pre_range = peak_range
             post_range = math.floor((peak_idx[p + 1] - peak_idx[p])/2)
@@ -254,7 +258,7 @@ def PCA_OBS(data, **kwargs):
             plt.xlabel('time [s]')
             plt.ylabel('amplitude [V]')
             plt.title('Subject ' + sub_nr + ', channel ' + current_channel)
-            fig.savefig(f"{savename}_compareresults_{condition}.jpg")
+            fig.savefig(f"{savename}_compareresults_{condition}_test.jpg")
 
     # Actually subtract the artefact, return needs to be the same shape as input data
     # One sample shift purely due to the fact the r-peaks are currently detected in MATLAB
@@ -280,7 +284,7 @@ def PCA_OBS(data, **kwargs):
         pca_info.window_start_idx = window_start_idx
         pca_info.window_end_idx = window_end_idx
         dataset_keywords = [a for a in dir(pca_info) if not a.startswith('__')]
-        fn = f"{savename}_{condition}_pca_info.h5"
+        fn = f"{savename}_{condition}_pca_info_test.h5"
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(pca_info, keyword))

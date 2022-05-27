@@ -19,9 +19,10 @@ iv_baseline = cfg['iv_baseline'][0] / 1000
 notch_freq = cfg['notch_freq'][0]
 esg_bp_freq = cfg['esg_bp_freq'][0]
 prepared = False
-PCA = True
+PCA = False
+Post_ICA = False
 ICA = False
-SSP = False
+SSP = True
 
 for subject in subjects:
     subject_id = f'sub-{str(subject).zfill(3)}'
@@ -67,8 +68,16 @@ for subject in subjects:
             raw.pick_channels(channels)
             # raw.plot()
             # events = mne.pick_events(events, include=[1, 4])
-            raw.plot(duration=4, start=518.75, clipping=6, scalings=60e-6)
+            raw.plot(duration=1.5, start=1164, clipping=6, scalings=60e-6)
+            # raw.plot(duration=4, start=518.75, clipping=6, scalings=60e-6)
             # raw.plot(duration=2, start=784, clipping=6, scalings=40e-5)
+
+        if Post_ICA:
+            input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
+            fname = f"clean_ica_auto_{cond_name}.fif"
+            raw = mne.io.read_raw_fif(input_path + fname, preload=True)
+            raw.pick_channels(channels)
+            raw.plot(duration=1.5, start=1164, clipping=6, scalings=60e-6)
 
         if ICA:
             # Some editing here to avoid plotting fit_end and fit_start
@@ -87,7 +96,7 @@ for subject in subjects:
             raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}.fif")
             # raw.pick_channels(channels)
             # raw.plot()
-            raw.plot(duration=1, start=518, n_channels=1)
-            raw.plot(duration=1, start=784, n_channels=1)
+            raw.plot(duration=1, start=518, n_channels=3)
+            # raw.plot(duration=1, start=784, n_channels=1)
 
 plt.show()

@@ -1,4 +1,5 @@
 ############################################################################
+# Testing what's wrong with PCA_OBS - assuming it's an indexing issue currently
 # Want this to work with the fif file of the previous stage
 
 import os
@@ -6,13 +7,13 @@ import mne
 import h5py
 from scipy.io import loadmat
 from scipy.signal import firls
-from PCA_OBS import *
+from PCA_OBS_test import *
 from PCA_OBS_fittedart import *
 import matplotlib.pyplot as plt
 from get_conditioninfo import *
 from get_channels import *
 
-def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
+def rm_heart_artefact_test(subject, condition, srmr_nr, sampling_rate):
     matlab = False  # If this is true, use the data 'prepared' by matlab - testing to see where hump at 0 comes from
     # Incredibly slow without parallelization
     # Set variables
@@ -85,7 +86,7 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
         # This information is the same for each channel - run through fitting once to get vals, add to all channels
         # Add annotations to each channel
         keywords = ['window_start_idx', 'window_end_idx']
-        fn = f"{save_path}pca_chan_{ch}_{cond_name}_pca_info.h5"
+        fn = f"{save_path}pca_chan_{ch}_{cond_name}_pca_info_test.h5"
         with h5py.File(fn, "r") as infile:
             # Get the data
             window_start = infile[keywords[0]][()].reshape(-1)
@@ -128,7 +129,7 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
     # Save the new mne structure with the cleaned data
     # Save data without stim artefact and downsampled to 1000
     if matlab:
-        raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_mat.fif'), fmt='double',
+        raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_mat_test.fif'), fmt='double',
                  overwrite=True)
     else:
-        raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double', overwrite=True)
+        raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_test.fif'), fmt='double', overwrite=True)

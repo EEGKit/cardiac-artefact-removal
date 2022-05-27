@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    calc_prepared_snr = True
+    calc_prepared_snr = False
     calc_PCA_snr = True
-    calc_post_ICA_snr = True
-    calc_ICA_snr = True
+    calc_post_ICA_snr = False
+    calc_ICA_snr = False
     choose_limited = False  # If true compute SNR from ICA processed with limited components chosen
-    calc_SSP_snr = True
+    calc_SSP_snr = False
     cca_flag = False  # Compute SNR for final CCA corrected data
     selected_components = 2  # CCA_flag is redundant in this file - DONT used cca data to compute any SNRs
     reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR

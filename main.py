@@ -9,6 +9,7 @@ import mne
 from get_conditioninfo import *
 import random
 from rm_heart_artefact import *
+from rm_heart_artefact_test import *
 from SSP import *
 from import_data import *
 from epoch_data import *
@@ -21,20 +22,22 @@ from run_CCA_variabletrials import run_CCA_variabletrials
 if __name__ == '__main__':
 
     ## Pick which scripts you want to run ##
-    import_d = True  # Prep work
-    heart_removal = True  # Heart artefact removal
-    cut_epochs = True  # Epoch the data according to relevant event
-    SSP_flag = True  # Heart artefact removal by SSP
-    post_ica = True  # Run ICA after already running PCA_OBS
-    ica = True  # Run ICA on the 'dirty' data as a baseline comparison
+    import_d = False  # Prep work
+    heart_removal = False  # Heart artefact removal
+    heart_removal_test = True  # Heart artefact removal testing
+    cut_epochs = False  # Epoch the data according to relevant event
+    SSP_flag = False  # Heart artefact removal by SSP
+    post_ica = False  # Run ICA after already running PCA_OBS
+    ica = False  # Run ICA on the 'dirty' data as a baseline comparison
     # choose_limited should be false - SNR is worse if it's true, over 95% residual intensity and inps under 1.4
     choose_limited = False  # If true only take the top 4 ICA components from find_bads_ecg
-    CCA_flag = True  # Run CCA on data (from all methods)
-    variable_cca_flag = True  # Run CCA with limited trial numbers
+    CCA_flag = False  # Run CCA on data (from all methods)
+    variable_cca_flag = False  # Run CCA with limited trial numbers
 
     n_subjects = 36  # Number of subjects
     # Testing with just subject 1 at the moment
-    subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
+    # subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
+    subjects = [20]
     srmr_nr = 1  # Experiment Number
     conditions = [2, 3]  # Conditions of interest
     sampling_rate = 1000
@@ -57,6 +60,12 @@ if __name__ == '__main__':
         for subject in subjects:
             for condition in conditions:
                 rm_heart_artefact(subject, condition, srmr_nr, sampling_rate)
+
+    ## To remove heart artifact via PCA_OBS ##
+    if heart_removal_test:
+        for subject in subjects:
+            for condition in conditions:
+                rm_heart_artefact_test(subject, condition, srmr_nr, sampling_rate)
 
 
     ## To cut epochs around triggers ##
