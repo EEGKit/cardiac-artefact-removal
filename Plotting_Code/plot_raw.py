@@ -3,8 +3,6 @@
 from scipy.io import loadmat
 import mne
 import matplotlib.pyplot as plt
-import numpy as np
-from SNR_functions import evoked_from_raw
 
 # Testing with random subjects atm
 subjects = [20]

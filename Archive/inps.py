@@ -18,10 +18,8 @@
 from scipy.io import loadmat
 import numpy as np
 import mne
-from scipy.fft import fft, fftfreq, rfft, rfftfreq
-import matplotlib.pyplot as plt
+from scipy.fft import rfft, rfftfreq
 import h5py
-from SNR_functions import evoked_from_raw
 
 
 def get_harmonics(raw1, trigger, sample_rate):

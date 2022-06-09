@@ -14,7 +14,8 @@ def evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs):
     elif reduced_epochs and trigger_name == 'Tibial - Stimulation':
         epochs = epochs[800:1200]
 
-    evoked = epochs.average()
+    evoked = epochs.average()  # This line as is drops the ECG channel now when it didn't before....
+    # evoked = epochs.average(picks='all')  # Added all recently after errors moving to 3.9
 
     return evoked
 
@@ -45,6 +46,14 @@ def calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window):
         evoked.drop_channels(['AL', 'ECG'])
     elif 'AC' in evoked.ch_names:
         evoked.drop_channels(['AC', 'ECG'])
+    # if 'TH6' in evoked.ch_names:
+    #     evoked.drop_channels(['TH6'])
+    # if 'AL' in evoked.ch_names:
+    #     evoked.drop_channels(['AL'])
+    # if 'AC' in evoked.ch_names:
+    #     evoked.drop_channels(['AC'])
+    # if 'ECG' in evoked.ch_names:
+    #     evoked.drop_channels(['ECG'])
 
     # Want to only check channels relevant to potential being triggered
     # Tibial centred around 22ms - take 10ms on either end

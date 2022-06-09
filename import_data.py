@@ -140,7 +140,7 @@ def import_data(subject, condition, srmr_nr, sampling_rate):
         raw_concat.annotations.append(qrs_event, duration, description, ch_names=[eeg_chans] * len(QRSevents_m))
         fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif'
 
-    # Should have a single file name per condition now (just medial/tibial)
+    # Should have a single file name per condition now (just median/tibial)
     # Save data without stim artefact and downsampled to 1000
     raw_concat.save(os.path.join(save_path, fname_save), fmt='double', overwrite=True)
 

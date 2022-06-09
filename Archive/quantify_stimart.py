@@ -6,7 +6,7 @@ import mne
 import numpy as np
 import h5py
 from scipy.io import loadmat
-from SNR_functions import evoked_from_raw
+from Metrics.SNR_functions import evoked_from_raw
 
 if __name__ == '__main__':
     # Set which to run

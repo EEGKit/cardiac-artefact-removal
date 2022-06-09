@@ -25,9 +25,12 @@ def get_gridparameters(subjects):
 
         # remove electrode positions with NaN value
         # Don't want to drop nan, just want to generate logical indices where they are or are not nan
-        x_idx = pd.DataFrame.to_numpy(electrode_pos['x'].notna())
-        y_idx = pd.DataFrame.to_numpy(electrode_pos['y'].notna())
-        z_idx = pd.DataFrame.to_numpy(electrode_pos['z'].notna())
+        # x_idx = pd.DataFrame.to_numpy(electrode_pos['x'].notna())  # Worked with 3.6, not working with 3.9
+        # y_idx = pd.DataFrame.to_numpy(electrode_pos['y'].notna())
+        # z_idx = pd.DataFrame.to_numpy(electrode_pos['z'].notna())
+        x_idx = electrode_pos['x'].notna().to_numpy()
+        y_idx = electrode_pos['y'].notna().to_numpy()
+        z_idx = electrode_pos['z'].notna().to_numpy()
         my_list = np.array([x_idx, y_idx, z_idx])
         elec_idx = np.argwhere(my_list.sum(axis=0) == 3).reshape(-1)
 

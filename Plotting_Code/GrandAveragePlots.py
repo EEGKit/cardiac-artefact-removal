@@ -4,7 +4,7 @@ import mne
 import os
 import numpy as np
 from scipy.io import loadmat
-from SNR_functions import evoked_from_raw
+from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/GrandAveragePlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [False, True, True, True]
+    methods = [True, True, True, True]
     method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
     SSP = True
 
@@ -111,15 +111,15 @@ if __name__ == '__main__':
                 plt.xlim([-0.025, 0.065])
                 if cond_name == 'tibial':
                     plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
-                    plt.ylim([-0.5, 1.3])
+                    # plt.ylim([-0.5, 1.3])
                 elif cond_name == 'median':
                     plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
-                    plt.ylim([-0.8, 0.8])
+                    # plt.ylim([-0.8, 0.8])
                 plt.title(f"Method: {method}, Condition: {trigger_name} CCA: False")
                 if reduced_trials:
                     fname = f"{method}_{trigger_name}_reducedtrials.png"
                 else:
-                    fname = f"{method}_{trigger_name}_samescale.png"
+                    fname = f"{method}_{trigger_name}_shorter.png"
                 plt.legend(loc='upper right')
                 plt.savefig(image_path+fname)
                 plt.clf()
@@ -159,15 +159,15 @@ if __name__ == '__main__':
                 plt.xlim([-0.025, 0.065])
                 if cond_name == 'tibial':
                     plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
-                    plt.ylim([-0.5, 1.3])
+                    # plt.ylim([-0.5, 1.3])
                 elif cond_name == 'median':
                     plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
-                    plt.ylim([-0.8, 0.8])
+                    # plt.ylim([-0.8, 0.8])
                 plt.title(f"Method: SSP {n} proj., Condition: {trigger_name}, CCA: False")
                 if reduced_trials:
                     fname = f"SSP_{n}_{trigger_name}_reducedtrials.png"
                 else:
-                    fname = f"SSP_{n}_{trigger_name}_samescale.png"
+                    fname = f"SSP_{n}_{trigger_name}_shorter.png"
                 plt.legend(loc='upper right')
                 plt.savefig(image_path + fname)
                 plt.clf()

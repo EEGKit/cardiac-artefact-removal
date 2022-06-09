@@ -17,12 +17,13 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    calc_prepared_snr = False
+    calc_prepared_snr = True
     calc_PCA_snr = True
-    calc_post_ICA_snr = False
-    calc_ICA_snr = False
+    calc_post_ICA_snr = True
+    calc_ICA_snr = True
     choose_limited = False  # If true compute SNR from ICA processed with limited components chosen
-    calc_SSP_snr = False
+    calc_SSP_snr = True
+    # We don't use SNR for CCA data anymore
     cca_flag = False  # Compute SNR for final CCA corrected data
     selected_components = 2  # CCA_flag is redundant in this file - DONT used cca data to compute any SNRs
     reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR
@@ -176,6 +177,7 @@ if __name__ == '__main__':
                         epochs = mne.read_epochs(f"{input_path}epo_antRef_clean_{cond_name}.fif")
                     else:
                         epochs = mne.read_epochs(f"{input_path}epo_clean_{cond_name}.fif")
+
                     if reduced_epochs and trigger_name == 'Median - Stimulation':
                         epochs = epochs[900:1100]
                     elif reduced_epochs and trigger_name == 'Tibial - Stimulation':
@@ -428,7 +430,7 @@ if __name__ == '__main__':
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
                 # Want the SNR for each projection tried from 5 to 20
-                for n in np.arange(5, 21):  # (5, 21):
+                for n in np.arange(5, 21):
                     # Load SSP projection data
                     if cca_flag:
                         input_path = f"/data/p_02569/SSP_cca/{subject_id}/{n} projections/"

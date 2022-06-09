@@ -5,9 +5,8 @@ import mne
 import os
 import numpy as np
 from scipy.io import loadmat
-from SNR_functions import evoked_from_raw
+from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
-from get_esg_channels import get_esg_channels
 
 if __name__ == '__main__':
     freqs = np.arange(5., 250., 3.)

@@ -4,7 +4,7 @@ import mne
 import os
 import numpy as np
 from scipy.io import loadmat
-from SNR_functions import evoked_from_raw, evoked_from_raw_nobaseline
+from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':

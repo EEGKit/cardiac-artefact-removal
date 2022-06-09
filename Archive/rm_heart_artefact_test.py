@@ -3,13 +3,10 @@
 # Want this to work with the fif file of the previous stage
 
 import os
-import mne
-import h5py
 from scipy.io import loadmat
 from scipy.signal import firls
-from PCA_OBS_test import *
+from Archive.PCA_OBS_test import *
 from PCA_OBS_fittedart import *
-import matplotlib.pyplot as plt
 from get_conditioninfo import *
 from get_channels import *
 

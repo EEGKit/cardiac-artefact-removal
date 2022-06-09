@@ -16,10 +16,10 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    calc_prepared = False
-    calc_PCA = False
-    calc_post_ICA = False
-    calc_SSP = False
+    calc_prepared =True
+    calc_PCA = True
+    calc_post_ICA = True
+    calc_SSP = True
     cca_flag = True  # Compute SNR for final CCA corrected data
 
     # Testing with just subject 1 at the moment

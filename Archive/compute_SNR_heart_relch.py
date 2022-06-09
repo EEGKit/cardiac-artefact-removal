@@ -1,19 +1,12 @@
-# Script to quantify the SNR of the heart artefact
-# The signal in this case is the peak of the qrs waveform, and the noise is std in baseline period
-# QRS complex usually has duration of 0.06 to 0.10 seconds - search this area for maximal positive peak
-# Then noise calculated in 100ms period preceding the artefact
-# SNR = peak of QRS/std of baseline period
-# Doing in all channels for now, may reduce to only channels of interest
-
-# Could potentially make sense to only look at the reduction in the heart artefact at relevant channels
+# Very similar analysis to compute_SNR_heart, but instead of looking at all channels, look only at the three central
+# channels deemed important in the respective tibial and median stimulation conditions and take average across these
 
 import mne
 import numpy as np
 import h5py
-from SNR_functions import calculate_heart_SNR_evoked, evoked_from_raw
+from Metrics.SNR_functions import calculate_heart_SNR_evoked_ch, evoked_from_raw
 from scipy.io import loadmat
 from epoch_data import rereference_data
-import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
@@ -23,10 +16,10 @@ if __name__ == '__main__':
     sampling_rate = 1000
     # Pattern of results is the same with the wider period - so looking specifically at the R-peak is retained
     # Baseline is the 100ms period before the artefact occurs
-    # iv_baseline = [-300/1000, -200/1000]
+    # iv_baseline = [-300 / 1000, -200 / 1000]
     iv_baseline = [-150/1000, -50/1000]
-    # Want 200ms before and 200ms after the R-peak - we know where peak should be so can look pretty specifically
-    # iv_epoch = [-300/1000, 400/1000]
+    # Want 200ms before and 400ms after the R-peak
+    # iv_epoch = [-300 / 1000, 400 / 1000]
     iv_epoch = [-200/1000, 200/1000]
 
     # Set which to run
@@ -35,8 +28,8 @@ if __name__ == '__main__':
     calc_post_ICA_snr = True
     calc_ICA_snr = True
     calc_SSP_snr = True
-    reduced_window = False  # Smaller window about expected peak
     ant_ref = False  # Use the data that has been anteriorly referenced instead
+    reduced_window = False # Reduced window about expected peak
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
     # Run SNR calc on prepared data - heart artefact NOT removed here
@@ -92,7 +85,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                snr = calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -106,15 +99,14 @@ if __name__ == '__main__':
         dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
         if reduced_window:
             if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/prepared_py/snr_heart_ant_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/prepared_py/snr_heart_ch_ant_smallwin.h5"
             else:
-                fn = f"/data/pt_02569/tmp_data/prepared_py/snr_heart_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/prepared_py/snr_heart_ch_smallwin.h5"
         else:
             if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/prepared_py/snr_heart_ant.h5"
+                fn = f"/data/pt_02569/tmp_data/prepared_py/snr_heart_ch_ant.h5"
             else:
-                fn = f"/data/pt_02569/tmp_data/prepared_py/snr_heart.h5"
-
+                fn = f"/data/pt_02569/tmp_data/prepared_py/snr_heart_ch.h5"
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -173,7 +165,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                snr = calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -187,14 +179,14 @@ if __name__ == '__main__':
         dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
         if reduced_window:
             if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_heart_ant_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_heart_ch_ant_smallwin.h5"
             else:
-                fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_heart_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_heart_ch_smallwin.h5"
         else:
             if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_heart_ant.h5"
+                fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_heart_ch_ant.h5"
             else:
-                fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_heart.h5"
+                fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_heart_ch.h5"
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -236,7 +228,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                snr = calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -250,14 +242,14 @@ if __name__ == '__main__':
         dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
         if reduced_window:
             if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ant_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ch_ant_smallwin.h5"
             else:
-                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ch_smallwin.h5"
         else:
             if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ant.h5"
+                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ch_ant.h5"
             else:
-                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart.h5"
+                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ch.h5"
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -298,7 +290,7 @@ if __name__ == '__main__':
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                snr = calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition
                 if cond_name == 'median':
@@ -312,15 +304,14 @@ if __name__ == '__main__':
         dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
         if reduced_window:
             if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_heart_ant_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_heart_ch_ant_smallwin.h5"
             else:
-                fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_heart_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_heart_ch_smallwin.h5"
         else:
             if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_heart_ant.h5"
+                fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_heart_ch_ant.h5"
             else:
-                fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_heart.h5"
-
+                fn = f"/data/pt_02569/tmp_data/baseline_ica_py/snr_heart_ch.h5"
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -362,7 +353,7 @@ if __name__ == '__main__':
 
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
-                    snr = calculate_heart_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+                    snr = calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline, reduced_window)
 
                     # Now have one snr for relevant channel in each subject + condition
                     if cond_name == 'median':
@@ -376,15 +367,14 @@ if __name__ == '__main__':
         dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
         if reduced_window:
             if ant_ref:
-                fn = f"/data/p_02569/SSP/snr_heart_ant_smallwin.h5"
+                fn = f"/data/p_02569/SSP/snr_heart_ch_ant_smallwin.h5"
             else:
-                fn = f"/data/p_02569/SSP/snr_heart_smallwin.h5"
+                fn = f"/data/p_02569/SSP/snr_heart_ch_smallwin.h5"
         else:
             if ant_ref:
-                fn = f"/data/p_02569/SSP/snr_heart_ant.h5"
+                fn = f"/data/p_02569/SSP/snr_heart_ch_ant.h5"
             else:
-                fn = f"/data/p_02569/SSP/snr_heart.h5"
-
+                fn = f"/data/p_02569/SSP/snr_heart_ch.h5"
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(savesnr, keyword))

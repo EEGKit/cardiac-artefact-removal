@@ -6,7 +6,6 @@ import mne
 import os
 import numpy as np
 from scipy.io import loadmat
-from SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 import pandas as pd
 from invert import invert
