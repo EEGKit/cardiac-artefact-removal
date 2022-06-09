@@ -82,13 +82,13 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
                          iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
         # raw_FzRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_FzRef.ch_names), method='iir',
         #                  iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-        # raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
-        #                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+        raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
+                          iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
 
         # MNE recommend np.arange(50, 251, 50) for freqs, Birgit uses notch_freq
         clean_raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
         # raw_FzRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_FzRef.ch_names), method='fir', phase='zero')
-        # raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
+        raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
 
         ######################################### Plots ##############################################
         # Epoch around spinal triggers and plot
@@ -98,10 +98,10 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
         epochs = mne.Epochs(clean_raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1],
                             baseline=tuple(iv_baseline))
 
-        savename = figure_path + "/" + str(n) + " projections/"
+        savename = save_path + "/" + str(n) + " projections/"
         os.makedirs(savename, exist_ok=True)
 
         # Save the SSP cleaned data for future comparison
         clean_raw.save(f"{savename}ssp_cleaned_{cond_name}.fif", fmt='double', overwrite=True)
-        # raw_antRef.save(f"{savename}ssp_cleaned_{cond_name}_antRef.fif", fmt='double', overwrite=True)
+        raw_antRef.save(f"{savename}ssp_cleaned_{cond_name}_antRef.fif", fmt='double', overwrite=True)
         # raw_FzRef.save(f"{savename}ssp_cleaned_{cond_name}_FzRef.fif", fmt='double', overwrite=True)

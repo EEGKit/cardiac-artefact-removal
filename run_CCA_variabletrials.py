@@ -61,9 +61,9 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
         os.makedirs(save_path, exist_ok=True)
 
     elif data_string == 'SSP':
-        input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
+        input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + "/" + str(n) + " projections/"
         fname = f"ssp_cleaned_{cond_name}.fif"
-        save_path = "/data/p_02569/SSP_cca/" + subject_id + "/" + str(n) + " projections/"
+        save_path = "/data/p_02569/tmp_data/ssp_py_cca/" + subject_id + "/" + str(n) + " projections/"
         os.makedirs(save_path, exist_ok=True)
 
     else:
@@ -219,7 +219,7 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
     cca_epochs.save(os.path.join(save_path, fname[:-4]+f'{np.size(trial_indices)}.fif'), fmt='double', overwrite=True)
 
     ################################ Plotting Graphs #######################################
-    figure_path_spatial = f'/data/p_02569/ComponentIsopotentialPlots_Dataset1/{subject_id}/'
+    figure_path_spatial = f'/data/p_02569/ComponentIsopotentialPlots_Dataset1_Variable/{subject_id}/'
     os.makedirs(figure_path_spatial, exist_ok=True)
 
     if plot_graphs:

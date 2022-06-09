@@ -113,11 +113,6 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
         condition=cond_name, current_channel=ch
     )
 
-    # # Just adding this to be able to extract the fitted artefact alone
-    # raw_heart = raw.copy()
-    # raw_heart.apply_function(PCA_OBS_fittedart, picks=esg_chans, **PCA_OBS_kwargs, n_jobs=len(esg_chans))
-    # raw_heart.save(os.path.join(save_path, f'heart_artefact_{cond_name}_withqrs.fif'), fmt='double', overwrite=True)
-
     # adapted for data: delay of r - peak = 0 % (data, eventtype, method)
     # Apply function should modify the data in raw in place - checked output and it is working
     raw.apply_function(PCA_OBS, picks=esg_chans, **PCA_OBS_kwargs, n_jobs=len(esg_chans))

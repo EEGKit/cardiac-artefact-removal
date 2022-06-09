@@ -61,9 +61,9 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
         os.makedirs(save_path, exist_ok=True)
 
     elif data_string == 'SSP':
-        input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
+        input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + "/" + str(n) + " projections/"
         fname = f"ssp_cleaned_{cond_name}.fif"
-        save_path = "/data/p_02569/SSP_cca/" + subject_id + "/" + str(n) + " projections/"
+        save_path = "/data/pt_02569/tmp_data/ssp_py_cca/" + subject_id + "/" + str(n) + " projections/"
         os.makedirs(save_path, exist_ok=True)
 
     else:

@@ -19,9 +19,9 @@ from run_CCA_variabletrials import run_CCA_variabletrials
 if __name__ == '__main__':
 
     ## Pick which scripts you want to run ##
-    import_d = False  # Prep work
+    import_d = True  # Prep work
     heart_removal = True  # Heart artefact removal
-    heart_removal_test = False  # Heart artefact removal testing
+    # heart_removal_test = False  # Heart artefact removal testing
     cut_epochs = True  # Epoch the data according to relevant event
     SSP_flag = True  # Heart artefact removal by SSP
     post_ica = True  # Run ICA after already running PCA_OBS
