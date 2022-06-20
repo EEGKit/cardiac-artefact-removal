@@ -11,7 +11,7 @@ import pandas as pd
 from invert import invert
 
 if __name__ == '__main__':
-    subjects = np.arange(1, 25)   # 1 through 24 to access subject data
+    subjects = np.arange(1, 37)   # 1 through 24 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 

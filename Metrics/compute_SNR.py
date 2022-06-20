@@ -78,7 +78,7 @@ if __name__ == '__main__':
                     snr, chan = calculate_SNR_evoked_cca(evoked, cond_name, iv_baseline, reduced_window, selected_components)
                 else:
                     input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
-                    raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}.fif", preload=True)
+                    raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif", preload=True)
                     # add reference channel to data
                     if ant_ref:
                         # anterior reference
@@ -172,17 +172,15 @@ if __name__ == '__main__':
                     evoked = epochs.average()
                     snr, chan = calculate_SNR_evoked_cca(evoked, cond_name, iv_baseline, reduced_window, selected_components)
                 else:
-                    input_path = "/data/pt_02569/tmp_data/epoched_py/" + subject_id + "/esg/prepro/"
-                    if ant_ref:
-                        epochs = mne.read_epochs(f"{input_path}epo_antRef_clean_{cond_name}.fif")
-                    else:
-                        epochs = mne.read_epochs(f"{input_path}epo_clean_{cond_name}.fif")
-
-                    if reduced_epochs and trigger_name == 'Median - Stimulation':
-                        epochs = epochs[900:1100]
-                    elif reduced_epochs and trigger_name == 'Tibial - Stimulation':
-                        epochs = epochs[800:1200]
-                    evoked = epochs.average()
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                    raw = mne.io.read_raw_fif(f"{input_path}data_clean_ecg_spinal_{cond_name}_withqrs.fif",
+                                              preload=True)
+                    # add reference channel to data
+                    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+                    evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
                     snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
 
                 # Now have one snr related to each subject and condition

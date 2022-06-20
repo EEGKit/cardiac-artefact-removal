@@ -16,8 +16,8 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
     subject_id = f'sub-{str(subject).zfill(3)}'
     load_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Taking data from the prepared_py folder
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
-    save_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + "/esg/prepro/"
-    figure_path = "/data/p_02569/SSP/" + subject_id
+    # save_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + "/esg/prepro/"
+    save_path = "/data/p_02569/SSP/" + subject_id
     os.makedirs(save_path, exist_ok=True)
 
     # get condition info
@@ -104,4 +104,4 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
         # Save the SSP cleaned data for future comparison
         clean_raw.save(f"{savename}ssp_cleaned_{cond_name}.fif", fmt='double', overwrite=True)
         raw_antRef.save(f"{savename}ssp_cleaned_{cond_name}_antRef.fif", fmt='double', overwrite=True)
-        # raw_FzRef.save(f"{savename}ssp_cleaned_{cond_name}_FzRef.fif", fmt='double', overwrite=True)
+        # raw_FzRef.save(f"{savename}ssp_cleaned_{cond_name}_FzRef.fif", fmt='double', overwrite=Tr

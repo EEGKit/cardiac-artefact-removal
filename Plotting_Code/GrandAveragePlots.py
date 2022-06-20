@@ -8,7 +8,8 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    reduced_trials = False  # If true, generate images with fewer triggers
+    reduced_trials = True  # If true, generate images with fewer triggers
+    longer_time = True
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
@@ -30,7 +31,7 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/GrandAveragePlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [True, True, True, True]
+    methods = [False, False, False, False]
     method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
     SSP = True
 
@@ -107,8 +108,10 @@ if __name__ == '__main__':
                 plt.ylabel('Amplitude [\u03BCV]')
 
                 plt.xlabel('Time [s]')
-                # plt.xlim([-0.1, 0.3])
-                plt.xlim([-0.025, 0.065])
+                if longer_time:
+                    plt.xlim([-0.1, 0.3])
+                else:
+                    plt.xlim([-0.025, 0.065])
                 if cond_name == 'tibial':
                     plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
                     # plt.ylim([-0.5, 1.3])
@@ -116,8 +119,12 @@ if __name__ == '__main__':
                     plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
                     # plt.ylim([-0.8, 0.8])
                 plt.title(f"Method: {method}, Condition: {trigger_name} CCA: False")
-                if reduced_trials:
+                if reduced_trials and longer_time:
                     fname = f"{method}_{trigger_name}_reducedtrials.png"
+                elif longer_time and not reduced_trials:
+                    fname = f"{method}_{trigger_name}.png"
+                elif reduced_trials and not longer_time:
+                    fname = f"{method}_{trigger_name}_reducedtrials_shorter.png"
                 else:
                     fname = f"{method}_{trigger_name}_shorter.png"
                 plt.legend(loc='upper right')
@@ -155,8 +162,10 @@ if __name__ == '__main__':
                 plt.ylabel('Amplitude [\u03BCV]')
 
                 plt.xlabel('Time [s]')
-                # plt.xlim([-0.1, 0.3])
-                plt.xlim([-0.025, 0.065])
+                if longer_time:
+                    plt.xlim([-0.1, 0.3])
+                else:
+                    plt.xlim([-0.025, 0.065])
                 if cond_name == 'tibial':
                     plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
                     # plt.ylim([-0.5, 1.3])
@@ -164,8 +173,12 @@ if __name__ == '__main__':
                     plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
                     # plt.ylim([-0.8, 0.8])
                 plt.title(f"Method: SSP {n} proj., Condition: {trigger_name}, CCA: False")
-                if reduced_trials:
+                if reduced_trials and longer_time:
                     fname = f"SSP_{n}_{trigger_name}_reducedtrials.png"
+                elif longer_time and not reduced_trials:
+                    fname = f"SSP_{n}_{trigger_name}.png"
+                elif reduced_trials and not longer_time:
+                    fname = f"SSP_{n}_{trigger_name}_reducedtrials_shorter.png"
                 else:
                     fname = f"SSP_{n}_{trigger_name}_shorter.png"
                 plt.legend(loc='upper right')

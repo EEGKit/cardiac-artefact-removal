@@ -6,7 +6,7 @@ import os
 from scipy.io import loadmat
 from scipy.signal import firls
 from Archive.PCA_OBS_test import *
-from PCA_OBS_fittedart import *
+from Archive.PCA_OBS_fittedart import *
 from get_conditioninfo import *
 from get_channels import *
 

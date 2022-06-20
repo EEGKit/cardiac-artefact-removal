@@ -24,13 +24,13 @@ def get_harmonics(raw1, trigger, sample_rate):
 
 if __name__ == '__main__':
 
-    calc_prepared = False
-    calc_PCA = False
-    calc_post_ICA = False
-    calc_ICA = False
+    calc_prepared = True
+    calc_PCA = True
+    calc_post_ICA = True
+    calc_ICA = True
     choose_limited = False  # If true use ICA data with top 4 components chosen - use FALSE, see main
     calc_SSP = True
-    test39 = True
+    test39 = False
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
     # Define the channel names so they come out of each dataset the same
@@ -400,7 +400,7 @@ if __name__ == '__main__':
         # Instantiate class
         savepow = save_pow()
 
-        for n in np.arange(5, 7):  # 21
+        for n in np.arange(5, 21):
             # Matrix of dimensions no.subjects x no. channel
             pow_med_ssp = np.zeros((len(subjects), 39))
             pow_tib_ssp = np.zeros((len(subjects), 39))
@@ -459,10 +459,7 @@ if __name__ == '__main__':
             savepow.pow_tib = pow_tib_ssp
             dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
-            if test39:
-                fn = f"/data/p_02569/SSP/inps_yasa_{n}_39.h5"
-            else:
-                fn = f"/data/p_02569/SSP/inps_yasa_{n}.h5"
+            fn = f"/data/p_02569/SSP/inps_yasa_{n}.h5"
 
             with h5py.File(fn, "w") as outfile:
                 for keyword in dataset_keywords:
@@ -525,7 +522,7 @@ if __name__ == '__main__':
     print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4e}")
 
     # SSP
-    for n in np.arange(5, 7):  # 21
+    for n in np.arange(5, 21):
         if test39:
             fn = f"/data/p_02569/SSP/inps_yasa_{n}_39.h5"
         else:
@@ -608,7 +605,7 @@ if __name__ == '__main__':
     print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4e}")
 
     # SSP
-    for n in np.arange(5, 7):  # 21
+    for n in np.arange(5, 21):
         if test39:
             fn = f"/data/p_02569/SSP/inps_yasa_{n}_39.h5"
         else:

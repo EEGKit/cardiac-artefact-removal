@@ -14,6 +14,7 @@ if __name__ == '__main__':
     SSP_proj = 6
     # Testing with just subject 1 at the moment
     # subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
+    # subjects = [1, 2, 6, 7, 14, 15, 30, 32]
     subjects = [6]
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     df = pd.read_excel(xls, 'Dataset 1')
     df.set_index('Subject', inplace=True)
 
-    for method in ['Prepared', 'PCA', 'Post-ICA', 'SSP']:
+    for method in ['Uncleaned', 'PCA', 'Post-ICA', 'SSP']:
         for subject in subjects:
             for cond_name in cond_names:
                 if cond_name == 'median':
@@ -33,14 +34,14 @@ if __name__ == '__main__':
 
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
-                if method == 'Prepared':
+                if method == 'Uncleaned':
                     input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + "/esg/prepro/"
-                    cca_epochs = mne.read_epochs(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
+                    epochs = mne.read_epochs(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                                              , preload=True)
                     channel = df.loc[subject_id, f"Prep_{cond_name}"]
                     inv = df.loc[subject_id, f"Prep_{cond_name}_inv"]
                     if inv == 'inv' or inv == '!inv':
-                        cca_epochs.apply_function(invert, picks=channel)
+                        epochs.apply_function(invert, picks=channel)
 
                 elif method == 'PCA':
                     input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + "/esg/prepro/"
@@ -72,13 +73,20 @@ if __name__ == '__main__':
                 figure_path_st = f'/data/p_02569/1ComponentSinglePlots_Dataset1/{subject_id}/'
                 os.makedirs(figure_path_st, exist_ok=True)
 
-                fig, ax = plt.subplots(figsize=(5, 7))
-                cropped = cca_epochs.copy().crop(tmin=-0.025, tmax=0.065)
+                fig, ax = plt.subplots(figsize=(5.2, 7))
+                cropped = epochs.copy().crop(tmin=-0.025, tmax=0.065)
                 cmap = mpl.colors.ListedColormap(["mediumblue", "deepskyblue", "lemonchiffon", "gold"])
 
-                cropped.plot_image(picks=channel, combine=None, cmap=cmap, evoked=False, show=False,
-                                   title=f'{method}, Subject {subject}, Component {str(channel)[-1]}', colorbar=False, group_by=None, fig=fig,
-                                   vmin=-0.4, vmax=0.4, units=dict(eeg='V'), scalings=dict(eeg=1))
+                if method == 'SSP':
+                    cropped.plot_image(picks=channel, combine=None, cmap=cmap, evoked=False, show=False,
+                                       title=f'{method}{SSP_proj}, Subject {subject}, Component {str(channel)[-1]}',
+                                       colorbar=False, group_by=None, fig=fig,
+                                       vmin=-0.4, vmax=0.4, units=dict(eeg='V'), scalings=dict(eeg=1))
+                else:
+                    cropped.plot_image(picks=channel, combine=None, cmap=cmap, evoked=False, show=False,
+                                       title=f'{method}, Subject {subject}, Component {str(channel)[-1]}',
+                                       colorbar=False, group_by=None, fig=fig,
+                                       vmin=-0.4, vmax=0.4, units=dict(eeg='V'), scalings=dict(eeg=1))
 
                 plt.tight_layout()
                 fig.subplots_adjust(right=0.85)

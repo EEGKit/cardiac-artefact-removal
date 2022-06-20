@@ -20,7 +20,7 @@ if __name__ == '__main__':
     calc_PCA = True
     calc_post_ICA = True
     calc_SSP = True
-    cca_flag = True  # Compute SNR for final CCA corrected data
+    cca_flag = False  # Compute SNR for final CCA corrected data
 
     # Testing with just subject 1 at the moment
     subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
                 else:
                     input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
-                    raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}.fif", preload=True)
+                    raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif", preload=True)
                     # add reference channel to data
                     mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
                     raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',

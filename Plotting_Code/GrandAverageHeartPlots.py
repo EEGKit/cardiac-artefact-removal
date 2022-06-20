@@ -31,7 +31,7 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/GrandAverageHeartPlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [False, False, False, False]
+    methods = [True, True, True, True]
     method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
     ssp = True
 

@@ -11,12 +11,12 @@ import h5py
 from SNR_functions import evoked_from_raw
 
 if __name__ == '__main__':
-    calc_prepared = False  # Should always be true as this is the baseline we get the ratio with
+    calc_prepared = True  # Should always be true as this is the baseline we get the ratio with
     calc_PCA = True
-    calc_post_ICA = False
-    calc_ICA = False
+    calc_post_ICA = True
+    calc_ICA = True
     choose_limited = False  # If true, use data where only top 4 components chosen - use FALSE, see main
-    calc_SSP = False
+    calc_SSP = True
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
     # Define the channel names so they come out of each dataset the same
@@ -159,15 +159,12 @@ if __name__ == '__main__':
                 raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
-                print(evoked.ch_names)
-                print(esg_chans)
 
                 # Now we have an evoked potential about the heartbeat
                 # Want to compute the RMS for each channel
                 res_chan_pca = []
                 for ch in esg_chans:
                     # Pick a single channel
-                    print(ch)
                     evoked_ch = evoked.copy().pick_channels([ch], ordered=False)
                     data = evoked_ch.data[0, 0:]  # Format n_channels x n_times
                     rms = np.sqrt(np.mean(data ** 2))
