@@ -10,10 +10,14 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    freqs = np.arange(5., 250., 3.)
-    fmin, fmax = freqs[[0, -1]]
 
-    spinal = False  # If true plots SEPs, if false plots QRS  - not set up to do this yet
+    spinal = True  # If true plots SEPs, if false plots QRS  - not set up to do this yet
+    if spinal:
+        freqs = np.arange(5., 400., 3.)
+        fmin, fmax = freqs[[0, -1]]
+    else:
+        freqs = np.arange(5., 250., 3.)
+        fmin, fmax = freqs[[0, -1]]
     subjects = np.arange(1, 37)
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
@@ -92,6 +96,13 @@ if __name__ == '__main__':
                                    method='iir',
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
                         raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+                        if spinal:
+                            events, event_dict = mne.events_from_annotations(raw)
+                            tstart_esg = -0.007
+                            tmax_esg = 0.007
+                            mne.preprocessing.fix_stim_artifact(raw, events=events, event_id=event_dict[trigger_name],
+                                                                tmin=tstart_esg,
+                                                                tmax=tmax_esg, mode='linear', stim_channel=None)
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel)
@@ -127,19 +138,21 @@ if __name__ == '__main__':
                 if spinal:
                     tmin = -0.1
                     tmax = 0.1
+                    vmin = -380
+                    vmax = -250
                 else:  # Letting it autoset the limits for the spinal triggers - too hard to guess
-                    if method == 'Prep':
-                        vmin=-400
-                        vmax=-175
-                    else:
-                        if cond_name == 'tibial':
-                            vmin=-400
-                            vmax=-225
-                        else:
-                            vmin=-400
-                            vmax=-250
                     tmin = -0.2
                     tmax = 0.2
+                    if method == 'Prep':
+                        vmin = -400
+                        vmax = -175
+                    else:
+                        if cond_name == 'tibial':
+                            vmin = -400
+                            vmax = -225
+                        else:
+                            vmin = -400
+                            vmax = -250
                 fig, ax = plt.subplots(1, 1)
                 # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                 averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
@@ -192,6 +205,8 @@ if __name__ == '__main__':
                 if spinal:
                     tmin = -0.1
                     tmax = 0.1
+                    vmin = -380
+                    vmax = -250
                 else:
                     tmin = -0.2
                     tmax = 0.2

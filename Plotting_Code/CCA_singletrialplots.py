@@ -9,8 +9,15 @@ import matplotlib as mpl
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
+import random
 
 if __name__ == '__main__':
+    reduced_trials = True
+    if reduced_trials:
+        no = 100
+        trial_indices = random.sample(range(1999), no)  # Need to be all unique to avoid selecting the same trials
+        trial_indices.sort()  # Want in chronological order
+
     SSP_proj = 6
     # Testing with just subject 1 at the moment
     # subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
@@ -75,6 +82,9 @@ if __name__ == '__main__':
 
                 fig, ax = plt.subplots(figsize=(5.2, 7))
                 cropped = epochs.copy().crop(tmin=-0.025, tmax=0.065)
+                if reduced_trials:
+                    cropped = cropped[trial_indices]  # Select epochs of interest
+
                 cmap = mpl.colors.ListedColormap(["mediumblue", "deepskyblue", "lemonchiffon", "gold"])
 
                 if method == 'SSP':
@@ -94,11 +104,20 @@ if __name__ == '__main__':
                 norm = mpl.colors.Normalize(vmin=-0.4, vmax=0.4)
                 mpl.colorbar.ColorbarBase(ax5, cmap=cmap, norm=norm, spacing='proportional')
                 # has to be as a list - starts with x, y coordinates for start and then width and height in % of figure width
-                if method == 'SSP':
-                    # plt.suptitle(f'{data_string}_{n}_{cond_name_mixed}')
-                    plt.savefig(figure_path_st + f'{method}_{SSP_proj}_{cond_name}.png')
+                if reduced_trials:
+                    if method == 'SSP':
+                        # plt.suptitle(f'{data_string}_{n}_{cond_name_mixed}')
+                        plt.savefig(figure_path_st + f'{method}_{SSP_proj}_{cond_name}_reducedtrials.png')
 
+                    else:
+                        # plt.suptitle(f'{data_string}_{cond_name_mixed}')
+                        plt.savefig(figure_path_st + f'{method}_{cond_name}_reducedtrials.png')
                 else:
-                    # plt.suptitle(f'{data_string}_{cond_name_mixed}')
-                    plt.savefig(figure_path_st + f'{method}_{cond_name}.png')
+                    if method == 'SSP':
+                        # plt.suptitle(f'{data_string}_{n}_{cond_name_mixed}')
+                        plt.savefig(figure_path_st + f'{method}_{SSP_proj}_{cond_name}.png')
+
+                    else:
+                        # plt.suptitle(f'{data_string}_{cond_name_mixed}')
+                        plt.savefig(figure_path_st + f'{method}_{cond_name}.png')
                 plt.close(fig)

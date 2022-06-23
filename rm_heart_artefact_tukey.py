@@ -4,11 +4,11 @@
 import os
 from scipy.io import loadmat
 from scipy.signal import firls
-from PCA_OBS import *
+from PCA_OBS_tukey import *
 from get_conditioninfo import *
 from get_channels import *
 
-def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
+def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate):
     matlab = False  # If this is true, use the data 'prepared' by matlab - testing to see where hump at 0 comes from
     # Incredibly slow without parallelization
     # Set variables
@@ -22,7 +22,7 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
     # Setting paths
     input_path = "/data/pt_02569/tmp_data/prepared_py/"+subject_id+"/esg/prepro/"
     input_path_m = "/data/pt_02569/tmp_data/prepared/"+subject_id+"/esg/prepro/"
-    save_path = "/data/pt_02569/tmp_data/ecg_rm_py/"+subject_id+"/esg/prepro/"
+    save_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/"+subject_id+"/esg/prepro/"
     os.makedirs(save_path, exist_ok=True)
 
     figure_path = save_path
@@ -76,7 +76,7 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
         )
         # adapted for data: delay of r - peak = 0 % (data, eventtype, method)
         # Apply function should modify the data in raw in place - checked output and it is working
-        raw.copy().apply_function(PCA_OBS, picks=[ch], **PCA_OBS_kwargs)
+        raw.copy().apply_function(PCA_OBS_tukey, picks=[ch], **PCA_OBS_kwargs)
 
         # This information is the same for each channel - run through fitting once to get vals, add to all channels
         # Add annotations to each channel
@@ -114,7 +114,7 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
 
     # adapted for data: delay of r - peak = 0 % (data, eventtype, method)
     # Apply function should modify the data in raw in place - checked output and it is working
-    raw.apply_function(PCA_OBS, picks=esg_chans, **PCA_OBS_kwargs, n_jobs=len(esg_chans))
+    raw.apply_function(PCA_OBS_tukey, picks=esg_chans, **PCA_OBS_kwargs, n_jobs=len(esg_chans))
 
     # Save the new mne structure with the cleaned data
     # Save data without stim artefact and downsampled to 1000
