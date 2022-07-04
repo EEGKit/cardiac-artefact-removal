@@ -8,8 +8,8 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    group_avg = False
-    single_trial = True
+    group_avg = True
+    single_trial = False
     # subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     # subjects = [2, 13, 20, 36]
     subjects = [2, 20]
@@ -39,7 +39,8 @@ if __name__ == '__main__':
             for cond_name in cond_names:  # Conditions (median, tibial)
                 plt.figure()
                 # for Method in ['Uncleaned', 'Prepared', 'PCA', 'Artefact', 'PCA MATLAB', 'Prepared MAT + Py PCA']:
-                for Method in ['Prepared', 'Prepared MAT', 'PCA', 'PCA MATLAB', 'Prepared MAT + Py PCA']:
+                for Method in ['Prepared', 'Prepared MAT', 'Prepared PCHIP Py', 'PCA', 'PCA MATLAB', 'PCA PCHIP',
+                               'Prepared MAT + Py PCA']:
                 # for Method in ['PCA', 'PCA Test', 'PCA MATLAB']:
 
                     # Changing to pick channel when each is loaded, not after the evoked list is formed
@@ -74,9 +75,30 @@ if __name__ == '__main__':
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
                         raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
+                    elif Method == 'Prepared PCHIP Py':
+                        input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                        fname = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_pchip.fif'
+                        raw = mne.io.read_raw_fif(input_path + fname, preload=True)
+                        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
+                                   method='iir',
+                                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+
                     elif Method == 'PCA':
                         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
                         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
+                        raw = mne.io.read_raw_fif(input_path + fname, preload=True)
+                        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
+                                   method='iir',
+                                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                    elif Method == 'PCA PCHIP':
+                        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                        fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
                         raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
@@ -153,7 +175,8 @@ if __name__ == '__main__':
                 plt.title(f"Subject {subject_id}, Condition: {trigger_name}")
                 fname = f"{subject}_{trigger_name}_pcaprep.png"
                 plt.legend(loc='upper right')
-                plt.savefig(image_path+fname)
+                # plt.savefig(image_path+fname)
+                plt.show()
                 plt.clf()
 
     if single_trial:

@@ -16,9 +16,10 @@ from scipy.io import loadmat
 import h5py
 import os
 import glob
+from pchip_interpolation import PCHIP_interpolation
 
 
-def import_data(subject, condition, srmr_nr, sampling_rate):
+def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation):
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
     save_path = "../tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Saving to prepared_py
@@ -27,6 +28,15 @@ def import_data(subject, condition, srmr_nr, sampling_rate):
     montage_path = '/data/pt_02068/cfg/'
     montage_name = 'standard-10-5-cap385_added_mastoids.elp'
     os.makedirs(save_path, exist_ok=True)
+
+    sampling_rate_og = 10000
+
+    if pchip_interpolation:
+        pchip_interpolation = True
+        linear_interpolation = False
+    else:
+        pchip_interpolation = False
+        linear_interpolation = True
 
     # Process ESG channels and then EEG channels separately
     for esg_flag in [True, False]:  # True for esg, false for eeg
@@ -92,16 +102,38 @@ def import_data(subject, condition, srmr_nr, sampling_rate):
                 # Acts in place to edit raw via linear interpolation to remove stimulus artefact
                 # Need to loop as for alternating, there are 2 trigger names and event_ids at play
                 for j in trigger_name:
-                    if esg_flag:
-                        mne.preprocessing.fix_stim_artifact(raw, events=events, event_id=event_dict[j], tmin=tstart_esg,
-                                                            tmax=tmax_esg, mode='linear', stim_channel=None)
+                    # Need to get indices of events linked to this trigger
+                    trigger_points = events[:, np.where(event_dict[j])]
+                    trigger_points = trigger_points.reshape(-1).reshape(-1)
 
-                    elif not esg_flag:
-                        mne.preprocessing.fix_stim_artifact(raw, events=events, event_id=event_dict[j], tmin=tstart_eeg,
-                                                            tmax=tmax_eeg, mode='linear', stim_channel=None)
+                    if linear_interpolation:
+                        if esg_flag:
+                            mne.preprocessing.fix_stim_artifact(raw, events=events, event_id=event_dict[j], tmin=tstart_esg,
+                                                                tmax=tmax_esg, mode='linear', stim_channel=None)
 
-                    else:
-                        print('Flag has not been set - indicate if you are working with eeg or esg channels')
+                        elif not esg_flag:
+                            mne.preprocessing.fix_stim_artifact(raw, events=events, event_id=event_dict[j], tmin=tstart_eeg,
+                                                                tmax=tmax_eeg, mode='linear', stim_channel=None)
+
+                        else:
+                            print('Flag has not been set - indicate if you are working with eeg or esg channels')
+
+                    elif pchip_interpolation:
+                        if esg_flag:
+                            interpol_window = [tstart_esg, tmax_esg]
+                            PCHIP_kwargs = dict(
+                                debug_mode=False, interpol_window_sec=interpol_window,
+                                trigger_indices=trigger_points, fs=sampling_rate_og
+                            )
+                            raw.apply_function(PCHIP_interpolation, picks=esg_chans, **PCHIP_kwargs, n_jobs=len(esg_chans))
+
+                        elif not esg_flag:
+                            interpol_window = [tstart_eeg, tmax_eeg]
+                            PCHIP_kwargs = dict(
+                                debug_mode=False, interpol_window_sec=interpol_window,
+                                trigger_indices=trigger_points, fs=sampling_rate_og
+                            )
+                            raw.apply_function(PCHIP_interpolation, picks=esg_chans, **PCHIP_kwargs, n_jobs=len(eeg_chans))
 
             # Downsample the data
             raw.resample(srate_basic)  # resamples to srate_basic
@@ -132,12 +164,21 @@ def import_data(subject, condition, srmr_nr, sampling_rate):
         duration = np.repeat(0.0, len(QRSevents_m))
         description = ['qrs'] * len(QRSevents_m)
 
-        if esg_flag:
-            raw_concat.annotations.append(qrs_event, duration, description, ch_names=[esg_chans] * len(QRSevents_m))
-            fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
-        else:
-            raw_concat.annotations.append(qrs_event, duration, description, ch_names=[eeg_chans] * len(QRSevents_m))
-            fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif'
+        if linear_interpolation:
+            if esg_flag:
+                raw_concat.annotations.append(qrs_event, duration, description, ch_names=[esg_chans] * len(QRSevents_m))
+                fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
+            else:
+                raw_concat.annotations.append(qrs_event, duration, description, ch_names=[eeg_chans] * len(QRSevents_m))
+                fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif'
+
+        elif pchip_interpolation:
+            if esg_flag:
+                raw_concat.annotations.append(qrs_event, duration, description, ch_names=[esg_chans] * len(QRSevents_m))
+                fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_pchip.fif'
+            else:
+                raw_concat.annotations.append(qrs_event, duration, description, ch_names=[eeg_chans] * len(QRSevents_m))
+                fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg_pchip.fif'
 
         # Should have a single file name per condition now (just median/tibial)
         # Save data without stim artefact and downsampled to 1000

@@ -21,21 +21,29 @@ if __name__ == '__main__':
 
     ## Pick which scripts you want to run ##
     import_d = False  # Prep work
-    heart_removal = False  # Heart artefact removal
+    pchip_interpolation = False  # If true import with pchip, otherwise use linear interpolation
+
+    heart_removal = True  # Heart artefact removal
+    pchip = True  # Whether to use pchip prepared data or not
     heart_removal_test = False  # Heart artefact removal testing
-    heart_removal_tukey = True  # Fitted artefact multiplied by tukey window
+    heart_removal_tukey = False  # Fitted artefact multiplied by tukey window
+
     cut_epochs = False  # Epoch the data according to relevant event
+
     SSP_flag = False  # Heart artefact removal by SSP
+
     post_ica = False  # Run ICA after already running PCA_OBS
+
     ica = False  # Run ICA on the 'dirty' data as a baseline comparison
     # choose_limited should be false - SNR is worse if it's true, over 95% residual intensity and inps under 1.4
     choose_limited = False  # If true only take the top 4 ICA components from find_bads_ecg
+
     CCA_flag = False  # Run CCA on data (from all methods)
     variable_cca_flag = False  # Run CCA with limited trial numbers
 
     n_subjects = 36  # Number of subjects
     # Testing with just subject 1 at the moment
-    # subjects = [1, 20]
+    # subjects = [1]
     subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
     srmr_nr = 1  # Experiment Number
     conditions = [2, 3]  # Conditions of interest
@@ -52,13 +60,14 @@ if __name__ == '__main__':
     if import_d:
         for subject in subjects:
             for condition in conditions:
-                import_data(subject, condition, srmr_nr, sampling_rate)
+                import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
 
     ## To remove heart artifact via PCA_OBS ##
     if heart_removal:
         for subject in subjects:
             for condition in conditions:
-                rm_heart_artefact(subject, condition, srmr_nr, sampling_rate)
+                rm_heart_artefact(subject, condition, srmr_nr, sampling_rate, pchip)
+                # If pchip is true, uses data where stim artefact was removed by pchip
 
     ## To remove heart artifact via PCA_OBS and tukey window ##
     if heart_removal_tukey:

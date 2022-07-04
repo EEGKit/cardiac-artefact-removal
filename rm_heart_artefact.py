@@ -8,7 +8,8 @@ from PCA_OBS import *
 from get_conditioninfo import *
 from get_channels import *
 
-def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
+
+def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate, pchip):
     matlab = False  # If this is true, use the data 'prepared' by matlab - testing to see where hump at 0 comes from
     # Incredibly slow without parallelization
     # Set variables
@@ -36,7 +37,10 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
         fname = f"raw_{sampling_rate}_spinal_{cond_name}.set"
         raw = mne.io.read_raw_eeglab(input_path_m + fname, preload=True)
     else:
-        fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs"
+        if pchip:
+            fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs_pchip"
+        else:
+            fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs"
         # Read .fif file from the previous step (import_data)
         raw = mne.io.read_raw_fif(input_path + fname + '.fif', preload=True)
 
@@ -68,9 +72,13 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
         # these channels will be plotted(only for debugging / testing)
 
         # run PCA_OBS
+        if pchip:
+            name = 'pca_chan_' + ch + '_pchip'
+        else:
+            name = 'pca_chan_'+ch
         PCA_OBS_kwargs = dict(
             debug_mode=True, qrs=QRSevents_m, filter_coords=fwts, sr=sampling_rate,
-            savename=save_path+'pca_chan_'+ch,
+            savename=save_path+name,
             ch_names=channelNames, sub_nr=subject_id,
             condition=cond_name, current_channel=ch
         )
@@ -122,4 +130,7 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate):
         raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_mat.fif'), fmt='double',
                  overwrite=True)
     else:
-        raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double', overwrite=True)
+        if pchip:
+            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif'), fmt='double', overwrite=True)
+        else:
+            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double', overwrite=True)
