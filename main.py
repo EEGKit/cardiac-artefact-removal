@@ -23,10 +23,10 @@ if __name__ == '__main__':
     import_d = False  # Prep work
     pchip_interpolation = False  # If true import with pchip, otherwise use linear interpolation
 
-    heart_removal = True  # Heart artefact removal
+    heart_removal = False  # Heart artefact removal
     pchip = True  # Whether to use pchip prepared data or not
     heart_removal_test = False  # Heart artefact removal testing
-    heart_removal_tukey = False  # Fitted artefact multiplied by tukey window
+    heart_removal_tukey = True  # Fitted artefact multiplied by tukey window
 
     cut_epochs = False  # Epoch the data according to relevant event
 
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     if heart_removal_tukey:
         for subject in subjects:
             for condition in conditions:
-                rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate)
+                rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip)
 
     ## To remove heart artifact via PCA_OBS ##
     if heart_removal_test:

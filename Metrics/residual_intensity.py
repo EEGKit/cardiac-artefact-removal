@@ -11,12 +11,15 @@ import h5py
 from SNR_functions import evoked_from_raw
 
 if __name__ == '__main__':
-    calc_prepared = True  # Should always be true as this is the baseline we get the ratio with
-    calc_PCA = True
-    calc_post_ICA = True
-    calc_ICA = True
+    calc_prepared = False
+    calc_PCA = False
+    calc_PCA_pchip = True
+    calc_PCA_tukey = False
+    calc_PCA_tukey_pchip = False
+    calc_post_ICA = False
+    calc_ICA = False
     choose_limited = False  # If true, use data where only top 4 components chosen - use FALSE, see main
-    calc_SSP = True
+    calc_SSP = False
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
     # Define the channel names so they come out of each dataset the same
@@ -143,13 +146,13 @@ if __name__ == '__main__':
 
                 # Want the RMS of the data
                 # Load epochs resulting from ecg_rm_py - the raw data in this folder has not been rereferenced
-                # input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
-                # fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
-                # raw = mne.io.read_raw_fif(input_path+fname, preload=True)
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
+                raw = mne.io.read_raw_fif(input_path+fname, preload=True)
 
-                input_path = "/data/pt_02569/tmp_data/ecg_rm/" + subject_id + "/esg/prepro/"
-                fname = f"cnt_clean_ecg_spinal_{cond_name}.set"
-                raw = mne.io.read_raw_eeglab(input_path + fname, preload=True)
+                # input_path = "/data/pt_02569/tmp_data/ecg_rm/" + subject_id + "/esg/prepro/"
+                # fname = f"cnt_clean_ecg_spinal_{cond_name}.set"
+                # raw = mne.io.read_raw_eeglab(input_path + fname, preload=True)
 
                 mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
 
@@ -187,6 +190,229 @@ if __name__ == '__main__':
         dataset_keywords = [a for a in dir(saveres) if not a.startswith('__')]
 
         fn = f"/data/pt_02569/tmp_data/ecg_rm_py/res.h5"
+
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(saveres, keyword))
+
+    ##########################################################################
+    # Calculate Residuals for PCA_OBS PCHIP cleaned data
+    ##########################################################################
+    if calc_PCA_pchip:
+        class save_res():
+            def __init__(self):
+                pass
+
+        # Instantiate class
+        saveres = save_res()
+
+        # Matrix of dimensions no.subjects x no. channels
+        res_med_pca = np.zeros((len(subjects), 39))
+        res_tib_pca = np.zeros((len(subjects), 39))
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'qrs'
+                    nerve = 2
+                elif cond_name == 'median':
+                    trigger_name = 'qrs'
+                    nerve = 1
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the RMS of the data
+                # Load epochs resulting from ecg_rm_py - the raw data in this folder has not been rereferenced
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
+                raw = mne.io.read_raw_fif(input_path+fname, preload=True)
+
+                # input_path = "/data/pt_02569/tmp_data/ecg_rm/" + subject_id + "/esg/prepro/"
+                # fname = f"cnt_clean_ecg_spinal_{cond_name}.set"
+                # raw = mne.io.read_raw_eeglab(input_path + fname, preload=True)
+
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+
+                # Now we have an evoked potential about the heartbeat
+                # Want to compute the RMS for each channel
+                res_chan_pca = []
+                for ch in esg_chans:
+                    # Pick a single channel
+                    evoked_ch = evoked.copy().pick_channels([ch], ordered=False)
+                    data = evoked_ch.data[0, 0:]  # Format n_channels x n_times
+                    rms = np.sqrt(np.mean(data ** 2))
+                    res_chan_pca.append(rms)
+
+                # Now have rms for each subject, for each channel and condition
+                if cond_name == 'median':
+                    res_med_pca[subject - 1, :] = res_chan_pca
+                elif cond_name == 'tibial':
+                    res_tib_pca[subject - 1, :] = res_chan_pca
+
+        # print(np.shape(res_med_pca))
+        # print(res_med_pca)
+        # print(np.shape(res_tib_pca))
+        # print(res_tib_pca)
+
+        # Save to file
+        saveres.res_med = res_med_pca
+        saveres.res_tib = res_tib_pca
+        dataset_keywords = [a for a in dir(saveres) if not a.startswith('__')]
+
+        fn = f"/data/pt_02569/tmp_data/ecg_rm_py/res_pchip.h5"
+
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(saveres, keyword))
+
+    ##########################################################################
+    # Calculate Residuals for PCA_OBS Tukey cleaned data
+    ##########################################################################
+    if calc_PCA_tukey:
+        class save_res():
+            def __init__(self):
+                pass
+
+        # Instantiate class
+        saveres = save_res()
+
+        # Matrix of dimensions no.subjects x no. channels
+        res_med_pca = np.zeros((len(subjects), 39))
+        res_tib_pca = np.zeros((len(subjects), 39))
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'qrs'
+                    nerve = 2
+                elif cond_name == 'median':
+                    trigger_name = 'qrs'
+                    nerve = 1
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the RMS of the data
+                # Load epochs resulting from ecg_rm_py - the raw data in this folder has not been rereferenced
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
+                fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
+                raw = mne.io.read_raw_fif(input_path+fname, preload=True)
+
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+
+                # Now we have an evoked potential about the heartbeat
+                # Want to compute the RMS for each channel
+                res_chan_pca = []
+                for ch in esg_chans:
+                    # Pick a single channel
+                    evoked_ch = evoked.copy().pick_channels([ch], ordered=False)
+                    data = evoked_ch.data[0, 0:]  # Format n_channels x n_times
+                    rms = np.sqrt(np.mean(data ** 2))
+                    res_chan_pca.append(rms)
+
+                # Now have rms for each subject, for each channel and condition
+                if cond_name == 'median':
+                    res_med_pca[subject - 1, :] = res_chan_pca
+                elif cond_name == 'tibial':
+                    res_tib_pca[subject - 1, :] = res_chan_pca
+
+        # print(np.shape(res_med_pca))
+        # print(res_med_pca)
+        # print(np.shape(res_tib_pca))
+        # print(res_tib_pca)
+
+        # Save to file
+        saveres.res_med = res_med_pca
+        saveres.res_tib = res_tib_pca
+        dataset_keywords = [a for a in dir(saveres) if not a.startswith('__')]
+
+        fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/res.h5"
+
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(saveres, keyword))
+
+    ##########################################################################
+    # Calculate Residuals for PCA_OBS Tukey PCHIP cleaned data
+    ##########################################################################
+    if calc_PCA_tukey_pchip:
+        class save_res():
+            def __init__(self):
+                pass
+
+        # Instantiate class
+        saveres = save_res()
+
+        # Matrix of dimensions no.subjects x no. channels
+        res_med_pca = np.zeros((len(subjects), 39))
+        res_tib_pca = np.zeros((len(subjects), 39))
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'qrs'
+                    nerve = 2
+                elif cond_name == 'median':
+                    trigger_name = 'qrs'
+                    nerve = 1
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the RMS of the data
+                # Load epochs resulting from ecg_rm_py - the raw data in this folder has not been rereferenced
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
+                fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
+                raw = mne.io.read_raw_fif(input_path+fname, preload=True)
+
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+
+                # Now we have an evoked potential about the heartbeat
+                # Want to compute the RMS for each channel
+                res_chan_pca = []
+                for ch in esg_chans:
+                    # Pick a single channel
+                    evoked_ch = evoked.copy().pick_channels([ch], ordered=False)
+                    data = evoked_ch.data[0, 0:]  # Format n_channels x n_times
+                    rms = np.sqrt(np.mean(data ** 2))
+                    res_chan_pca.append(rms)
+
+                # Now have rms for each subject, for each channel and condition
+                if cond_name == 'median':
+                    res_med_pca[subject - 1, :] = res_chan_pca
+                elif cond_name == 'tibial':
+                    res_tib_pca[subject - 1, :] = res_chan_pca
+
+        # print(np.shape(res_med_pca))
+        # print(res_med_pca)
+        # print(np.shape(res_tib_pca))
+        # print(res_tib_pca)
+
+        # Save to file
+        saveres.res_med = res_med_pca
+        saveres.res_tib = res_tib_pca
+        dataset_keywords = [a for a in dir(saveres) if not a.startswith('__')]
+
+        fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/res_pchip.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
@@ -427,6 +653,48 @@ if __name__ == '__main__':
     print(f"Residual PCA Medial: {residual_med_pca:.4f}%")
     print(f"Residual PCA Tibial: {residual_tib_pca:.4f}%")
 
+    # PCA PCHIP
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/res_pchip.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        res_med_pca = infile[keywords[0]][()]
+        res_tib_pca = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_pca = (np.mean(res_med_pca / res_med_prep, axis=tuple([0, 1]))) * 100
+    residual_tib_pca = (np.mean(res_tib_pca / res_tib_prep, axis=tuple([0, 1]))) * 100
+
+    print(f"Residual PCA PCHIP Medial: {residual_med_pca:.4f}%")
+    print(f"Residual PCA PCHIP Tibial: {residual_tib_pca:.4f}%")
+
+    # PCA Tukey
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/res.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        res_med_pca = infile[keywords[0]][()]
+        res_tib_pca = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_pca = (np.mean(res_med_pca / res_med_prep, axis=tuple([0, 1]))) * 100
+    residual_tib_pca = (np.mean(res_tib_pca / res_tib_prep, axis=tuple([0, 1]))) * 100
+
+    print(f"Residual PCA Tukey Medial: {residual_med_pca:.4f}%")
+    print(f"Residual PCA Tukey Tibial: {residual_tib_pca:.4f}%")
+
+    # PCA Tukey pchip
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/res_pchip.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        res_med_pca = infile[keywords[0]][()]
+        res_tib_pca = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_pca = (np.mean(res_med_pca / res_med_prep, axis=tuple([0, 1]))) * 100
+    residual_tib_pca = (np.mean(res_tib_pca / res_tib_prep, axis=tuple([0, 1]))) * 100
+
+    print(f"Residual PCA Tukey PCHIP Medial: {residual_med_pca:.4f}%")
+    print(f"Residual PCA Tukey PCHIP Tibial: {residual_tib_pca:.4f}%")
+
     # ICA
     if choose_limited:
         fn = f"/data/pt_02569/tmp_data/baseline_ica_py/res_lim.h5"
@@ -526,6 +794,45 @@ if __name__ == '__main__':
 
     print(f"Residual PCA Medial: {residual_med_pca:.4f}%")
     print(f"Residual PCA Tibial: {residual_tib_pca:.4f}%")
+
+    # PCA PCHIP
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/res_pchip.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        res_med_pca = infile[keywords[0]][()]
+        res_tib_pca = infile[keywords[1]][()]
+
+    residual_med_pca = (np.mean(res_med_pca[:, median_pos] / res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+    residual_tib_pca = (np.mean(res_tib_pca[:, tibial_pos] / res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+
+    print(f"Residual PCA PCHIP Medial: {residual_med_pca:.4f}%")
+    print(f"Residual PCA PCHIP Tibial: {residual_tib_pca:.4f}%")
+
+    # PCA Tukey
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/res.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        res_med_pca = infile[keywords[0]][()]
+        res_tib_pca = infile[keywords[1]][()]
+
+    residual_med_pca = (np.mean(res_med_pca[:, median_pos] / res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+    residual_tib_pca = (np.mean(res_tib_pca[:, tibial_pos] / res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+
+    print(f"Residual PCA Tukey Medial: {residual_med_pca:.4f}%")
+    print(f"Residual PCA Tukey Tibial: {residual_tib_pca:.4f}%")
+
+    # PCA Tukey PCHIP
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/res_pchip.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        res_med_pca = infile[keywords[0]][()]
+        res_tib_pca = infile[keywords[1]][()]
+
+    residual_med_pca = (np.mean(res_med_pca[:, median_pos] / res_med_prep[:, median_pos], axis=tuple([0, 1]))) * 100
+    residual_tib_pca = (np.mean(res_tib_pca[:, tibial_pos] / res_tib_prep[:, tibial_pos], axis=tuple([0, 1]))) * 100
+
+    print(f"Residual PCA Tukey PCHIP Medial: {residual_med_pca:.4f}%")
+    print(f"Residual PCA Tukey PCHIP Tibial: {residual_tib_pca:.4f}%")
 
     # ICA
     if choose_limited:

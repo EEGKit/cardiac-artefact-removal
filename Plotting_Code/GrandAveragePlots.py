@@ -8,7 +8,7 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    reduced_trials = True  # If true, generate images with fewer triggers
+    reduced_trials = False  # If true, generate images with fewer triggers
     longer_time = True
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/GrandAveragePlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [False, False, False, False]
+    methods = [True, True, True, True]
     method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
     SSP = True
 

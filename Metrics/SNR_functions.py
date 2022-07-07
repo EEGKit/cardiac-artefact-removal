@@ -46,14 +46,6 @@ def calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window):
         evoked.drop_channels(['AL', 'ECG'])
     elif 'AC' in evoked.ch_names:
         evoked.drop_channels(['AC', 'ECG'])
-    # if 'TH6' in evoked.ch_names:
-    #     evoked.drop_channels(['TH6'])
-    # if 'AL' in evoked.ch_names:
-    #     evoked.drop_channels(['AL'])
-    # if 'AC' in evoked.ch_names:
-    #     evoked.drop_channels(['AC'])
-    # if 'ECG' in evoked.ch_names:
-    #     evoked.drop_channels(['ECG'])
 
     # Want to only check channels relevant to potential being triggered
     # Tibial centred around 22ms - take 10ms on either end

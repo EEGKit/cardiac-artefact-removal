@@ -24,12 +24,15 @@ def get_harmonics(raw1, trigger, sample_rate):
 
 if __name__ == '__main__':
 
-    calc_prepared = True
-    calc_PCA = True
-    calc_post_ICA = True
-    calc_ICA = True
+    calc_prepared = False
+    calc_PCA = False
+    calc_PCA_pchip = True
+    calc_PCA_tukey = False
+    calc_PCA_tukey_pchip = False
+    calc_post_ICA = False
+    calc_ICA = False
     choose_limited = False  # If true use ICA data with top 4 components chosen - use FALSE, see main
-    calc_SSP = True
+    calc_SSP = False
     test39 = False
     reduced_epochs = False  # Dummy variable - always false in this script as I don't reduce epochs
 
@@ -217,6 +220,257 @@ if __name__ == '__main__':
         dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
         fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps_yasa.h5"
+
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(savepow, keyword))
+
+    ##########################################################################
+    # Calculate Power for PCA PCHIP Data
+    ##########################################################################
+    if calc_PCA_pchip:
+        class save_pow():
+            def __init__(self):
+                pass
+
+        # Instantiate class
+        savepow = save_pow()
+
+        # Matrix of dimensions no.subjects x no. channels
+        pow_med_pca = np.zeros((len(subjects), 39))
+        pow_tib_pca = np.zeros((len(subjects), 39))
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'qrs'
+                    nerve = 2
+                elif cond_name == 'median':
+                    trigger_name = 'qrs'
+                    nerve = 1
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the RMS of the data
+                # Load epochs resulting from PCA - the raw data in this folder has not been rereferenced
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
+                raw = mne.io.read_raw_fif(input_path+fname, preload=True)
+
+                freq = get_harmonics(raw, trigger_name, sampling_rate)
+
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                # Now we have the raw data in the filtered form
+                # We have the fundamental frequency and harmonics for this subject
+                # Compute power at the frequencies
+                freq = np.around(freq, decimals=1)
+
+                data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
+                # PSD will have units uV^2 now
+                # Need a frequency resolution of 0.1Hz - win set to 10 seconds
+                # This outputs a dataframe
+                # bp1 = yasa.bandpower(raw, win_sec=10, relative=True,
+                #                      bandpass=False,
+                #                      bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                #                             (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                #                             (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                #                             (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                #                             (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                #                      kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
+                                    bandpass=False,
+                                    bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                                           (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                                           (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                                           (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                                           (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                                    kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                # Extract the absolute power from the relative powers output above
+                bands = ['f0', 'f1', 'f2', 'f3', 'f4']
+                bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
+                bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
+                power = bp_abs['Sum'].values  # Extract value of interest
+
+                # Now have power for each subject, insert it into the correct condition array
+                if cond_name == 'median':
+                    pow_med_pca[subject - 1, :] = power
+                elif cond_name == 'tibial':
+                    pow_tib_pca[subject - 1, :] = power
+
+        # Save to file
+        savepow.pow_med = pow_med_pca
+        savepow.pow_tib = pow_tib_pca
+        dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
+
+        fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps_yasa_pchip.h5"
+
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(savepow, keyword))
+
+    ##########################################################################
+    # Calculate Power for PCA Tukey Data
+    ##########################################################################
+    if calc_PCA_tukey:
+        class save_pow():
+            def __init__(self):
+                pass
+
+        # Instantiate class
+        savepow = save_pow()
+
+        # Matrix of dimensions no.subjects x no. channels
+        pow_med_pca = np.zeros((len(subjects), 39))
+        pow_tib_pca = np.zeros((len(subjects), 39))
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'qrs'
+                    nerve = 2
+                elif cond_name == 'median':
+                    trigger_name = 'qrs'
+                    nerve = 1
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the RMS of the data
+                # Load epochs resulting from PCA - the raw data in this folder has not been rereferenced
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
+                fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
+                raw = mne.io.read_raw_fif(input_path + fname, preload=True)
+
+                freq = get_harmonics(raw, trigger_name, sampling_rate)
+
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                # Now we have the raw data in the filtered form
+                # We have the fundamental frequency and harmonics for this subject
+                # Compute power at the frequencies
+                freq = np.around(freq, decimals=1)
+
+                data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
+                # PSD will have units uV^2 now
+                bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
+                                    bandpass=False,
+                                    bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                                           (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                                           (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                                           (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                                           (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                                    kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                # Extract the absolute power from the relative powers output above
+                bands = ['f0', 'f1', 'f2', 'f3', 'f4']
+                bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
+                bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
+                power = bp_abs['Sum'].values  # Extract value of interest
+
+                # Now have power for each subject, insert it into the correct condition array
+                if cond_name == 'median':
+                    pow_med_pca[subject - 1, :] = power
+                elif cond_name == 'tibial':
+                    pow_tib_pca[subject - 1, :] = power
+
+        # Save to file
+        savepow.pow_med = pow_med_pca
+        savepow.pow_tib = pow_tib_pca
+        dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
+
+        fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/inps_yasa.h5"
+
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(savepow, keyword))
+
+    ##########################################################################
+    # Calculate Power for PCA Tukey Data
+    ##########################################################################
+    if calc_PCA_tukey_pchip:
+        class save_pow():
+            def __init__(self):
+                pass
+
+        # Instantiate class
+        savepow = save_pow()
+
+        # Matrix of dimensions no.subjects x no. channels
+        pow_med_pca = np.zeros((len(subjects), 39))
+        pow_tib_pca = np.zeros((len(subjects), 39))
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'qrs'
+                    nerve = 2
+                elif cond_name == 'median':
+                    trigger_name = 'qrs'
+                    nerve = 1
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the RMS of the data
+                # Load epochs resulting from PCA - the raw data in this folder has not been rereferenced
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
+                fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
+                raw = mne.io.read_raw_fif(input_path + fname, preload=True)
+
+                freq = get_harmonics(raw, trigger_name, sampling_rate)
+
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                # Now we have the raw data in the filtered form
+                # We have the fundamental frequency and harmonics for this subject
+                # Compute power at the frequencies
+                freq = np.around(freq, decimals=1)
+
+                data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
+                # PSD will have units uV^2 now
+                bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
+                                    bandpass=False,
+                                    bands=[(freq[0] - 0.1, freq[0] + 0.1, 'f0'),
+                                           (freq[1] - 0.1, freq[1] + 0.1, 'f1'),
+                                           (freq[2] - 0.1, freq[2] + 0.1, 'f2'),
+                                           (freq[3] - 0.1, freq[3] + 0.1, 'f3'),
+                                           (freq[4] - 0.1, freq[4] + 0.1, 'f4')],
+                                    kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
+
+                # Extract the absolute power from the relative powers output above
+                bands = ['f0', 'f1', 'f2', 'f3', 'f4']
+                bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
+                bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
+                power = bp_abs['Sum'].values  # Extract value of interest
+
+                # Now have power for each subject, insert it into the correct condition array
+                if cond_name == 'median':
+                    pow_med_pca[subject - 1, :] = power
+                elif cond_name == 'tibial':
+                    pow_tib_pca[subject - 1, :] = power
+
+        # Save to file
+        savepow.pow_med = pow_med_pca
+        savepow.pow_tib = pow_tib_pca
+        dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
+
+        fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/inps_yasa_pchip.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:
@@ -490,6 +744,48 @@ if __name__ == '__main__':
     print(f"Residual PCA Medial: {residual_med_pca:.4e}")
     print(f"Residual PCA Tibial: {residual_tib_pca:.4e}")
 
+    # PCA PCHIP
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps_yasa_pchip.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_pca = infile[keywords[0]][()]
+        pow_tib_pca = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_pca = (np.mean(pow_med_prep / pow_med_pca, axis=tuple([0, 1])))
+    residual_tib_pca = (np.mean(pow_tib_prep / pow_tib_pca, axis=tuple([0, 1])))
+
+    print(f"Residual PCA PCHIP Medial: {residual_med_pca:.4e}")
+    print(f"Residual PCA PCHIP Tibial: {residual_tib_pca:.4e}")
+
+    # PCA tukey
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/inps_yasa.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_pca = infile[keywords[0]][()]
+        pow_tib_pca = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_pca = (np.mean(pow_med_prep / pow_med_pca, axis=tuple([0, 1])))
+    residual_tib_pca = (np.mean(pow_tib_prep / pow_tib_pca, axis=tuple([0, 1])))
+
+    print(f"Residual PCA Tukey Medial: {residual_med_pca:.4e}")
+    print(f"Residual PCA Tukey Tibial: {residual_tib_pca:.4e}")
+
+    # PCA tukey pchip
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/inps_yasa_pchip.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_pca = infile[keywords[0]][()]
+        pow_tib_pca = infile[keywords[1]][()]
+
+    # Changing to mean of means after ratio is already calculated
+    residual_med_pca = (np.mean(pow_med_prep / pow_med_pca, axis=tuple([0, 1])))
+    residual_tib_pca = (np.mean(pow_tib_prep / pow_tib_pca, axis=tuple([0, 1])))
+
+    print(f"Residual PCA Tukey PCHIP Medial: {residual_med_pca:.4e}")
+    print(f"Residual PCA Tukey PCHIP Tibial: {residual_tib_pca:.4e}")
+
     # ICA
     if choose_limited:
         fn = f"/data/pt_02569/tmp_data/baseline_ica_py/inps_yasa_lim.h5"
@@ -574,6 +870,45 @@ if __name__ == '__main__':
 
     print(f"Residual PCA Medial: {residual_med_pca:.4e}")
     print(f"Residual PCA Tibial: {residual_tib_pca:.4e}")
+
+    # PCA PCHIP
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/inps_yasa_pchip.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_pca = infile[keywords[0]][()]
+        pow_tib_pca = infile[keywords[1]][()]
+
+    residual_med_pca = (np.mean(pow_med_prep[:, median_pos] / pow_med_pca[:, median_pos], axis=tuple([0, 1])))
+    residual_tib_pca = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_pca[:, tibial_pos], axis=tuple([0, 1])))
+
+    print(f"Residual PCA PCHIP Medial: {residual_med_pca:.4e}")
+    print(f"Residual PCA PCHIP Tibial: {residual_tib_pca:.4e}")
+
+    # PCA tukey
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/inps_yasa.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_pca = infile[keywords[0]][()]
+        pow_tib_pca = infile[keywords[1]][()]
+
+    residual_med_pca = (np.mean(pow_med_prep[:, median_pos] / pow_med_pca[:, median_pos], axis=tuple([0, 1])))
+    residual_tib_pca = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_pca[:, tibial_pos], axis=tuple([0, 1])))
+
+    print(f"Residual PCA Tukey Medial: {residual_med_pca:.4e}")
+    print(f"Residual PCA Tukey Tibial: {residual_tib_pca:.4e}")
+
+    # PCA tukey pchip
+    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/inps_yasa_pchip.h5"
+    with h5py.File(fn, "r") as infile:
+        # Get the data
+        pow_med_pca = infile[keywords[0]][()]
+        pow_tib_pca = infile[keywords[1]][()]
+
+    residual_med_pca = (np.mean(pow_med_prep[:, median_pos] / pow_med_pca[:, median_pos], axis=tuple([0, 1])))
+    residual_tib_pca = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_pca[:, tibial_pos], axis=tuple([0, 1])))
+
+    print(f"Residual PCA Tukey PCHIP Medial: {residual_med_pca:.4e}")
+    print(f"Residual PCA Tukey PCHIP Tibial: {residual_tib_pca:.4e}")
 
     # ICA
     if choose_limited:

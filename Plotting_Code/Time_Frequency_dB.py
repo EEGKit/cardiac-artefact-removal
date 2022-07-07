@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
-    spinal = True  # If true plots SEPs, if false plots QRS  - not set up to do this yet
+    spinal = True  # If true plots SEPs, if false plots QRS 
     if spinal:
         freqs = np.arange(5., 400., 3.)
         fmin, fmax = freqs[[0, -1]]

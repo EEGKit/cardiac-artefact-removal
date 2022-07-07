@@ -39,8 +39,9 @@ if __name__ == '__main__':
             for cond_name in cond_names:  # Conditions (median, tibial)
                 plt.figure()
                 # for Method in ['Uncleaned', 'Prepared', 'PCA', 'Artefact', 'PCA MATLAB', 'Prepared MAT + Py PCA']:
-                for Method in ['Prepared', 'Prepared MAT', 'Prepared PCHIP Py', 'PCA', 'PCA MATLAB', 'PCA PCHIP',
-                               'Prepared MAT + Py PCA']:
+                # for Method in ['Prepared', 'Prepared MAT', 'Prepared PCHIP Py', 'PCA', 'PCA MATLAB', 'PCA PCHIP',
+                #                'Prepared MAT + Py PCA']:
+                for Method in ['PCA', 'PCA MATLAB', 'PCA PCHIP', 'PCA Tukey', 'PCA Tukey PCHIP']:
                 # for Method in ['PCA', 'PCA Test', 'PCA MATLAB']:
 
                     # Changing to pick channel when each is loaded, not after the evoked list is formed
@@ -85,7 +86,6 @@ if __name__ == '__main__':
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
                         raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
-
                     elif Method == 'PCA':
                         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
                         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
@@ -98,6 +98,26 @@ if __name__ == '__main__':
 
                     elif Method == 'PCA PCHIP':
                         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                        fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
+                        raw = mne.io.read_raw_fif(input_path + fname, preload=True)
+                        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
+                                   method='iir',
+                                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                    elif Method == 'PCA Tukey':
+                        input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
+                        fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
+                        raw = mne.io.read_raw_fif(input_path + fname, preload=True)
+                        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
+                                   method='iir',
+                                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+
+                    elif Method == 'PCA Tukey PCHIP':
+                        input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
                         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place

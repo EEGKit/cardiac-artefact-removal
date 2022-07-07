@@ -10,7 +10,7 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    cortical_channels = True  # Calculate TFR for cortical channels of interest
+    cortical_channels = False  # Calculate TFR for cortical channels of interest
     ECG_channel = True  # Calculate TFR for ECG channel
     freqs = np.arange(5., 250., 3.)
     fmin, fmax = freqs[[0, -1]]
@@ -102,6 +102,9 @@ if __name__ == '__main__':
                 raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                 evoked = evoked.pick_channels(channel)
+                evoked = evoked.set_channel_types({'ECG': 'eeg'})  # Needed to do transform
+                # print(evoked.ch_names)
+                # print(evoked.info)
                 power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                 # evoked_list.append(evoked)
                 evoked_list.append(power)

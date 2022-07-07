@@ -17,12 +17,15 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    calc_prepared_snr = True
-    calc_PCA_snr = True
-    calc_post_ICA_snr = True
-    calc_ICA_snr = True
+    calc_prepared_snr = False
+    calc_PCA_snr = False
+    calc_PCA_pchip = False
+    calc_PCA_tukey_snr = False
+    calc_PCA_tukey_pchip_snr = False
+    calc_post_ICA_snr = False
+    calc_ICA_snr = False
     choose_limited = False  # If true compute SNR from ICA processed with limited components chosen
-    calc_SSP_snr = True
+    calc_SSP_snr = False
     # We don't use SNR for CCA data anymore
     cca_flag = False  # Compute SNR for final CCA corrected data
     selected_components = 2  # CCA_flag is redundant in this file - DONT used cca data to compute any SNRs
@@ -140,11 +143,169 @@ if __name__ == '__main__':
         # print(snr_med)
         # print(snr_tib)
 
+    ################################### PCA Tukey SNR Calculations #################################
+    if calc_PCA_tukey_snr:
+        class save_SNR():
+            def __init__(self):
+                pass
+        # Instantiate class
+        savesnr = save_SNR()
+
+        # Matrix of dimensions no.subjects x no. projections
+        snr_med = np.zeros((len(subjects), 1))
+        snr_tib = np.zeros((len(subjects), 1))
+        chan_med = []
+        chan_tib = []
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'Tibial - Stimulation'
+                elif cond_name == 'median':
+                    trigger_name = 'Median - Stimulation'
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the SNR
+                # Load epochs resulting from PCA OBS cleaning - has been rereferenced and filtered
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
+                raw = mne.io.read_raw_fif(f"{input_path}data_clean_ecg_spinal_{cond_name}_withqrs.fif",
+                                          preload=True)
+                # add reference channel to data
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+
+                # Now have one snr related to each subject and condition
+                if cond_name == 'median':
+                    snr_med[subject - 1, 0] = snr
+                    chan_med.append(chan)
+                elif cond_name == 'tibial':
+                    snr_tib[subject - 1, 0] = snr
+                    chan_tib.append(chan)
+
+        # Save to file to compare to matlab - only for debugging
+        savesnr.snr_med = snr_med
+        savesnr.snr_tib = snr_tib
+        savesnr.chan_med = chan_med
+        savesnr.chan_tib = chan_tib
+        dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
+        if reduced_window:
+            if reduced_epochs:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_reduced_ant_smallwin.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_reduced_smallwin.h5"
+            else:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_ant_smallwin.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_smallwin.h5"
+        else:
+            if reduced_epochs:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_reduced_ant.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_reduced.h5"
+            else:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_ant.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr.h5"
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
+
+        # print(snr_med)
+        # print(snr_tib)
+
+    ################################### PCA Tukey PCHIP SNR Calculations #################################
+    if calc_PCA_tukey_pchip_snr:
+        class save_SNR():
+            def __init__(self):
+                pass
+
+        # Instantiate class
+        savesnr = save_SNR()
+
+        # Matrix of dimensions no.subjects x no. projections
+        snr_med = np.zeros((len(subjects), 1))
+        snr_tib = np.zeros((len(subjects), 1))
+        chan_med = []
+        chan_tib = []
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'Tibial - Stimulation'
+                elif cond_name == 'median':
+                    trigger_name = 'Median - Stimulation'
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the SNR
+                # Load epochs resulting from PCA OBS cleaning - has been rereferenced and filtered
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
+                raw = mne.io.read_raw_fif(f"{input_path}data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif",
+                                          preload=True)
+                # add reference channel to data
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+
+                # Now have one snr related to each subject and condition
+                if cond_name == 'median':
+                    snr_med[subject - 1, 0] = snr
+                    chan_med.append(chan)
+                elif cond_name == 'tibial':
+                    snr_tib[subject - 1, 0] = snr
+                    chan_tib.append(chan)
+
+        # Save to file to compare to matlab - only for debugging
+        savesnr.snr_med = snr_med
+        savesnr.snr_tib = snr_tib
+        savesnr.chan_med = chan_med
+        savesnr.chan_tib = chan_tib
+        dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
+        if reduced_window:
+            if reduced_epochs:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_reduced_ant_smallwin_pchip.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_reduced_smallwin_pchip.h5"
+            else:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_ant_smallwin_pchip.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_smallwin_pchip.h5"
+        else:
+            if reduced_epochs:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_reduced_ant_pchip.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_reduced_pchip.h5"
+            else:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_ant_pchip.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py_tukey/snr_pchip.h5"
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
+
     ################################### PCA SNR Calculations #################################
     if calc_PCA_snr:
         class save_SNR():
             def __init__(self):
                 pass
+
+
         # Instantiate class
         savesnr = save_SNR()
 
@@ -170,7 +331,8 @@ if __name__ == '__main__':
                     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                     epochs = mne.read_epochs(input_path + fname, preload=True)
                     evoked = epochs.average()
-                    snr, chan = calculate_SNR_evoked_cca(evoked, cond_name, iv_baseline, reduced_window, selected_components)
+                    snr, chan = calculate_SNR_evoked_cca(evoked, cond_name, iv_baseline, reduced_window,
+                                                         selected_components)
                 else:
                     input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
                     raw = mne.io.read_raw_fif(f"{input_path}data_clean_ecg_spinal_{cond_name}_withqrs.fif",
@@ -227,6 +389,83 @@ if __name__ == '__main__':
 
         # print(snr_med)
         # print(snr_tib)
+
+    ################################### PCA PCHIP SNR Calculations #################################
+    if calc_PCA_pchip:
+        class save_SNR():
+            def __init__(self):
+                pass
+
+        # Instantiate class
+        savesnr = save_SNR()
+
+        # Matrix of dimensions no.subjects x no. projections
+        snr_med = np.zeros((len(subjects), 1))
+        snr_tib = np.zeros((len(subjects), 1))
+        chan_med = []
+        chan_tib = []
+
+        for subject in subjects:
+            for cond_name in cond_names:
+                if cond_name == 'tibial':
+                    trigger_name = 'Tibial - Stimulation'
+                elif cond_name == 'median':
+                    trigger_name = 'Median - Stimulation'
+
+                subject_id = f'sub-{str(subject).zfill(3)}'
+
+                # Want the SNR
+                # Load epochs resulting from PCA OBS cleaning - has been rereferenced and filtered
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                raw = mne.io.read_raw_fif(f"{input_path}data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif",
+                                          preload=True)
+                # add reference channel to data
+                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
+                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
+                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
+                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
+                snr, chan = calculate_SNR_evoked(evoked, cond_name, iv_baseline, reduced_window)
+
+                # Now have one snr related to each subject and condition
+                if cond_name == 'median':
+                    snr_med[subject - 1, 0] = snr
+                    chan_med.append(chan)
+                elif cond_name == 'tibial':
+                    snr_tib[subject - 1, 0] = snr
+                    chan_tib.append(chan)
+
+        # Save to file to compare to matlab - only for debugging
+        savesnr.snr_med = snr_med
+        savesnr.snr_tib = snr_tib
+        savesnr.chan_med = chan_med
+        savesnr.chan_tib = chan_tib
+        dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
+        if reduced_window:
+            if reduced_epochs:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_reduced_ant_smallwin_pchip.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_reduced_smallwin_pchip.h5"
+            else:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_ant_smallwin_pchip.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_smallwin_pchip.h5"
+        else:
+            if reduced_epochs:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_reduced_ant_pchip.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_reduced_pchip.h5"
+            else:
+                if ant_ref:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_ant_pchip.h5"
+                else:
+                    fn = f"/data/pt_02569/tmp_data/ecg_rm_py/snr_pchip.h5"
+        with h5py.File(fn, "w") as outfile:
+            for keyword in dataset_keywords:
+                outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
 
 
     ############################################## Post ICA SNR Calculations ########################################
@@ -498,17 +737,22 @@ if __name__ == '__main__':
     keywords = ['snr_med', 'snr_tib']
     input_paths = ["/data/pt_02569/tmp_data/prepared_py/",
                    "/data/pt_02569/tmp_data/ecg_rm_py/",
+                   "/data/pt_02569/tmp_data/ecg_rm_py/",
+                   "/data/pt_02569/tmp_data/ecg_rm_py_tukey/",
+                   "/data/pt_02569/tmp_data/ecg_rm_py_tukey/",
                    "/data/pt_02569/tmp_data/baseline_ica_py/",
                    "/data/pt_02569/tmp_data/ica_py/",
                    "/data/p_02569/SSP/"]
 
-    names = ['Prepared', 'PCA', 'ICA', 'Post-ICA', 'SSP']
+    names = ['Prepared', 'PCA', 'PCA PCHIP', 'PCA Tukey', 'PCA Tukey PCHIP', 'ICA', 'Post-ICA', 'SSP']
     print("\n")
-    for i in np.arange(0, 5):
+    for i in np.arange(0, 8):
         input_path = input_paths[i]
         name = names[i]
         if name == 'ICA' and choose_limited:
             fn = f"{input_path}snr_lim.h5"
+        elif name == 'PCA Tukey PCHIP' or name == 'PCA PCHIP':
+            fn = f"{input_path}snr_pchip.h5"
         else:
             fn = f"{input_path}snr.h5"
         # All have shape (24, 1) bar SSP which is (24, 16)
