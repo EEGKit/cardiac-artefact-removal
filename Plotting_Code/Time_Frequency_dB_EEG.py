@@ -103,8 +103,6 @@ if __name__ == '__main__':
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                 evoked = evoked.pick_channels(channel)
                 evoked = evoked.set_channel_types({'ECG': 'eeg'})  # Needed to do transform
-                # print(evoked.ch_names)
-                # print(evoked.info)
                 power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                 # evoked_list.append(evoked)
                 evoked_list.append(power)

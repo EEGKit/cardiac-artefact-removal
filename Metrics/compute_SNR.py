@@ -755,7 +755,7 @@ if __name__ == '__main__':
             fn = f"{input_path}snr_pchip.h5"
         else:
             fn = f"{input_path}snr.h5"
-        # All have shape (24, 1) bar SSP which is (24, 16)
+        # All have shape (24, 1) bar SSP which is (36, 16)
         with h5py.File(fn, "r") as infile:
             # Get the data
             snr_med = infile[keywords[0]][()]

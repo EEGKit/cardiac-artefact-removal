@@ -24,7 +24,7 @@ if __name__ == '__main__':
     pchip_interpolation = False  # If true import with pchip, otherwise use linear interpolation
 
     heart_removal = False  # Heart artefact removal
-    pchip = True  # Whether to use pchip prepared data or not
+    pchip = False  # Whether to use pchip prepared data or not
     heart_removal_test = False  # Heart artefact removal testing
     heart_removal_tukey = True  # Fitted artefact multiplied by tukey window
 

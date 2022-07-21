@@ -37,7 +37,8 @@ def fit_ecgTemplate_tukey(data, pca_template, aPeak_idx, peak_range, pre_range, 
     fitted_art[0, aPeak_idx[0] - pre_range-1: aPeak_idx[0] + post_range] = pad_fit[midP - pre_range-1: midP + post_range].T
 
     # Mods for Tukey
-    tukey_window = tukey(M=len(pad_fit[midP - pre_range-1: midP + post_range].T), alpha=0.5, sym=True)
+    # tukey_window = tukey(M=len(pad_fit[midP - pre_range-1: midP + post_range].T), alpha=0.5, sym=True)
+    tukey_window = tukey(M=len(pad_fit[midP - pre_range-1: midP + post_range].T), alpha=0.25, sym=True)
     fitted_art[0, aPeak_idx[0] - pre_range - 1: aPeak_idx[0] + post_range] = \
         tukey_window*pad_fit[midP - pre_range-1: midP + post_range].T
 
