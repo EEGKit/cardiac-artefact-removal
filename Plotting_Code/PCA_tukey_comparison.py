@@ -74,7 +74,8 @@ if __name__ == '__main__':
             plt.show()
 
     if grand_average:
-        method_names = ['PCA', 'PCA MATLAB', 'PCA PCHIP', 'PCA Tukey', 'PCA Tukey PCHIP']
+        # method_names = ['PCA', 'PCA MATLAB', 'PCA PCHIP', 'PCA Tukey', 'PCA Tukey PCHIP']
+        method_names = ['PCA', 'PCA MATLAB', 'PCA PCHIP']
 
         # To use mne grand_average method, need to generate a list of evoked potentials for each subject
         ## Need to change this part - just do all methods, no need for loop
