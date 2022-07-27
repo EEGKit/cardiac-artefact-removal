@@ -11,7 +11,8 @@ import os
 
 
 if __name__ == '__main__':
-    methods = ['Prep', 'PCA', 'ICA', 'Post-ICA', 'SSP']  # Methods to do
+    # methods = ['Prep', 'PCA', 'ICA', 'Post-ICA', 'SSP']  # Methods to do
+    methods = ['ICA', 'SSP']  # Methods to do
     n_proj = 6
 
     trigger_names = ['Median - Stimulation', 'Tibial - Stimulation']
@@ -90,11 +91,11 @@ if __name__ == '__main__':
 
             chanvalues = evoked.data[:, time_idx]
             chan_labels = evoked.ch_names
-            # if method == 'SSP':
-            #     colorbar_axes = [-1, 1]
-            # else:
-            #     colorbar_axes = [-2, 2]
-            colorbar_axes = [-1, 1]
+            if method == 'SSP' or method == 'ICA':
+                colorbar_axes = [-0.5, 0.5]
+            else:
+                colorbar_axes = [-1, 1]
+            # colorbar_axes = [-1, 1]
             subjects_4grid = np.arange(1, 37)  # subj  # Pass this instead of (1, 37) for 1 subjects
             # you can also base the grid on an several subjects
             # then the function takes the average over the channel positions of all those subjects
