@@ -1,3 +1,6 @@
+# Holds functions necessary to form evoked responses and compute relevant SNR metrics for
+# Evoked responses
+
 import mne
 import numpy as np
 
