@@ -7,6 +7,7 @@ from scipy.stats import ttest_1samp as ttest
 import matplotlib.pyplot as plt
 import os
 
+
 def reliability(data, noExperiment, trialSizes, subjectSizes):
     # Set up output array for p-values and effect sizes, 1000 x subject size x trial size
     p_vals = np.zeros((noExperiment, len(subjectSizes), len(trialSizes)))
@@ -43,10 +44,10 @@ if __name__ == '__main__':
     figure_path = '/data/p_02569/Reliability Assessment/'
     os.makedirs(figure_path, exist_ok=True)
     which_method = {'Prep': True,
-                    'PCA': False,
-                    'Post-ICA': False,
-                    'SSP_5': False,
-                    'SSP_6': False}
+                    'PCA': True,
+                    'Post-ICA': True,
+                    'SSP_5': True,
+                    'SSP_6': True}
 
     for i in np.arange(0, len(which_method)):
         method = list(which_method.keys())[i]
@@ -79,7 +80,7 @@ if __name__ == '__main__':
             trials = np.arange(5, 1000, 10)  # Sample this many trials
             subjects = [4, 8, 12, 16, 20]  # Sample this many subjects
             for condition in ['Median Stimulation', 'Tibial Stimulation']:
-                figure_name = 'Reliability_{condition}.png'
+                figure_name = f'Reliability_{condition}.png'
                 reliability(amp_med, noexp, trials, subjects)
                 plt.title(f'Reliability Assessment, {method}, {condition}')
                 plt.savefig(figure_path+figure_name)
