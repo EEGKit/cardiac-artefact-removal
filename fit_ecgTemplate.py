@@ -74,7 +74,7 @@ def fit_ecgTemplate(data, pca_template, aPeak_idx, peak_range, pre_range, post_r
             fitecg.y_fit = y_fit
             fitecg.x_interpol = x_interpol
             fitecg.y_interpol = y_interpol
-            fitecg.fitted_art = fitted_art # Reassign if we've gone into this loop
+            fitecg.fitted_art = fitted_art  # Reassign if we've gone into this loop
 
     # # Save to file to compare to matlab - only for debugging
     # dataset_keywords = [a for a in dir(fitecg) if not a.startswith('__')]

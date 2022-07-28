@@ -57,7 +57,7 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate, pchip):
     # Create filter coefficients
     fs = sampling_rate
     a = [0, 0, 1, 1]
-    f = [0, 0.4/(fs/2), 0.9/(fs / 2), 1] # 0.9 Hz highpass filter
+    f = [0, 0.4/(fs/2), 0.9/(fs / 2), 1]  # 0.9 Hz highpass filter
     # f = [0 0.4 / (fs / 2) 0.5 / (fs / 2) 1] # 0.5 Hz highpass filter
     ord = round(3*fs/0.5)
     fwts = firls(ord+1, f, a)
