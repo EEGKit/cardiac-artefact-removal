@@ -8,7 +8,7 @@ Emma Bailey, 08/11/2021
 
 Set of scripts used to remove the cardiac artefact from spinal electrophysiology data using a variety of methods, namely:
 PCA_OBS - Principal Component Analysis Optimal Basis Sets,
-ICA - Independent Components Analysis
+ICA - Independent Components Analysis,
 ICA after PCA_OBS,
 SSP - Signal Space Projection with varying numbers of projectors,
 CCA - Canonical Correlation Analysis
