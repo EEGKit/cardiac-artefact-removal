@@ -97,39 +97,3 @@ if __name__ == '__main__':
             print(f"{method} {condition} Corrected P-Values")
             print(df_pvals)
 
-    # ###################### Prep versus each method #####################################
-    # cc = list(combinations(df.columns, 2))  # All combinations
-    # cc = [el for el in cc if el[0] == 'Prep']  # Just ones with Prep in first position
-    # df_prep = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
-    # df_prep.columns = pd.Series(cc).map('-'.join)
-    # arr = df_prep.to_numpy()
-    #
-    # print(df_prep)
-    #
-    # T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
-    #
-    # formatted_pvals = {}
-    # colnames = df_prep.columns
-    # for index in np.arange(0, len(p_values)):
-    #     formatted_pvals.update({colnames[index]: p_values[index]})
-    #
-    # df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
-    # print(df_pvals)
-    #
-    # ########################## PCA versus each method ##########################
-    # cc = list(combinations(df.columns, 2))  # All combinations
-    # cc = [el for el in cc if el[0] == 'PCA']  # Just ones with PCA in first position
-    # df_pca = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
-    # df_pca.columns = pd.Series(cc).map('-'.join)
-    # arr = df_pca.to_numpy()
-    # print(df_pca)
-    #
-    # T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
-    #
-    # formatted_pvals = {}
-    # colnames = df_pca.columns
-    # for index in np.arange(0, len(p_values)):
-    #     formatted_pvals.update({colnames[index]: p_values[index]})
-    #
-    # df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
-    # print(df_pvals)
