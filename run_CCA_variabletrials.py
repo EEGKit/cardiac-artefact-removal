@@ -1,4 +1,4 @@
-# Script to actually run CCA on the data
+# Script to actually run CCA on the data - using smaller trial numbers
 # Using the meet package https://github.com/neurophysics/meet.git to run the CCA
 
 import os
@@ -14,7 +14,6 @@ import matplotlib as mpl
 
 
 def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_indices):
-
     plot_graphs = False
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
     cfg = loadmat(cfg_path + 'cfg.mat')
@@ -23,7 +22,6 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
     iv_epoch = cfg['iv_epoch'][0] / 1000
     iv_baseline = cfg['iv_baseline'][0] / 1000
 
-    # Birgit uses custom interpolation windows for each subject - I don't
     interpol_window_esg = cfg['interpol_window_esg'][0]  # In ms
 
     # Set variables
@@ -32,7 +30,6 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
     trigger_name = cond_info.trigger_name
     subject_id = f'sub-{str(subject).zfill(3)}'
 
-    # New
     potential_path = f"/data/p_02068/SRMR1_experiment/analyzed_data/esg/{subject_id}/"
 
     # Select the right files based on the data_string
@@ -88,7 +85,6 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
         raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
-
     # now create epochs based on the trigger names
     events, event_ids = mne.events_from_annotations(raw)
     event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
@@ -96,7 +92,7 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
                         baseline=tuple(iv_baseline), preload=True)
     epochs = epochs_all[trial_indices]  # Select epochs of interest
 
-    # cca window size - Birgit have individual potential latencies for each subject
+    # cca window size - Birgit created individual potential latencies for each subject
     halfwindow_size = 10/2
     fname_pot = 'potential_latency.mat'
     matdata = loadmat(potential_path + fname_pot)
@@ -167,13 +163,13 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
     no_times_long = np.shape(epochs.get_data())[2]
     no_epochs = np.shape(epochs.get_data())[0]
 
-    # Get into the same form as matlab and perform reshape as it does to be safe with reshape
+    # Reshape
     CCA_comps = np.reshape(CCA_concat, (all_components, no_times_long, no_epochs), order='F')
 
     # Now we have CCA comps, get the data in the axes format MNE likes (n_epochs, n_channels, n_times)
     CCA_comps = np.swapaxes(CCA_comps, 0, 2)
     CCA_comps = np.swapaxes(CCA_comps, 1, 2)
-    selected_components = all_components  # Just keeping all for now to avoid rerunning
+    selected_components = all_components
 
     ################################ Check if it needs inverting ###########################
     # sep_latency is in ms
@@ -229,7 +225,6 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
         fig = plt.figure()
         for icomp in np.arange(0, 4):  # Plot for each of four components
             plt.subplot(2, 2, icomp + 1, title=f'Component {icomp + 1}')
-            # Multiplying by 10**6 because plotting script multiplies by 10**-6
             if data_string == 'SSP':
                 colorbar_axes = [-2, 2]
             elif data_string == 'Prep':
@@ -244,12 +239,10 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
             mrmr_esg_isopotentialplot([subject], A_st[:, icomp], colorbar_axes, chan_labels, colorbar, time)
 
         if data_string == 'SSP':
-            # plt.suptitle(f'{data_string}_{n}_{cond_name_mixed}')
             plt.tight_layout()
             plt.savefig(figure_path_spatial + f'{data_string}_{n}_{cond_name}.png')
 
         else:
-            # plt.suptitle(f'{data_string}_{cond_name_mixed}')
             plt.tight_layout()
             plt.savefig(figure_path_spatial + f'{data_string}_{cond_name}.png')
         plt.close(fig)
@@ -278,12 +271,10 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
             plt.ylabel('Amplitude [A.U.]')
             plt.legend()
             if data_string == 'SSP':
-                # plt.suptitle(f'{data_string}_{n}_{cond_name_mixed}')
                 plt.tight_layout()
                 plt.savefig(figure_path_time + f'{data_string}_{n}_{cond_name}.png')
 
             else:
-                # plt.suptitle(f'{data_string}_{cond_name_mixed}')
                 plt.tight_layout()
                 plt.savefig(figure_path_time + f'{data_string}_{cond_name}.png')
         plt.close(fig)
@@ -310,14 +301,11 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
         mpl.colorbar.ColorbarBase(ax5, cmap=cmap, norm=norm, spacing='proportional')
         # has to be as a list - starts with x, y coordinates for start and then width and height in % of figure width
         if data_string == 'SSP':
-            # plt.suptitle(f'{data_string}_{n}_{cond_name_mixed}')
             plt.savefig(figure_path_st + f'{data_string}_{n}_{cond_name}.png')
 
         else:
-            # plt.suptitle(f'{data_string}_{cond_name_mixed}')
             plt.savefig(figure_path_st + f'{data_string}_{cond_name}.png')
         plt.close(fig)
-        # plt.show()
 
         ############################ Combine to one Image ##########################
         figure_path = f'/data/p_02569/ComponentPlots_Dataset1/{subject_id}/'
@@ -352,5 +340,3 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
             plt.suptitle(f'Subject {subject}, {data_string}_{cond_name}')
             plt.savefig(figure_path + f'{data_string}_{cond_name}.png')
         plt.close(fig)
-        # plt.show()
-

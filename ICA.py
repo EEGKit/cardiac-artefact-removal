@@ -1,4 +1,5 @@
 # Run auto method of ICA on the prepared data as a comparison
+# From MNE package - removes components with correlation coefficient greater than 0.9 with the ECG channel
 
 import os
 import mne
@@ -39,12 +40,10 @@ def run_ica(subject, condition, srmr_nr, sampling_rate, choose_limited):
 
     raw_filtered.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                         iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
     raw_filtered.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
     # ICA
     ica = mne.preprocessing.ICA(n_components=len(raw_filtered.ch_names), max_iter='auto', random_state=97)
-    # ica = mne.preprocessing.ICA(n_components=20, max_iter='auto', random_state=97)
     ica.fit(raw_filtered)
 
     raw.load_data()
@@ -89,7 +88,7 @@ def run_ica(subject, condition, srmr_nr, sampling_rate, choose_limited):
     # raw_FzRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_FzRef.ch_names), method='fir', phase='zero')
     # raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
 
-    # Save raw data - not epoched
+    # Save raw data
     if choose_limited:
         fname = 'clean_baseline_ica_auto_' + cond_name + '_lim.fif'
         raw.save(os.path.join(save_path, fname), fmt='double', overwrite=True)

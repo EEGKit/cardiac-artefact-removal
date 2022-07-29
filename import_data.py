@@ -17,6 +17,7 @@ import h5py
 import os
 import glob
 from pchip_interpolation import PCHIP_interpolation
+import numpy as np
 
 
 def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation):
@@ -52,21 +53,22 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
         tstart_eeg = -0.0015
         tmax_eeg = 0.006
 
-        # File names - * allows you to match to a pattern rather than absolute
-        # File names are related to the condition read in
+        # Get file names that match pattern
         search = input_path + subject_id + '*' + cond_name + '*.set'
         cond_files = glob.glob(search)
         cond_files = sorted(cond_files)  # Arrange in order from lowest to highest value
         nblocks = len(cond_files)
 
         # Find out which channels are which, include ECG, exclude EOG
-        eeg_chans, esg_chans, bipolar_chans = get_channels(subject_nr=subject, includesEcg=True, includesEog=False, study_nr=srmr_nr)
+        eeg_chans, esg_chans, bipolar_chans = get_channels(subject_nr=subject, includesEcg=True, includesEog=False,
+                                                           study_nr=srmr_nr)
 
         ####################################################################
-        # Extract the raw data for each block, remove stimulus artefact, downsample, concatenate, detect ecg, and then save
+        # Extract the raw data for each block, remove stimulus artefact, down-sample, concatenate, detect ecg,
+        # and then save
         ####################################################################
         # Looping through each condition and each subject in main.py
-        # So in here, we're only dealing with one condition at a time, loop through however many blocks of said condition
+        # Only dealing with one condition at a time, loop through however many blocks of said condition
         for iblock in np.arange(0, nblocks):
             # load data - need to read in files from EEGLAB format in bids folder
             fname = cond_files[iblock]
@@ -90,7 +92,6 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
                     # fits channel locations to data
                     raw.set_montage(montage, on_missing="ignore")
                     # Have to use ignore as the montage only includes EEG head channels (can't work with esg)
-                    # Quirk: For some reason it excludes FPz but we move
 
                 # events contains timestamps with corresponding event_id
                 # event_dict returns the event/trigger names with their corresponding event_id
@@ -118,6 +119,7 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
                         else:
                             print('Flag has not been set - indicate if you are working with eeg or esg channels')
 
+                    # This allows for PCHIP interpolation rather than linear
                     elif pchip_interpolation:
                         if esg_flag:
                             interpol_window = [tstart_esg, tmax_esg]
@@ -125,7 +127,8 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
                                 debug_mode=False, interpol_window_sec=interpol_window,
                                 trigger_indices=trigger_points, fs=sampling_rate_og
                             )
-                            raw.apply_function(PCHIP_interpolation, picks=esg_chans, **PCHIP_kwargs, n_jobs=len(esg_chans))
+                            raw.apply_function(PCHIP_interpolation, picks=esg_chans, **PCHIP_kwargs,
+                                               n_jobs=len(esg_chans))
 
                         elif not esg_flag:
                             interpol_window = [tstart_eeg, tmax_eeg]
@@ -133,11 +136,11 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
                                 debug_mode=False, interpol_window_sec=interpol_window,
                                 trigger_indices=trigger_points, fs=sampling_rate_og
                             )
-                            raw.apply_function(PCHIP_interpolation, picks=esg_chans, **PCHIP_kwargs, n_jobs=len(eeg_chans))
+                            raw.apply_function(PCHIP_interpolation, picks=esg_chans, **PCHIP_kwargs,
+                                               n_jobs=len(eeg_chans))
 
             # Downsample the data
             raw.resample(srate_basic)  # resamples to srate_basic
-
 
             # Append blocks of the same condition
             if iblock == 0:
@@ -145,13 +148,11 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
             else:
                 mne.concatenate_raws([raw_concat, raw])
 
-        # Detects 1258 events for first subject, medial condition versus 1270 in MATLAB
-        # They don't seem a million miles off though
-        # Detect ECG events (contains a band pass filter) but start 10s before first event tstart = first_real_event/sr-10.0
+        # Detect ECG events
         ecg_events, ch_ecg, average_pulse = mne.preprocessing.find_ecg_events(raw_concat, event_id=999, ch_name='ECG',
-                                                                                tstart=0, l_freq=5,
-                                                                                h_freq=35, qrs_threshold='auto',
-                                                                                filter_length='5s')
+                                                                              tstart=0, l_freq=5,
+                                                                              h_freq=35, qrs_threshold='auto',
+                                                                              filter_length='5s')
 
         # Read .mat file with QRS events
         input_path_m = "/data/pt_02569/tmp_data/prepared/"+subject_id+"/esg/prepro/"
@@ -164,6 +165,7 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
         duration = np.repeat(0.0, len(QRSevents_m))
         description = ['qrs'] * len(QRSevents_m)
 
+        # Set filenames and append QRS annotations
         if linear_interpolation:
             if esg_flag:
                 raw_concat.annotations.append(qrs_event, duration, description, ch_names=[esg_chans] * len(QRSevents_m))
@@ -180,7 +182,6 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
                 raw_concat.annotations.append(qrs_event, duration, description, ch_names=[eeg_chans] * len(QRSevents_m))
                 fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg_pchip.fif'
 
-        # Should have a single file name per condition now (just median/tibial)
         # Save data without stim artefact and downsampled to 1000
         raw_concat.save(os.path.join(save_path, fname_save), fmt='double', overwrite=True)
 

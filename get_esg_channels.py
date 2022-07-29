@@ -8,6 +8,6 @@ def get_esg_channels():
     lumbar_chans = ['S20', 'S22', 'S24', 'S21', 'S23', 'S25', 'S26', 'S28', 'L1',
                     'S30', 'S32', 'S29', 'S31', 'S33', 'S34', 'S36', 'S35', 'AL', 'L4']
 
-    ref_chan = ['TH6'] # recording reference
+    ref_chan = ['TH6']  # recording reference
 
     return brainstem_chans, cervical_chans, lumbar_chans, ref_chan

@@ -7,8 +7,8 @@ from fit_ecgTemplate_tukey import fit_ecgTemplate_tukey
 import math
 import h5py
 
-def PCA_OBS_tukey(data, **kwargs):
 
+def PCA_OBS_tukey(data, **kwargs):
     # Declare class to hold pca information
     class PCAInfo():
         def __init__(self):
@@ -21,10 +21,9 @@ def PCA_OBS_tukey(data, **kwargs):
     required_kws = ["debug_mode", "qrs", "filter_coords", "sr", "savename", "ch_names", "sub_nr", "condition", "current_channel"]
     assert all([kw in kwargs.keys() for kw in required_kws]), "Error. Some KWs not passed into PCA_OBS."
 
-   # Extract all kwargs - more elegant ways to do this
+    # Extract all kwargs
     debug_mode = kwargs['debug_mode']
     qrs = kwargs['qrs']
-    # qrs = qrs - 1  # Testing
     filter_coords = kwargs['filter_coords']
     sr = kwargs['sr']
     ch_names = kwargs['ch_names']
@@ -39,13 +38,12 @@ def PCA_OBS_tukey(data, **kwargs):
     # Standard delay between QRS peak and artifact
     delay = 0
 
-    Gwindow = 2 # 20 adapted by BN 13.05.2019
+    Gwindow = 2
     GHW = np.floor(Gwindow / 2).astype('int')
     rcount = 0
     firstplot = 1
 
-    # set to baseline - editing shape to match MATLAB code (data there is 40 channels x 1567442 times)
-    # whereas here the data extracted is showing as (1567442, )
+    # set to baseline
     data = data.reshape(-1, 1)
     data = data.T
     data = data - np.mean(data, axis=1)  # axis = 1 to compute mean of each row
@@ -55,16 +53,13 @@ def PCA_OBS_tukey(data, **kwargs):
     peakplot = np.zeros(data.shape)
 
     # Extract QRS events
-    # If statement to avoid indexing out of bounds - problem first noticed with subject 31
-    # qrs is a list of lists due to how matdata is loaded into python
-    # Original code: peakplot[0, qrs] = 1
     for idx in qrs[0]:
         if idx < len(peakplot[0, :]):
             peakplot[0, idx] = 1  # logical indexed locations of qrs events
     # sh = np.zeros((1, delay))
     # np1 = len(peakplot)
     # peakplot = [sh, peakplot(1:np1 - delay)] # shifts indexed array by the delay - skipped here since delay=0
-    peak_idx = np.nonzero(peakplot)[1] # Selecting indices along columns
+    peak_idx = np.nonzero(peakplot)[1]  # Selecting indices along columns
     peak_idx = peak_idx.reshape(-1, 1)
     peak_count = len(peak_idx)
 
@@ -74,16 +69,15 @@ def PCA_OBS_tukey(data, **kwargs):
     print('Pulse artifact subtraction in progress...Please wait!')
 
     # define peak range based on RR
-    RR = np.diff(peak_idx[:, 0]) # peak_idx is (1270, 1) - need to extract the 1270
+    RR = np.diff(peak_idx[:, 0])
     mRR = np.median(RR)
-    peak_range = round(mRR/2) # Rounds to an integer
+    peak_range = round(mRR/2)  # Rounds to an integer
     midP = peak_range + 1
-    baseline_range = [0, round(peak_range/8)] # [1 round((peak_range / 8) * 3)]
-    n_samples_fit = round(peak_range/8) # sample fit for interpolation between fitted artifact windows
+    baseline_range = [0, round(peak_range/8)]
+    n_samples_fit = round(peak_range/8)  # sample fit for interpolation between fitted artifact windows
 
     # make sure array is long enough for PArange (if not cut off  last ECG peak)
-    pa = peak_count # Number of QRS complexes detected
-    # peak_idx is (1270, 1) - want to access last element in first column
+    pa = peak_count  # Number of QRS complexes detected
     while peak_idx[pa-1, 0] + peak_range > len(data[0]):
         pa = pa - 1
     steps = 1 * pa
@@ -93,25 +87,22 @@ def PCA_OBS_tukey(data, **kwargs):
     eegchan = filtfilt(filter_coords, 1, data)
 
     # build PCA matrix(heart - beat - epoch x window - length)
-    pcamat = np.zeros((peak_count - 1, 2*peak_range+1)) # [epoch x time]
+    pcamat = np.zeros((peak_count - 1, 2*peak_range+1))  # [epoch x time]
     # dpcamat = pcamat # [epoch x time]
     # picking out heartbeat epochs
     for p in range(1, peak_count):
         pcamat[p-1, :] = eegchan[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range+1]
 
-    # detrending matrix(twice - why?)
-    pcamat = detrend(pcamat, type='constant', axis=1) # [epoch x time] - detrended along the epoch
-    # pcamat = np.transpose(detrend(np.transpose(pcamat), type='constant'))
-    mean_effect = np.mean(pcamat, axis=0) # [1 x time], contains the mean over all epochs
-    std_effect = np.std(pcamat, axis=0) # want mean and std of each column
-    dpcamat = detrend(pcamat, type='constant', axis=1) # [time x epoch]
+    # detrending matrix(twice)
+    pcamat = detrend(pcamat, type='constant', axis=1)  # [epoch x time] - detrended along the epoch
+    mean_effect = np.mean(pcamat, axis=0)  # [1 x time], contains the mean over all epochs
+    std_effect = np.std(pcamat, axis=0)  # want mean and std of each column
+    dpcamat = detrend(pcamat, type='constant', axis=1)  # [time x epoch]
 
     ###################################################################
     # Perform PCA with sklearn
     ###################################################################
     # run PCA(performs SVD(singular value decomposition))
-    # Using sklearn for this step - matlab translation was a mess
-    # pca = PCA()
     pca = PCA(svd_solver="full")
     pca.fit(dpcamat)
     eigen_vectors = pca.components_
@@ -168,7 +159,7 @@ def PCA_OBS_tukey(data, **kwargs):
         pcatime = (np.arange(-peak_range, peak_range+1))/fs
         pcatime = pcatime.reshape(-1)
         plt.plot(pcatime, std_effect)
-        plt.plot(pcatime, mean_effect) # Mean effect seems to be all zeros - check
+        plt.plot(pcatime, mean_effect)
         plt.plot(pcatime, factor_loadings[:, 0: nComponents])
         plt.legend(['std effect', 'mean effect', 'PCA_1', 'PCA_2', 'PCA_3', 'PCA_4'])
         fig.suptitle(f"{sub_nr} papc channel {current_channel}")
@@ -183,7 +174,7 @@ def PCA_OBS_tukey(data, **kwargs):
     for p in range(0, peak_count):
         # Deals with start portion of data
         if p == 0:
-            plot_tukey=False
+            plot_tukey = False
             pre_range = peak_range
             post_range = math.floor((peak_idx[p + 1] - peak_idx[p])/2)
             if post_range > peak_range:
@@ -201,7 +192,7 @@ def PCA_OBS_tukey(data, **kwargs):
 
         # Deals with last edge of data
         elif p == peak_count:
-            plot_tukey=False
+            plot_tukey = False
             print('On last section - almost there!')
             try:
                 pre_range = math.floor((peak_idx[p] - peak_idx[p - 1]) / 2)
@@ -209,7 +200,7 @@ def PCA_OBS_tukey(data, **kwargs):
                 if pre_range > peak_range:
                     pre_range = peak_range
                 fitted_art, _ = fit_ecgTemplate_tukey(data, pca_template, peak_idx(p), peak_range, pre_range, post_range,
-                                                baseline_range, midP, fitted_art, post_idx_nextPeak, n_samples_fit,
+                                                      baseline_range, midP, fitted_art, post_idx_nextPeak, n_samples_fit,
                                                       plot_tukey)
                 window_start_idx.append(peak_idx[p] - peak_range)
                 window_end_idx.append(peak_idx[p] + peak_range)
@@ -218,7 +209,7 @@ def PCA_OBS_tukey(data, **kwargs):
 
         # Deals with middle portion of data
         else:
-            plot_tukey=False
+            plot_tukey = False
             try:
                 # ---------------- Processing of central data - --------------------
                 # cycle through peak artifacts identified by peakplot
@@ -239,12 +230,12 @@ def PCA_OBS_tukey(data, **kwargs):
                 print(f"Cannot fit middle section of data. Reason: {e}")
 
 
-    # Plot some channels to compare to MATLAB
+    # Plot some channels
     if debug_mode:
         # check with plot what has been done
         # First check if this channel is one we want to plot for debugging
         plotChannel = 0
-        for ii in range(0,len(ch_names)):
+        for ii in range(0, len(ch_names)):
             if current_channel == ch_names[ii]:
                 plotChannel = 1
 

@@ -1,5 +1,4 @@
-############################################################################
-# Want this to work with the fif file of the previous stage
+# The same as rm_heart_artefact except the fitted artefact is multiplied by a Tukey window to avoid edge effects
 
 import os
 from scipy.io import loadmat
@@ -8,9 +7,10 @@ from PCA_OBS_tukey import *
 from get_conditioninfo import *
 from get_channels import *
 
+
 def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
-    matlab = False  # If this is true, use the data 'prepared' by matlab - testing to see where hump at 0 comes from
-    # Incredibly slow without parallelization
+    matlab = False  # If this is true, use the data 'prepared' by matlab - testing
+
     # Set variables
     subject_id = f'sub-{str(subject).zfill(3)}'
     cond_info = get_conditioninfo(condition, srmr_nr)
@@ -58,13 +58,9 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
     fs = sampling_rate
     a = [0, 0, 1, 1]
     f = [0, 0.4/(fs/2), 0.9/(fs / 2), 1] # 0.9 Hz highpass filter
-    # f = [0 0.4 / (fs / 2) 0.5 / (fs / 2) 1] # 0.5 Hz highpass filter
     ord = round(3*fs/0.5)
     fwts = firls(ord+1, f, a)
 
-    # Isolate ESG channels - remove the ECG channel
-    # Instead just exclude it from loop in python
-    # This should be parallelised - can use njobs parameter in apply_function
     # Run once with a single channel and debug_mode = True to get window information
     for ch in debug_channel:
         # set PCA_OBS input variables
@@ -82,8 +78,7 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
             ch_names=channelNames, sub_nr=subject_id,
             condition=cond_name, current_channel=ch
         )
-        # adapted for data: delay of r - peak = 0 % (data, eventtype, method)
-        # Apply function should modify the data in raw in place - checked output and it is working
+        # Apply function modifies the data in raw in place
         raw.copy().apply_function(PCA_OBS_tukey, picks=[ch], **PCA_OBS_kwargs)
 
         # This information is the same for each channel - run through fitting once to get vals, add to all channels
@@ -95,7 +90,7 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
             window_start = infile[keywords[0]][()].reshape(-1)
             window_end = infile[keywords[1]][()].reshape(-1)
 
-        onset = [x/sampling_rate for x in window_start] # Divide by sampling rate to make times
+        onset = [x/sampling_rate for x in window_start]  # Divide by sampling rate to make times
         duration = np.repeat(0.0, len(window_start))
         description = ['fit_start'] * len(window_start)
         raw.annotations.append(onset, duration, description, ch_names=[esg_chans] * len(window_start))
@@ -103,7 +98,6 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
         onset = [x/sampling_rate for x in window_end]
         duration = np.repeat(0.0, len(window_end))
         description = ['fit_end'] * len(window_end)
-        # Need to append annotations - if you use set_annotations it overwrites what is already there
         raw.annotations.append(onset, duration, description, ch_names=[esg_chans]*len(window_end))
 
     # Then run parallel for all channels with n_jobs set and debug_mode = False
@@ -120,8 +114,7 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
         condition=cond_name, current_channel=ch
     )
 
-    # adapted for data: delay of r - peak = 0 % (data, eventtype, method)
-    # Apply function should modify the data in raw in place - checked output and it is working
+    # Apply function modifies the data in raw in place
     raw.apply_function(PCA_OBS_tukey, picks=esg_chans, **PCA_OBS_kwargs, n_jobs=len(esg_chans))
 
     # Save the new mne structure with the cleaned data
@@ -131,6 +124,8 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
                  overwrite=True)
     else:
         if pchip:
-            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif'), fmt='double', overwrite=True)
+            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif'), fmt='double',
+                     overwrite=True)
         else:
-            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double', overwrite=True)
+            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double',
+                     overwrite=True)

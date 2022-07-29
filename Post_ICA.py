@@ -1,11 +1,4 @@
-# 1. First going to try ICA on the unepoched data
-# Load dataset, make a copy
-# Filter the normal way (bandpass and notch)
-# Perform ICA on this filtered set
-# Apply ICA weights to the unfiltered dataset
-# Then filter the data, rereference it and save
-
-# 2. Try applying the same method, but on the data epoched around the heart events - not sure this is necessary
+# Apply auto ICA on the data already cleaned using PCA_OBS
 
 import os
 import mne
@@ -13,6 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 from get_conditioninfo import *
 from epoch_data import rereference_data
+
 
 def run_post_ica(subject, condition, srmr_nr, sampling_rate):
     # Set paths
@@ -53,7 +47,7 @@ def run_post_ica(subject, condition, srmr_nr, sampling_rate):
     ica.fit(raw_filtered)
 
     raw.load_data()
-    # ica.plot_sources(raw, show_scrollbars=False) # this function errors - potential bug
+    # ica.plot_sources(raw, show_scrollbars=False)
     # ica.plot_overlay(raw, exclude=[0], picks='eeg')
     # ica.plot_overlay(raw, exclude=[0, 1], picks='eeg')
     # ica.plot_overlay(raw, exclude=[0, 1, 2], picks='eeg')
@@ -134,6 +128,3 @@ def run_post_ica(subject, condition, srmr_nr, sampling_rate):
         fig = epochs[trigger_name].plot_image(picks=channelNames[count], vmin=-5, vmax=5, show=False)
         plt.savefig(f"{figure_path}{channelNames[count]}_{cond_name}_{len(ica.exclude)}_ICs_auto.jpg")
         plt.close()
-
-
-

@@ -1,5 +1,5 @@
-############################################################################
-# Want this to work with the fif file of the previous stage
+# Calls PCA_OBS which in turn calls fit_ecgTemplate to remove the heart artefact via PCA_OBS (Principal Component
+# Analysis, Optimal Basis Sets
 
 import os
 from scipy.io import loadmat
@@ -62,9 +62,6 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate, pchip):
     ord = round(3*fs/0.5)
     fwts = firls(ord+1, f, a)
 
-    # Isolate ESG channels - remove the ECG channel
-    # Instead just exclude it from loop in python
-    # This should be parallelised - can use njobs parameter in apply_function
     # Run once with a single channel and debug_mode = True to get window information
     for ch in debug_channel:
         # set PCA_OBS input variables
@@ -82,12 +79,10 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate, pchip):
             ch_names=channelNames, sub_nr=subject_id,
             condition=cond_name, current_channel=ch
         )
-        # adapted for data: delay of r - peak = 0 % (data, eventtype, method)
-        # Apply function should modify the data in raw in place - checked output and it is working
+        # Apply function modifies the data in raw in place
         raw.copy().apply_function(PCA_OBS, picks=[ch], **PCA_OBS_kwargs)
 
         # This information is the same for each channel - run through fitting once to get vals, add to all channels
-        # Add annotations to each channel
         keywords = ['window_start_idx', 'window_end_idx']
         fn = f"{save_path}pca_chan_{ch}_{cond_name}_pca_info.h5"
         with h5py.File(fn, "r") as infile:
@@ -103,7 +98,6 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate, pchip):
         onset = [x/sampling_rate for x in window_end]
         duration = np.repeat(0.0, len(window_end))
         description = ['fit_end'] * len(window_end)
-        # Need to append annotations - if you use set_annotations it overwrites what is already there
         raw.annotations.append(onset, duration, description, ch_names=[esg_chans]*len(window_end))
 
     # Then run parallel for all channels with n_jobs set and debug_mode = False
@@ -120,17 +114,17 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate, pchip):
         condition=cond_name, current_channel=ch
     )
 
-    # adapted for data: delay of r - peak = 0 % (data, eventtype, method)
-    # Apply function should modify the data in raw in place - checked output and it is working
+    # Apply function should modifies the data in raw in place
     raw.apply_function(PCA_OBS, picks=esg_chans, **PCA_OBS_kwargs, n_jobs=len(esg_chans))
 
     # Save the new mne structure with the cleaned data
-    # Save data without stim artefact and downsampled to 1000
     if matlab:
         raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_mat.fif'), fmt='double',
                  overwrite=True)
     else:
         if pchip:
-            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif'), fmt='double', overwrite=True)
+            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif'), fmt='double',
+                     overwrite=True)
         else:
-            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double', overwrite=True)
+            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double',
+                     overwrite=True)

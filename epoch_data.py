@@ -31,13 +31,6 @@ def epoch_data(subject, condition, srmr_nr, sampling_rate):
     fname = f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'
     raw = mne.io.read_raw_fif(load_path + fname, preload=True)
 
-    # events contains timestamps with corresponding event_id
-    # # event_dict returns the event/trigger names with their corresponding event_id
-    # events, event_dict = mne.events_from_annotations(raw)
-    #
-    # # Fetch the event_id based on whether it was tibial/medial stimulation (trigger name)
-    # trigger_name = set(raw.annotations.description)
-
     ########################### Re - Reference ####################################
     # add reference channel to data
     mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
@@ -55,8 +48,6 @@ def epoch_data(subject, condition, srmr_nr, sampling_rate):
     cfg = loadmat(cfg_path+'cfg.mat')
     notch_freq = cfg['notch_freq'][0]
     esg_bp_freq = cfg['esg_bp_freq'][0]
-    # b_band, a_band = butter(N=2, Wn=esg_bp_freq/(sampling_rate/2), btype='bandpass')
-    # b_notch, a_notch = butter(N=2, Wn=notch_freq/(sampling_rate / 2), btype='bandpass')
 
     raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
                iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
@@ -65,7 +56,6 @@ def epoch_data(subject, condition, srmr_nr, sampling_rate):
     raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
                       iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
 
-    # MNE recommend np.arange(50, 251, 50) for freqs, Birgit uses notch_freq
     raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
     raw_FzRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_FzRef.ch_names), method='fir', phase='zero')
     raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
@@ -83,12 +73,11 @@ def epoch_data(subject, condition, srmr_nr, sampling_rate):
 
 
     # Extract our event of interest as a dictionary so the keys can later be used to access associated events.
-    # trigger_name is obtained at the top of the script from get_conditioninfo script
     event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
     event_id_dict_ant = {key: value for key, value in event_ids_antRef.items() if key == trigger_name}
     event_id_dict_Fz = {key: value for key, value in event_ids_FzRef.items() if key == trigger_name}
 
-    # Cut epochs, can remove baseline within this step also by specifying baseline period
+    # Cut epochs
     epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1],
                         baseline=tuple(iv_baseline))
     epochs_antRef = mne.Epochs(raw_antRef, events_antRef, event_id=event_id_dict_ant, tmin=iv_epoch[0], tmax=iv_epoch[1]

@@ -1,5 +1,4 @@
-# Want to merge SSP with the steps in epoch_data.py
-# Rereference and filter the same way
+# Perform Signal Space Projection
 # Mainly working from tutorial https://mne.tools/stable/auto_tutorials/preprocessing/50_artifact_correction_ssp.html
 # SSP uses singular value decomposition to create the projection matrix
 
@@ -14,7 +13,7 @@ import matplotlib.pyplot as plt
 def apply_SSP(subject, condition, srmr_nr, sampling_rate):
     # set variables
     subject_id = f'sub-{str(subject).zfill(3)}'
-    load_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Taking data from the prepared_py folder
+    load_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
     # save_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + "/esg/prepro/"
     save_path = "/data/p_02569/SSP/" + subject_id
@@ -54,9 +53,6 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
         # Leaving everything default values
         projs, events = mne.preprocessing.compute_proj_ecg(raw, n_eeg=n, reject=None, n_jobs=len(raw.ch_names),
                                                            ch_name='ECG')
-        # raw.plot(events=events, duration=4, start=518, show=True)
-        # plt.show()
-        # exit()
 
         # Apply projections (clean data)
         clean_raw = raw.copy().add_proj(projs)
@@ -85,7 +81,6 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
         raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
 
-        # MNE recommend np.arange(50, 251, 50) for freqs, Birgit uses notch_freq
         clean_raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
         # raw_FzRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_FzRef.ch_names), method='fir', phase='zero')
         raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')

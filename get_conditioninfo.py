@@ -1,5 +1,3 @@
-import numpy as np
-
 def get_conditioninfo(condition, srmr_nr):
     # return info of the different conditions
     class CondInfo():
@@ -128,10 +126,5 @@ def get_conditioninfo(condition, srmr_nr):
     cond_info.str_nerve = str_nerve
     cond_info.condition = condition
     cond_info.cond_name2 = cond_name2
-
-    # For debugging
-    # for key in vars(cond_info):
-    #    print(key)
-    #    print(getattr(cond_info, key))
 
     return cond_info

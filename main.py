@@ -1,5 +1,4 @@
 ###########################################################
-# Creating Python Equivalent of Birgit Nierula's MATLAB Code
 # Emma Bailey, 08/11/2021
 # This is essentially a wrapper script for the pipeline
 ###########################################################
@@ -18,32 +17,34 @@ from run_CCA import run_CCA
 from run_CCA_variabletrials import run_CCA_variabletrials
 
 if __name__ == '__main__':
-
-    ## Pick which scripts you want to run ##
+    ######## Want to import the data? ############
     import_d = False  # Prep work
     pchip_interpolation = False  # If true import with pchip, otherwise use linear interpolation
 
+    ######## Want to use PCA_OBS to remove the heart artefact? #########
     heart_removal = False  # Heart artefact removal
     pchip = False  # Whether to use pchip prepared data or not
-    heart_removal_test = False  # Heart artefact removal testing
     heart_removal_tukey = True  # Fitted artefact multiplied by tukey window
 
+    ######## Want to cut epochs from the PCA_OBS corrected data? ########
     cut_epochs = False  # Epoch the data according to relevant event
 
+    ######### Want to clean the heart artefact using SSP? ########
     SSP_flag = False  # Heart artefact removal by SSP
 
+    ######### Want to perform ICA on the PCA_OBS cleaned data? ########
     post_ica = False  # Run ICA after already running PCA_OBS
 
+    ######### Want to perform ICA to clean the heart artefact? ########
     ica = False  # Run ICA on the 'dirty' data as a baseline comparison
     # choose_limited should be false - SNR is worse if it's true, over 95% residual intensity and inps under 1.4
     choose_limited = False  # If true only take the top 4 ICA components from find_bads_ecg
 
+    ######## Want to use Canonical Correlation Analysis to clean the heart artefact? ########
     CCA_flag = False  # Run CCA on data (from all methods)
     variable_cca_flag = False  # Run CCA with limited trial numbers
 
     n_subjects = 36  # Number of subjects
-    # Testing with just subject 1 at the moment
-    # subjects = [1]
     subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
     srmr_nr = 1  # Experiment Number
     conditions = [2, 3]  # Conditions of interest
@@ -75,13 +76,6 @@ if __name__ == '__main__':
             for condition in conditions:
                 rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip)
 
-    ## To remove heart artifact via PCA_OBS ##
-    if heart_removal_test:
-        for subject in subjects:
-            for condition in conditions:
-                rm_heart_artefact_test(subject, condition, srmr_nr, sampling_rate)
-
-
     ## To cut epochs around triggers ##
     if cut_epochs:
         for subject in subjects:
@@ -107,10 +101,8 @@ if __name__ == '__main__':
             for condition in conditions:
                 apply_SSP(subject, condition, srmr_nr, sampling_rate)
 
-    ## Run CCA on the data
-    # The functionality of CCA is different in dataset 1 versus dataset 2
-    # These scripts DO NOT work the same - be wary when applying which run_cca.py you wish to use
-    data_strings = ['Prep', 'Post-ICA', 'PCA']  # 'ICA' - ICA not working due to how decimated the signal is
+    ## Run CCA on the data ##
+    data_strings = ['Prep', 'Post-ICA', 'PCA']  # 'ICA' - ICA not used due to how decimated the signal is
     n = 5
     if CCA_flag:
         for data_string in data_strings:
@@ -125,17 +117,14 @@ if __name__ == '__main__':
                 for condition in conditions:
                     run_CCA(subject, condition, srmr_nr, data_string, n)
 
-    ## Run CCA on the data
-    # The functionality of CCA is different in dataset 1 versus dataset 2
-    # These scripts DO NOT work the same - be wary when applying which run_cca.py you wish to use
-    data_strings = ['Prep', 'Post-ICA', 'PCA']  # 'ICA' - ICA not working due to how decimated the signal is
+    ## Run CCA on the data with fewer trial numbers ##
+    data_strings = ['Prep', 'Post-ICA', 'PCA']
     n = 5
     if variable_cca_flag:
         for no in [1000, 500, 250]:
             # Some have size of less than 1999
             trial_indices = random.sample(range(1999), no)  # Need to be all unique to avoid selecting the same trials
             trial_indices.sort()  # Want in chronological order
-            # trial_indices = np.random.randint(low=0, high=2000, size=no)
 
             for data_string in data_strings:
                 for subject in subjects:

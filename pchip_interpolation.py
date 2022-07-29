@@ -30,11 +30,10 @@ def PCHIP_interpolation(data, **kwargs):
     post_window = round((interpol_window_sec[1]*1000) * fs / 1000)  # in samples
     intpol_window = np.ceil([pre_window, post_window]).astype(int)  # interpolation window
 
-    n_samples_fit = 5  # +1  number of samples before and after cut used for interpolation fit
+    n_samples_fit = 5  # number of samples before and after cut used for interpolation fit
 
     x_fit_raw = np.concatenate([np.arange(intpol_window[0]-n_samples_fit-1, intpol_window[0], 1),
                                 np.arange(intpol_window[1]+1, intpol_window[1]+n_samples_fit+2, 1)])
-    # x_fit_raw = [j for sub in x_fit_raw_init for j in sub]
     x_interpol_raw = np.arange(intpol_window[0], intpol_window[1]+1, 1)  # points to be interpolated; in pt
 
     for ii in np.arange(0, len(trigger_indices)):  # loop through all stimulation events
@@ -52,7 +51,7 @@ def PCHIP_interpolation(data, **kwargs):
     if debug_mode:
         # plot signal with interpolated artifact
         plt.figure()
-        plt.plot(xx, data[trigger_indices[test_trial] + plot_range[0] : trigger_indices[test_trial] + plot_range[1]])
+        plt.plot(xx, data[trigger_indices[test_trial] + plot_range[0]: trigger_indices[test_trial] + plot_range[1]])
         plt.title('After Correction')
 
     plt.show()
