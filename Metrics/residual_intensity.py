@@ -21,8 +21,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    # Testing with just subject 1 at the moment
-    subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
+    subjects = np.arange(1, 37)  # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 

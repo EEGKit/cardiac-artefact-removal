@@ -1,5 +1,5 @@
 # Compute SNR of the data for each method
-# The SNR was estimated by dividing the ERP peak amplitude of the evoked response
+# The SNR was estimated by dividing the evoked response peak amplitude
 # (absolute value) by the standard deviation of the LEP waveform in
 # the pre-stimulus interval
 # https://www.sciencedirect.com/science/article/abs/pii/S105381190901297X
@@ -17,8 +17,7 @@ if __name__ == '__main__':
     ant_ref = False  # Use the data that has been anteriorly referenced instead
     choose_limited = False  # Use ICA with limited components removed
 
-    # Testing with just subject 1 at the moment
-    subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
+    subjects = np.arange(1, 37)  # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 

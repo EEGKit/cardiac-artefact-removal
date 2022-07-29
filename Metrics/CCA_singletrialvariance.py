@@ -40,7 +40,7 @@ if __name__ == '__main__':
                     'PCA': False,
                     'Post-ICA': False,
                     'SSP': True}
-    cca_flag = True  # Compute for CCA corrected data or normal
+    cca_flag = True  # Compute for CCA corrected data (True) or normal (False)
 
     subjects = np.arange(1, 37)  # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     iv_epoch = cfg['iv_epoch'][0] / 1000
     iv_baseline = cfg['iv_baseline'][0] / 1000
 
-    # Contains information on which CCA component to pick
+    # Contains information on which CCA component to pick - manually selected previously
     xls = pd.ExcelFile('/data/p_02569/Components.xls')
     df = pd.read_excel(xls, 'Dataset 1')
     df.set_index('Subject', inplace=True)
@@ -138,7 +138,7 @@ if __name__ == '__main__':
                             elif cond_name == 'tibial':
                                 var_tib[subject - 1, 0] = var
 
-                # Save to file to compare to matlab - only for debugging
+                # Save to file
                 savevar.var_med = var_med
                 savevar.var_tib = var_tib
                 dataset_keywords = [a for a in dir(savevar) if not a.startswith('__')]
@@ -212,7 +212,7 @@ if __name__ == '__main__':
                             elif cond_name == 'tibial':
                                 var_tib[subject - 1, 0] = var
 
-                # Save to file to compare to matlab - only for debugging
+                # Save to file
                 savevar.var_med = var_med
                 savevar.var_tib = var_tib
                 dataset_keywords = [a for a in dir(savevar) if not a.startswith('__')]

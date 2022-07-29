@@ -1,10 +1,10 @@
-# Holds functions necessary to form evoked responses and compute relevant SNR metrics for
-# Evoked responses
+# Holds functions necessary to form evoked responses and compute relevant SNR metrics
 
 import mne
 import numpy as np
 
 
+# Create epochs and evoked response
 def evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs):
     events, event_ids = mne.events_from_annotations(raw)
     event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
@@ -22,6 +22,7 @@ def evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs):
     return evoked
 
 
+# Create epochs and evoked response - no baseline correction
 def evoked_from_raw_nobaseline(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs):
     events, event_ids = mne.events_from_annotations(raw)
     event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}

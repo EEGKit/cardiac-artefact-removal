@@ -1,4 +1,4 @@
-# Want to get negative amplitude in relevant time period
+# Want to get negative amplitude in relevant time period for reliability assessment
 
 import mne
 import numpy as np
@@ -10,10 +10,7 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR
-    reduced_window = False  # Smaller window about expected peak
 
-    # Testing with just subject 1 at the moment
     subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
@@ -25,11 +22,17 @@ if __name__ == '__main__':
     iv_epoch = cfg['iv_epoch'][0] / 1000
     iv_baseline = cfg['iv_baseline'][0] / 1000
 
-    method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA', 'SSP_5', 'SSP_6']
-    which_method = [False, True, True, True, True, True]
-    for i in np.arange(0, len(method_names)):
-        method = method_names[i]
-        if which_method[i]:  # If this method is true, go through with the rest
+    # Loop through methods and save as required
+    which_method = {'Prep': True,
+                    'PCA': True,
+                    'ICA': True,
+                    'Post-ICA': True,
+                    'SSP_5': True,
+                    'SSP_6': True}
+
+    for i in np.arange(0, len(which_method)):
+        method = list(which_method.keys())[i]
+        if which_method[method]:  # If this method is true, go through with the rest
             class save_Amp():
                 def __init__(self):
                     pass
@@ -122,7 +125,7 @@ if __name__ == '__main__':
                         elif cond_name == 'tibial':
                             amp_tib[subject - 1, trial] = min
 
-            # Save to file to compare to matlab - only for debugging
+            # Save to file
             saveamp.amp_med = amp_med
             saveamp.amp_tib = amp_tib
             dataset_keywords = [a for a in dir(saveamp) if not a.startswith('__')]

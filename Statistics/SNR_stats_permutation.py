@@ -1,25 +1,14 @@
-# File to compute one way ANOVA and post-hoc testing on effect of method on SNR
-import mne.stats
+# File to compute p-values via permutation t-testing for the SNR results
+
+import mne
 import pandas as pd
 import numpy as np
 import h5py
 from itertools import combinations
-import pprint
-import matplotlib.pyplot as plt
-import seaborn as sns
-import scipy.stats as stats
-from bioinfokit.analys import stat
-import pingouin
-from statannotations.Annotator import Annotator
 import os
-from statsmodels.formula.api import ols
-import statsmodels.api as sm
+
 
 if __name__ == '__main__':
-    test_assumptions = False
-    run_anova = False
-    run_posthoc = True
-    plot_graph = True
 
     # Read in results files and format in a pandas dataframe
     # Set file locations
@@ -70,28 +59,77 @@ if __name__ == '__main__':
 
             count += 1
 
-    #################################### Dataframe of Differences ###########################
+    #################################### Dataframe of Differences #################################
     # Test
-    # df = df_med.dropna()  # Drop NA- discuss with FALK
+    df = df_med.dropna()  # Drop NA- discuss with FALK
     # df = df_med.fillna(0)  # Fill NA values with 0
-    df = df_med.fillna(df_med.mean())  # Replace with mean of column
+    # df = df_med.fillna(df_med.mean())  # Replace with mean of column
 
-    cc = list(combinations(df.columns, 2))
-    df = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
-    df.columns = df.columns.map('-'.join)
-    arr = df.to_numpy()
+    # # This will get ALL possible combinations
+    # cc = list(combinations(df.columns, 2))
+    # df = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
+    # df.columns = df.columns.map('-'.join)
+    # arr = df.to_numpy()
 
-    print(df_med)
-    print(df)
-    print(np.shape(arr))
+    ###################### Do median and tibial ##########################
+    for condition in ['median', 'tibial']:
+        if condition == 'median':
+            df = df_med.dropna()
+        elif condition == 'tibial':
+            df = df_tib.dropna()
 
-    T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=1000, n_jobs=36)
-    print(p_values)
+        for method in ['Prep', 'PCA']:
+            cc = list(combinations(df.columns, 2))  # All combinations
+            cc = [el for el in cc if el[0] == method]  # Just ones with Prep in first position
+            df_comb = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
+            df_comb.columns = pd.Series(cc).map('-'.join)
+            arr = df_comb.to_numpy()
+            print(df_comb.describe())
 
-    formatted_pvals = {}
-    colnames = df.columns
-    for index in np.arange(0, len(p_values)):
-        formatted_pvals.update({colnames[index]: p_values[index]})
+            T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
 
-    df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
-    print(df_pvals)
+            formatted_pvals = {}
+            colnames = df_comb.columns
+            for index in np.arange(0, len(p_values)):
+                formatted_pvals.update({colnames[index]: p_values[index]})
+
+            df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
+            print(f"{method} {condition} Corrected P-Values")
+            print(df_pvals)
+
+    # ###################### Prep versus each method #####################################
+    # cc = list(combinations(df.columns, 2))  # All combinations
+    # cc = [el for el in cc if el[0] == 'Prep']  # Just ones with Prep in first position
+    # df_prep = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
+    # df_prep.columns = pd.Series(cc).map('-'.join)
+    # arr = df_prep.to_numpy()
+    #
+    # print(df_prep)
+    #
+    # T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
+    #
+    # formatted_pvals = {}
+    # colnames = df_prep.columns
+    # for index in np.arange(0, len(p_values)):
+    #     formatted_pvals.update({colnames[index]: p_values[index]})
+    #
+    # df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
+    # print(df_pvals)
+    #
+    # ########################## PCA versus each method ##########################
+    # cc = list(combinations(df.columns, 2))  # All combinations
+    # cc = [el for el in cc if el[0] == 'PCA']  # Just ones with PCA in first position
+    # df_pca = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
+    # df_pca.columns = pd.Series(cc).map('-'.join)
+    # arr = df_pca.to_numpy()
+    # print(df_pca)
+    #
+    # T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
+    #
+    # formatted_pvals = {}
+    # colnames = df_pca.columns
+    # for index in np.arange(0, len(p_values)):
+    #     formatted_pvals.update({colnames[index]: p_values[index]})
+    #
+    # df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
+    # print(df_pvals)

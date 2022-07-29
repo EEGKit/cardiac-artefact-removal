@@ -1,4 +1,4 @@
-# File to compute the inps using the bandpower functionality of the yasa package
+# File to compute the inpsr using the bandpower functionality of the yasa package
 
 from scipy.io import loadmat
 import numpy as np
@@ -110,7 +110,7 @@ if __name__ == '__main__':
                             savename = input_path + "/" + str(n) + " projections/"
                             raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}.fif")
 
-                            # Compute power at the fundamental frequency and harmonics
+                            # Compute power at the fundamental frequency and harmonics + get power
                             freq = get_harmonics(raw, trigger_name, sampling_rate)
                             freq = np.around(freq, decimals=1)
                             data = raw.get_data(esg_chans) * 1e6
@@ -212,7 +212,7 @@ if __name__ == '__main__':
 
     # Print to Screen #
     ##########################################################################
-    # Calculate INPS for each - Prepared divided by clean
+    # Calculate INPS for each - Prepared divided by cleaned
     ##########################################################################
     input_paths = {'PCA': "/data/pt_02569/tmp_data/ecg_rm_py/",
                    'PCA PCHIP': "/data/pt_02569/tmp_data/ecg_rm_py/",
