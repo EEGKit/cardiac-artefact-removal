@@ -24,8 +24,11 @@ if __name__ == '__main__':
     notch_freq = cfg['notch_freq'][0]
     esg_bp_freq = cfg['esg_bp_freq'][0]
 
-    iv_baseline = [-150 / 1000, -50 / 1000]
-    iv_epoch = [-200 / 1000, 200 / 1000]
+    # Want 200ms before R-peak and 400ms after R-peak
+    # Baseline is the 100ms period before the artefact occurs
+    iv_baseline = [-300 / 1000, -200 / 1000]
+    # Want 200ms before and 400ms after the R-peak in our epoch - need baseline outside this
+    iv_epoch = [-300 / 1000, 400 / 1000]
 
     image_path = "/data/p_02569/TimeFrequencyPlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)

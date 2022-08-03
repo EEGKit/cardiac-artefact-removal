@@ -4,10 +4,11 @@ import mne
 import os
 import numpy as np
 from scipy.io import loadmat
-from Metrics.SNR_functions import evoked_from_raw
+from Metrics.SNR_functions import evoked_from_raw, evoked_from_fourth_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
+    every_fourth = True
     reduced_trials = False  # If true, generate images with fewer triggers
     longer_time = True
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
@@ -64,7 +65,10 @@ if __name__ == '__main__':
                                    method='iir',
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
                         raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-                        evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
+                        if every_fourth:
+                            evoked = evoked_from_fourth_raw(raw, iv_epoch, iv_baseline, trigger_name)
+                        else:
+                            evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel, ordered=True)
                         evoked_list.append(evoked)
@@ -78,7 +82,10 @@ if __name__ == '__main__':
                                    method='iir',
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
                         raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-                        evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
+                        if every_fourth:
+                            evoked = evoked_from_fourth_raw(raw, iv_epoch, iv_baseline, trigger_name)
+                        else:
+                            evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel, ordered=True)
                         evoked_list.append(evoked)
@@ -87,7 +94,10 @@ if __name__ == '__main__':
                         input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
                         fname = f"clean_baseline_ica_auto_{cond_name}.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                        evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
+                        if every_fourth:
+                            evoked = evoked_from_fourth_raw(raw, iv_epoch, iv_baseline, trigger_name)
+                        else:
+                            evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel, ordered=True)
                         evoked_list.append(evoked)
@@ -96,7 +106,10 @@ if __name__ == '__main__':
                         input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
                         fname = f"clean_ica_auto_{cond_name}.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                        evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
+                        if every_fourth:
+                            evoked = evoked_from_fourth_raw(raw, iv_epoch, iv_baseline, trigger_name)
+                        else:
+                            evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
                         evoked.reorder_channels(esg_chans)
                         evoked = evoked.pick_channels(channel, ordered=True)
                         evoked_list.append(evoked)
@@ -127,6 +140,9 @@ if __name__ == '__main__':
                     fname = f"{method}_{trigger_name}_reducedtrials_shorter.png"
                 else:
                     fname = f"{method}_{trigger_name}_shorter.png"
+
+                if longer_time and every_fourth:
+                    fname = f"{method}_{trigger_name}_fourth.png"
                 plt.legend(loc='upper right')
                 plt.savefig(image_path+fname)
                 plt.clf()
@@ -150,7 +166,10 @@ if __name__ == '__main__':
 
                     input_path = f"/data/p_02569/SSP/{subject_id}/{n} projections/"
                     raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
-                    evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
+                    if every_fourth:
+                        evoked = evoked_from_fourth_raw(raw, iv_epoch, iv_baseline, trigger_name)
+                    else:
+                        evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
                     evoked.reorder_channels(esg_chans)
                     evoked = evoked.pick_channels([channel], ordered=True)
                     evoked_list.append(evoked)
@@ -181,6 +200,9 @@ if __name__ == '__main__':
                     fname = f"SSP_{n}_{trigger_name}_reducedtrials_shorter.png"
                 else:
                     fname = f"SSP_{n}_{trigger_name}_shorter.png"
+
+                if longer_time and every_fourth:
+                    fname = f"SSP_{n}_{trigger_name}_fourth.png"
                 plt.legend(loc='upper right')
                 plt.savefig(image_path + fname)
                 plt.clf()

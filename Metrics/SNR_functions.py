@@ -22,6 +22,19 @@ def evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs):
     return evoked
 
 
+# Create epochs and evoked response
+def evoked_from_fourth_raw(raw, iv_epoch, iv_baseline, trigger_name):
+    events, event_ids = mne.events_from_annotations(raw)
+    event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
+    epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1],
+                        baseline=tuple(iv_baseline))
+    epochs = epochs[1::4]  # Take every fourth trial
+    # print(np.shape(epochs.get_data()))
+    evoked = epochs.average(picks='all')  # Keeps ECG channel
+
+    return evoked
+
+
 # Create epochs and evoked response - no baseline correction
 def evoked_from_raw_nobaseline(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs):
     events, event_ids = mne.events_from_annotations(raw)

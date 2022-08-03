@@ -10,8 +10,7 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-
-    spinal = True  # If true plots SEPs, if false plots QRS 
+    spinal = True  # If true plots SEPs, if false plots QRS
     if spinal:
         freqs = np.arange(5., 400., 3.)
         fmin, fmax = freqs[[0, -1]]
@@ -31,8 +30,11 @@ if __name__ == '__main__':
         iv_epoch = cfg['iv_epoch'][0] / 1000
         iv_baseline = cfg['iv_baseline'][0] / 1000
     else:
-        iv_baseline = [-150 / 1000, -50 / 1000]
-        iv_epoch = [-200 / 1000, 200 / 1000]
+        # Want 200ms before R-peak and 400ms after R-peak
+        # Baseline is the 100ms period before the artefact occurs
+        iv_baseline = [-300 / 1000, -200 / 1000]
+        # Want 200ms before and 400ms after the R-peak in our epoch - need baseline outside this
+        iv_epoch = [-300 / 1000, 400 / 1000]
 
     esg_chans = ['S35', 'S24', 'S36', 'Iz', 'S17', 'S15', 'S32', 'S22',
                  'S19', 'S26', 'S28', 'S9', 'S13', 'S11', 'S7', 'SC1', 'S4', 'S18',
@@ -140,7 +142,7 @@ if __name__ == '__main__':
                     tmax = 0.1
                     vmin = -380
                     vmax = -250
-                else:  # Letting it autoset the limits for the spinal triggers - too hard to guess
+                else:
                     tmin = -0.2
                     tmax = 0.2
                     if method == 'Prep':
@@ -164,7 +166,7 @@ if __name__ == '__main__':
                     fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
                 else:
                     fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
-                plt.savefig(image_path+fname)
+                fig.savefig(image_path+fname)
                 plt.clf()
 
     # Now deal with SSP plots - Just doing 5 to 6 for now
@@ -228,5 +230,5 @@ if __name__ == '__main__':
                 else:
                     fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
 
-                plt.savefig(image_path + fname)
+                fig.savefig(image_path + fname)
                 plt.clf()
