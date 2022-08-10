@@ -37,13 +37,13 @@ if __name__ == '__main__':
     esg_bp_freq = cfg['esg_bp_freq'][0]
 
     # Loop through methods and save as required
-    which_method = {'Prep': True,
-                    'PCA': True,
-                    'PCA PCHIP': True,
-                    'PCA Tukey': True,
-                    'PCA Tukey PCHIP': True,
-                    'ICA': True,
-                    'Post-ICA': True,
+    which_method = {'Prep': False,
+                    'PCA': False,
+                    'PCA PCHIP': False,
+                    'PCA Tukey': False,
+                    'PCA Tukey PCHIP': False,
+                    'ICA': False,
+                    'Post-ICA': False,
                     'SSP': True}
 
     for i in np.arange(0, len(which_method)):
@@ -57,7 +57,7 @@ if __name__ == '__main__':
             saveres = save_res()
 
             if method == 'SSP':
-                for n in np.arange(5, 21):
+                for n in np.arange(1, 6):  # 5, 21
                     # Instantiate class
                     saveres = save_res()
 
@@ -220,7 +220,7 @@ if __name__ == '__main__':
 
         if name == 'SSP':
             # SSP
-            for n in np.arange(5, 21):
+            for n in np.arange(1, 21):  # 5, 21
                 fn = f"/data/p_02569/SSP/res_{n}.h5"
                 with h5py.File(fn, "r") as infile:
                     # Get the data
@@ -272,7 +272,7 @@ if __name__ == '__main__':
 
         if name == 'SSP':
             # SSP
-            for n in np.arange(5, 21):
+            for n in np.arange(1, 21):  # 5, 21
                 fn = f"/data/p_02569/SSP/res_{n}.h5"
                 with h5py.File(fn, "r") as infile:
                     # Get the data

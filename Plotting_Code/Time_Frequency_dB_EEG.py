@@ -10,8 +10,8 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    cortical_channels = False  # Calculate TFR for cortical channels of interest
-    ECG_channel = True  # Calculate TFR for ECG channel
+    cortical_channels = True  # Calculate TFR for cortical channels of interest
+    ECG_channel = False  # Calculate TFR for ECG channel
     freqs = np.arange(5., 250., 3.)
     fmin, fmax = freqs[[0, -1]]
 

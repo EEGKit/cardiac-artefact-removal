@@ -218,6 +218,4 @@ if __name__ == '__main__':
                 fname = f"Combined_{cond_name}.png"
 
             plt.savefig(save_path+fname)
-            # plt.show()
-
-
+            # plt.show

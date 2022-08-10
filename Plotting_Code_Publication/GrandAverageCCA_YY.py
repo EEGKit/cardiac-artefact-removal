@@ -283,7 +283,4 @@ if __name__ == '__main__':
                              f"Lumbar Spinal Cord")
 
             plt.tight_layout()
-            # plt.show()
-            # exit()
-            plt.savefig(image_path+fname)
-
+            # plt.show

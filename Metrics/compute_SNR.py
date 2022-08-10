@@ -29,13 +29,13 @@ if __name__ == '__main__':
     iv_baseline = cfg['iv_baseline'][0] / 1000
 
     # Loop through methods and save as required
-    which_method = {'Prep': True,
-                    'PCA': True,
-                    'PCA PCHIP': True,
-                    'PCA Tukey': True,
-                    'PCA Tukey PCHIP': True,
-                    'ICA': True,
-                    'Post-ICA': True,
+    which_method = {'Prep': False,
+                    'PCA': False,
+                    'PCA PCHIP': False,
+                    'PCA Tukey': False,
+                    'PCA Tukey PCHIP': False,
+                    'ICA': False,
+                    'Post-ICA': False,
                     'SSP': True}
 
     for i in np.arange(0, len(which_method)):
@@ -50,8 +50,8 @@ if __name__ == '__main__':
 
             # Treat SSP separately - has extra loop for projections
             if method == 'SSP':
-                snr_med = np.zeros((len(subjects), len(np.arange(5, 21))))
-                snr_tib = np.zeros((len(subjects), len(np.arange(5, 21))))
+                snr_med = np.zeros((len(subjects), len(np.arange(1, 21))))  # 5, 21
+                snr_tib = np.zeros((len(subjects), len(np.arange(1, 21))))  # 5, 21
                 chan_med = []
                 chan_tib = []
 
@@ -64,8 +64,8 @@ if __name__ == '__main__':
 
                         subject_id = f'sub-{str(subject).zfill(3)}'
 
-                        # Want the SNR for each projection tried from 5 to 20
-                        for n in np.arange(5, 21):
+                        # Want the SNR for each projection tried from 1 to 20
+                        for n in np.arange(1, 21):  # (5, 21)
                             # Load SSP projection data
                             input_path = "/data/p_02569/SSP/" + subject_id
                             savename = input_path + "/" + str(n) + " projections/"
@@ -78,10 +78,12 @@ if __name__ == '__main__':
 
                             # Now have one snr for relevant channel in each subject + condition
                             if cond_name == 'median':
-                                snr_med[subject - 1, n - 5] = snr
+                                # snr_med[subject - 1, n - 5] = snr
+                                snr_med[subject - 1, n - 1] = snr
                                 chan_med.append(chan)
                             elif cond_name == 'tibial':
-                                snr_tib[subject - 1, n - 5] = snr
+                                # snr_tib[subject - 1, n - 5] = snr
+                                snr_tib[subject - 1, n - 1] = snr
                                 chan_tib.append(chan)
 
                 # Save to file to compare to matlab - only for debugging
@@ -258,9 +260,11 @@ if __name__ == '__main__':
         average_tib = np.nanmean(snr_tib, axis=0)
 
         if name == 'SSP':
-            for n in np.arange(0, 16):
-                print(f'SNR {name} Median {n + 5}: {average_med[n]:.4f}')
-                print(f'SNR {name} Tibial {n + 5}: {average_tib[n]:.4f}')
+            for n in np.arange(0, 20):  # 0, 16
+                # print(f'SNR {name} Median {n + 5}: {average_med[n]:.4f}')
+                # print(f'SNR {name} Tibial {n + 5}: {average_tib[n]:.4f}')
+                print(f'SNR {name} Median {n + 1}: {average_med[n]:.4f}')
+                print(f'SNR {name} Tibial {n + 1}: {average_tib[n]:.4f}')
         else:
             print(f'SNR {name} Median: {average_med[0]:.4f}')
             print(f'SNR {name} Tibial: {average_tib[0]:.4f}')

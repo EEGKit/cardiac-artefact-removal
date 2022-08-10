@@ -24,13 +24,13 @@ if __name__ == '__main__':
     ######## Want to use PCA_OBS to remove the heart artefact? #########
     heart_removal = False  # Heart artefact removal
     pchip = False  # Whether to use pchip prepared data or not
-    heart_removal_tukey = True  # Fitted artefact multiplied by tukey window
+    heart_removal_tukey = False  # Fitted artefact multiplied by tukey window
 
     ######## Want to cut epochs from the PCA_OBS corrected data? ########
     cut_epochs = False  # Epoch the data according to relevant event
 
     ######### Want to clean the heart artefact using SSP? ########
-    SSP_flag = False  # Heart artefact removal by SSP
+    SSP_flag = True  # Heart artefact removal by SSP
 
     ######### Want to perform ICA on the PCA_OBS cleaned data? ########
     post_ica = False  # Run ICA after already running PCA_OBS

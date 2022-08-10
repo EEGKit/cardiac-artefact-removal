@@ -72,6 +72,13 @@ if __name__ == '__main__':
     # arr = df.to_numpy()
 
     ###################### Do median and tibial ##########################
+    # Drop Post-ICA and SSP_5
+    df_med.drop('Post-ICA', axis=1, inplace=True)
+    df_med.drop('SSP_5', axis=1, inplace=True)
+    # Drop Post-ICA and SSP_5
+    df_tib.drop('Post-ICA', axis=1, inplace=True)
+    df_tib.drop('SSP_5', axis=1, inplace=True)
+
     for condition in ['median', 'tibial']:
         if condition == 'median':
             df = df_med.dropna()

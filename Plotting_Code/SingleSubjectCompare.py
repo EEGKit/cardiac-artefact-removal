@@ -1,4 +1,4 @@
-# Plotting uncleaned and cleaned on top of one another to see artefact
+# Plotting uncleaned and cleaned on top of one another to see fitted artefact from PCA - to see where it appears
 
 import mne
 import os
@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     group_avg = True
     single_trial = False
-    # subjects = np.arange(1, 37)   # 1 through 36 to access subject data
+    subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     # subjects = [2, 13, 20, 36]
-    subjects = [2, 20]
+    # subjects = [2, 20]
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 
@@ -38,11 +38,11 @@ if __name__ == '__main__':
             subject_id = f'sub-{str(subject).zfill(3)}'
             for cond_name in cond_names:  # Conditions (median, tibial)
                 plt.figure()
-                # for Method in ['Uncleaned', 'Prepared', 'PCA', 'Artefact', 'PCA MATLAB', 'Prepared MAT + Py PCA']:
-                # for Method in ['Prepared', 'Prepared MAT', 'Prepared PCHIP Py', 'PCA', 'PCA MATLAB', 'PCA PCHIP',
+                for Method in ['Uncleaned', 'PCA_OBS', 'Artefact']:
+                # for Method in ['Uncleaned', 'Prepared MAT', 'Prepared PCHIP Py', 'PCA_OBS', 'PCA MATLAB', 'PCA PCHIP',
                 #                'Prepared MAT + Py PCA']:
-                for Method in ['PCA', 'PCA MATLAB', 'PCA PCHIP', 'PCA Tukey', 'PCA Tukey PCHIP']:
-                # for Method in ['PCA', 'PCA Test', 'PCA MATLAB']:
+                # for Method in ['PCA_OBS', 'PCA MATLAB', 'PCA PCHIP', 'PCA Tukey', 'PCA Tukey PCHIP']:
+                # for Method in ['PCA_OBS', 'PCA Test', 'PCA MATLAB']:
 
                     # Changing to pick channel when each is loaded, not after the evoked list is formed
                     if cond_name == 'tibial':
@@ -53,20 +53,8 @@ if __name__ == '__main__':
                         trigger_name = 'Median - Stimulation'
                         channel = ['SC6']
 
-                    # raw data (no filtering)
-                    # raw data with interpolated stimulus artifact  (no filtering)
-                    # data after pca  (no filtering)
+                    # Same as above, but the label is different that's why I changed
                     if Method == 'Uncleaned':
-                        input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
-                        fname = f'Stimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
-                        raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                                   method='iir',
-                                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-
-                    elif Method == 'Prepared':
                         input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
                         fname = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
@@ -86,7 +74,7 @@ if __name__ == '__main__':
                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
                         raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
-                    elif Method == 'PCA':
+                    elif Method == 'PCA_OBS':
                         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
                         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
@@ -186,16 +174,16 @@ if __name__ == '__main__':
 
                 plt.ylabel('Amplitude [\u03BCV]')
                 plt.xlabel('Time [s]')
-                # plt.xlim([-0.1, 0.3])
-                plt.xlim([-0.05, 0.05])
+                plt.xlim([-0.1, 0.3])
+                # plt.xlim([-0.05, 0.05])
                 if cond_name == 'tibial':
                     plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
                 elif cond_name == 'median':
                     plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
                 plt.title(f"Subject {subject_id}, Condition: {trigger_name}")
-                fname = f"{subject}_{trigger_name}_pcaprep.png"
+                fname = f"{subject}_{trigger_name}_pca_obs.png"
                 plt.legend(loc='upper right')
-                # plt.savefig(image_path+fname)
+                plt.savefig(image_path+fname)
                 plt.show()
                 plt.clf()
 

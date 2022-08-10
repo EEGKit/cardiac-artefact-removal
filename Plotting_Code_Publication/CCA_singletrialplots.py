@@ -14,15 +14,15 @@ import random
 if __name__ == '__main__':
     reduced_trials = True
     if reduced_trials:
-        no = 100
+        no = 500
         trial_indices = random.sample(range(1999), no)  # Need to be all unique to avoid selecting the same trials
         trial_indices.sort()  # Want in chronological order
 
     SSP_proj = 6
     # Testing with just subject 1 at the moment
     # subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
-    # subjects = [1, 2, 6, 7, 14, 15, 30, 32]
-    subjects = [6]
+    subjects = [1, 2, 6, 7, 14, 15, 30, 32]
+    # subjects = [6]
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 
