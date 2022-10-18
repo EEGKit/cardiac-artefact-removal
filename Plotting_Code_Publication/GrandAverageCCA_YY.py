@@ -197,8 +197,8 @@ if __name__ == '__main__':
             # Uncleaned
             ax1.plot(epochs.times, relevant_channel_prep_cca[0, :], label='Uncleaned CCA',
                      color='teal')
-            ax1.set_ylabel('Cleaned SEP Amplitude [\u03BCV]')
-            ax1.set_xlabel('Time [s]')
+            ax1.set_ylabel('Cleaned SEP Amplitude (AU)')
+            ax1.set_xlabel('Time (s)')
             ax1.set_title('Uncleaned + CCA')
             # ax1.spines['left'].set_color('teal')
             # ax1.tick_params(axis='y', colors='teal')
@@ -209,8 +209,7 @@ if __name__ == '__main__':
             # PCA
             ax2.plot(epochs.times, relevant_channel_pca_cca[0, :], label='PCA_OBS CCA',
                      color='blue')
-            ax2.set_ylabel('Cleaned SEP Amplitude [\u03BCV]')
-            ax2.set_xlabel('Time [s]')
+            ax2.set_xlabel('Time (s)')
             ax2.set_title('PCA_OBS + CCA')
             ax2.set_yticklabels([])
             # ax2.spines['left'].set_color('blue')
@@ -222,25 +221,25 @@ if __name__ == '__main__':
             # SSP6
             ax3.plot(epochs.times, relevant_channel_ssp6_cca[0, :], label='SSP6 CCA',
                      color='magenta')
-            ax3.set_xlabel('Time [s]')
+            ax3.set_xlabel('Time (s)')
             ax3.set_title('SSP6 + CCA')
             ax3.set_yticklabels([])
             ax30.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :]*10**6, label='Uncleaned',
                       linewidth=0.5, linestyle='dashed', color='black')
-            ax30.set_ylabel('Uncleaned SEP Amplitude [\u03BCV]')
+            ax30.set_ylabel('Uncleaned SEP Amplitude (\u03BCV)')
             # ax3.spines['left'].set_color('magenta')
             # ax3.tick_params(axis='y', colors='magenta')
 
             # Add vertical line at expected latency
             if cond_name == 'tibial':
-                ax1.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
-                ax2.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
-                ax3.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
+                ax1.axvline(x=22 / 1000, color='k', linewidth=0.7, label='22ms')
+                ax2.axvline(x=22 / 1000, color='k', linewidth=0.7, label='22ms')
+                ax3.axvline(x=22 / 1000, color='k', linewidth=0.7, label='22ms')
 
             elif cond_name == 'median':
-                ax1.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
-                ax2.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
-                ax3.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
+                ax1.axvline(x=13 / 1000, color='k', linewidth=0.7, label='13ms')
+                ax2.axvline(x=13 / 1000, color='k', linewidth=0.7, label='13ms')
+                ax3.axvline(x=13 / 1000, color='k', linewidth=0.7, label='13ms')
 
             if shorter_timescale:
                 ax1.set_xlim([-25 / 1000, 65 / 1000])
@@ -283,4 +282,7 @@ if __name__ == '__main__':
                              f"Lumbar Spinal Cord")
 
             plt.tight_layout()
-            # plt.show
+            # plt.show()
+            # exit()
+            plt.savefig(image_path+fname)
+

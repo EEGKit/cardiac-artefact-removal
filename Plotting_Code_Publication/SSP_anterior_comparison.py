@@ -13,8 +13,10 @@ if __name__ == '__main__':
     grand_average = True
 
     # Testing with random subjects atm
-    subjects = [1, 6, 11, 15, 22, 30]
-    # subjects = np.arange(1, 2)  # (1, 37) # 1 through 36 to access subject data
+    if single_subject:
+        subjects = [1, 6, 11, 15, 22, 30]
+    if grand_average:
+        subjects = np.arange(1, 37)  # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 
@@ -33,11 +35,13 @@ if __name__ == '__main__':
                 if cond_name == 'tibial':
                     trigger_name = 'Tibial - Stimulation'
                     channels = ['S23', 'L1', 'S31']
+                    full_name = 'Tibial Nerve Stimulation'
                 elif cond_name == 'median':
                     trigger_name = 'Median - Stimulation'
                     channels = ['S6', 'SC6', 'S14']
+                    full_name = 'Median Nerve Stimulation'
 
-                for n in np.arange(5, 7):
+                for n in np.arange(6, 7):
                     # Load epochs resulting from SSP cleaning
                     input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
                     raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif")
@@ -50,16 +54,20 @@ if __name__ == '__main__':
                         evoked_ch = evoked.pick_channels([ch])
                         evoked_ant_ch = evoked_ant.pick_channels([ch])
                         plt.figure()
-                        plt.plot(evoked_ch.times, evoked_ch.data.reshape(-1), label='Original')
-                        plt.plot(evoked_ant_ch.times, evoked_ant_ch.data.reshape(-1), label='Anterior')
+                        plt.plot(evoked_ch.times, evoked_ch.data.reshape(-1)*10**6, label='Original', color='magenta')
+                        plt.plot(evoked_ant_ch.times, evoked_ant_ch.data.reshape(-1)*10**6,
+                                 label='Anterior Rereferencing', color='plum')
                         plt.xlim([-0.025, 0.065])
+                        plt.ylabel('Amplitude (\u03BCV)')
+                        plt.xlabel('Time (s)')
                         plt.legend()
-                        plt.title(f'Channel {ch}')
+                        plt.title(f'{full_name}\n'
+                                  f'Subject {subject}, Channel {ch}')
 
                         if cond_name == 'tibial':
-                            plt.axvline(x=22 / 1000, linewidth=0.5, linestyle='--')
+                            plt.axvline(x=22 / 1000, linewidth=0.7, linestyle='dashed', color='k')
                         elif cond_name == 'median':
-                            plt.axvline(x=13 / 1000, linewidth=0.5, linestyle='--')
+                            plt.axvline(x=13 / 1000, linewidth=0.7, linestyle='dashed', color='k')
 
                         if reduced_epochs:
                             plt.savefig(f"{figure_path}SSP_{n}proj_{ch}_{cond_name}_reduced.png")
@@ -70,7 +78,7 @@ if __name__ == '__main__':
         plt.show()
 
     if grand_average:
-        for n in np.arange(5, 7):  # Methods Applied
+        for n in np.arange(6, 7):  # Methods Applied
             figure_path = "/data/p_02569/SSP_anterior_comparison_images/"
             os.makedirs(figure_path, exist_ok=True)
 
@@ -79,10 +87,12 @@ if __name__ == '__main__':
                 if cond_name == 'tibial':
                     trigger_name = 'Tibial - Stimulation'
                     channels = ['S23', 'L1', 'S32']
+                    full_name = 'Tibial Nerve Stimulation'
 
                 elif cond_name == 'median':
                     trigger_name = 'Median - Stimulation'
                     channels = ['S6', 'SC6', 'S14']
+                    full_name = 'Median Nerve Stimulation'
 
                 for channel in channels:
                     evoked_list = []
@@ -108,20 +118,20 @@ if __name__ == '__main__':
                     # relevant_channel = averaged.pick_channels(channel)
                     plt.figure()
                     plt.plot(relevant_channel.times, np.mean(relevant_channel.data[:, :], axis=0) * 10 ** 6,
-                             label='Evoked Grand Average')
+                             label='Original', color='magenta')
                     plt.plot(relevant_ant_channel.times, np.mean(relevant_ant_channel.data[:, :], axis=0) * 10 ** 6,
-                             label='Evoked Grand Average')
-                    plt.ylabel('Amplitude [\u03BCV]')
-
-                    plt.xlabel('Time [s]')
+                             label='Anterior Rereferenced', color='plum')
+                    plt.ylabel('Amplitude (\u03BCV)')
+                    plt.xlabel('Time (s)')
                     plt.xlim([-0.025, 0.065])
                     if cond_name == 'tibial':
-                        plt.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
+                        plt.axvline(x=22 / 1000, color='k', linewidth=0.7, linestyle='dashed', label=None)
                         # plt.ylim([-0.5, 1.3])
                     elif cond_name == 'median':
-                        plt.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
+                        plt.axvline(x=13 / 1000, color='k', linewidth=0.7, linestyle='dashed', label=None)
                         # plt.ylim([-0.8, 0.8])
-                    plt.title(f"Method: SSP {n} proj., Condition: {trigger_name}, Channel: {channel}")
+                    plt.title(f"{full_name}\n"
+                              f"Evoked Grand Average, Channel: {channel}")
                     if reduced_epochs:
                         fname = f"SSP_{n}_{trigger_name}_{channel}_reducedtrials.png"
                     else:
@@ -129,4 +139,3 @@ if __name__ == '__main__':
                     plt.legend(loc='upper right')
                     plt.savefig(figure_path + fname)
                     plt.clf()
-

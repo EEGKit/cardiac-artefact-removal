@@ -42,12 +42,12 @@ if __name__ == '__main__':
             elif file_path == ssp_path:
                 # These have shape (n_subjects, n_projectors)
                 snr_med = infile[keywords[0]][()]
-                df_med[f'{names[count]}_5'] = snr_med[:, 0]
-                df_med[f'{names[count]}_6'] = snr_med[:, 1]
+                df_med[f'{names[count]}_5'] = snr_med[:, 4]
+                df_med[f'{names[count]}_6'] = snr_med[:, 5]
 
                 snr_tib = infile[keywords[1]][()]
-                df_tib[f'{names[count]}_5'] = snr_tib[:, 0]
-                df_tib[f'{names[count]}_6'] = snr_tib[:, 1]
+                df_tib[f'{names[count]}_5'] = snr_tib[:, 4]
+                df_tib[f'{names[count]}_6'] = snr_tib[:, 5]
 
             else:
                 # Get the data
@@ -59,9 +59,19 @@ if __name__ == '__main__':
 
             count += 1
 
+    ###################### Get mean and sem of columns ####################
+    print('Median Means')
+    print(df_med.mean())
+    print('Median Standard Error')
+    print(df_med.sem())
+    print('Tibial Means')
+    print(df_tib.mean())
+    print('Tibial Standard Error')
+    print(df_tib.sem())
+
     #################################### Dataframe of Differences #################################
     # Test
-    df = df_med.dropna()  # Drop NA- discuss with FALK
+    df = df_med.dropna()  # Drop NA
     # df = df_med.fillna(0)  # Fill NA values with 0
     # df = df_med.fillna(df_med.mean())  # Replace with mean of column
 
@@ -85,22 +95,22 @@ if __name__ == '__main__':
         elif condition == 'tibial':
             df = df_tib.dropna()
 
-        for method in ['Prep', 'PCA']:
-            cc = list(combinations(df.columns, 2))  # All combinations
-            cc = [el for el in cc if el[0] == method]  # Just ones with Prep in first position
-            df_comb = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
-            df_comb.columns = pd.Series(cc).map('-'.join)
-            arr = df_comb.to_numpy()
-            print(df_comb.describe())
+        # for method in ['Prep', 'PCA']:
+        cc = list(combinations(df.columns, 2))  # All combinations
+        # cc = [el for el in cc if el[0] == method]  # Just ones with certain method in first position
+        df_comb = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
+        df_comb.columns = pd.Series(cc).map('-'.join)
+        arr = df_comb.to_numpy()
+        print(df_comb.describe())
 
-            T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
+        T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
 
-            formatted_pvals = {}
-            colnames = df_comb.columns
-            for index in np.arange(0, len(p_values)):
-                formatted_pvals.update({colnames[index]: p_values[index]})
+        formatted_pvals = {}
+        colnames = df_comb.columns
+        for index in np.arange(0, len(p_values)):
+            formatted_pvals.update({colnames[index]: p_values[index]})
 
-            df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
-            print(f"{method} {condition} Corrected P-Values")
-            print(df_pvals)
+        df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
+        print(f"{condition} Corrected P-Values")
+        print(df_pvals)
 

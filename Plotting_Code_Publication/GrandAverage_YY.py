@@ -64,6 +64,7 @@ def align_yaxis_np(axes):
 
 if __name__ == '__main__':
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
+    # subjects = [1]
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 
@@ -179,8 +180,8 @@ if __name__ == '__main__':
             # PCA
             ax1.plot(relevant_channel_pca.times, relevant_channel_pca.data[0, :]*10**6, label='PCA_OBS',
                      color='blue')
-            ax1.set_ylabel('Cleaned SEP Amplitude [\u03BCV]')
-            ax1.set_xlabel('Time [s]')
+            ax1.set_ylabel('Cleaned SEP Amplitude (\u03BCV)')
+            ax1.set_xlabel('Time (s)')
             ax1.set_title('PCA_OBS')
             ax1.spines['left'].set_color('blue')
             ax1.tick_params(axis='y', colors='blue')
@@ -191,7 +192,7 @@ if __name__ == '__main__':
             # ICA
             ax2.plot(relevant_channel_ica.times, relevant_channel_ica.data[0, :] * 10 ** 6, label='ICA',
                      color='orange')
-            ax2.set_xlabel('Time [s]')
+            ax2.set_xlabel('Time (s)')
             ax2.set_title('ICA')
             # ax2.set_yticklabels([])
             ax2.spines['left'].set_color('orange')
@@ -203,25 +204,25 @@ if __name__ == '__main__':
             # SSP6
             ax3.plot(relevant_channel_ssp6.times, relevant_channel_ssp6.data[0, :] * 10 ** 6, label='SSP6',
                      color='magenta')
-            ax3.set_xlabel('Time [s]')
+            ax3.set_xlabel('Time (s)')
             ax3.set_title('SSP6')
             # ax3.set_yticklabels([])
             ax30.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :] * 10 ** 6, label='Uncleaned',
                       linewidth=0.5, linestyle='dashed', color='black')
-            ax30.set_ylabel('Uncleaned SEP Amplitude [\u03BCV]')
+            ax30.set_ylabel('Uncleaned SEP Amplitude (\u03BCV)')
             ax3.spines['left'].set_color('magenta')
             ax3.tick_params(axis='y', colors='magenta')
 
             # Add vertical line at expected latency
             if cond_name == 'tibial':
-                ax1.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
-                ax2.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
-                ax3.axvline(x=22 / 1000, color='r', linewidth=0.5, label='22ms')
+                ax1.axvline(x=22 / 1000, color='g', linewidth=0.7, label='22ms')
+                ax2.axvline(x=22 / 1000, color='g', linewidth=0.7, label='22ms')
+                ax3.axvline(x=22 / 1000, color='g', linewidth=0.7, label='22ms')
 
             elif cond_name == 'median':
-                ax1.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
-                ax2.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
-                ax3.axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
+                ax1.axvline(x=13 / 1000, color='g', linewidth=0.7, label='13ms')
+                ax2.axvline(x=13 / 1000, color='g', linewidth=0.7, label='13ms')
+                ax3.axvline(x=13 / 1000, color='g', linewidth=0.7, label='13ms')
 
             if shorter_timescale:
                 ax1.set_xlim([-25 / 1000, 65 / 1000])

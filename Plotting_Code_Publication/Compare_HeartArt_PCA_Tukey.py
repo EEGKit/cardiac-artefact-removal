@@ -1,4 +1,4 @@
-# Script to create plots of the grand averages heart evoked responses of the heartbeat across participants for each stimulation
+# Script to create plots of the grand averages heart evoked responses of the heartbeat across participants
 
 import mne
 import os
@@ -38,10 +38,12 @@ if __name__ == '__main__':
         if cond_name == 'tibial':
             trigger_name = 'qrs'
             channel = 'L1'
+            full_name = 'Tibial Nerve Stimulation'
 
         elif cond_name == 'median':
             trigger_name = 'qrs'
             channel = 'SC6'
+            full_name = 'Median Nerve Stimulation'
 
         for subject in subjects:  # All subjects
             subject_id = f'sub-{str(subject).zfill(3)}'
@@ -78,12 +80,14 @@ if __name__ == '__main__':
         relevant_channel_pca_tukey = averaged_pca_tukey.pick_channels([channel])
 
         plt.figure()
-        plt.plot(relevant_channel_pca.times, relevant_channel_pca.data[0, :] * 10 ** 6, label='PCA')
-        plt.plot(relevant_channel_pca_tukey.times, relevant_channel_pca_tukey.data[0, :] * 10 ** 6, label='PCA Tukey')
-        plt.ylabel('Amplitude [\u03BCV]')
-        plt.xlabel('Time [s]')
+        plt.plot(relevant_channel_pca.times, relevant_channel_pca.data[0, :] * 10 ** 6, label='PCA_OBS', color='blue')
+        plt.plot(relevant_channel_pca_tukey.times, relevant_channel_pca_tukey.data[0, :] * 10 ** 6,
+                 label='PCA_OBS Tukey', color='red')
+        plt.ylabel('Amplitude (\u03BCV)')
+        plt.xlabel('Time (s)')
         plt.xlim([-200 / 1000, 400 / 1000])
-        plt.title(f"Heart Artefact Grand Average, Condition: {trigger_name}, Channel: {channel}")
+        plt.title(f"Heart Artefact Grand Average\n"
+                  f"{full_name}")
         fname = f"HeartArtComp_{trigger_name}_{channel}.png"
         plt.legend(loc='upper right')
         plt.savefig(image_path + fname)

@@ -97,8 +97,8 @@ if __name__ == '__main__':
         # PCA
         ax1.plot(relevant_channel_pca.times, relevant_channel_pca.data[0, :]*10**6, label='PCA_OBS',
                  color='blue')
-        ax1.set_ylabel('Cleaned Artefact Amplitude [\u03BCV]')
-        ax1.set_xlabel('Time [s]')
+        ax1.set_ylabel('Cleaned Artefact Amplitude (\u03BCV)')
+        ax1.set_xlabel('Time (s)')
         ax1.set_title('PCA_OBS')
         # ax1.spines['left'].set_color('blue')
         # ax1.tick_params(axis='y', colors='blue')
@@ -109,7 +109,7 @@ if __name__ == '__main__':
         # ICA
         ax2.plot(relevant_channel_ica.times, relevant_channel_ica.data[0, :] * 10 ** 6, label='ICA',
                  color='orange')
-        ax2.set_xlabel('Time [s]')
+        ax2.set_xlabel('Time (s)')
         ax2.set_title('ICA')
         ax2.set_yticklabels([])
         # ax2.spines['left'].set_color('orange')
@@ -121,12 +121,12 @@ if __name__ == '__main__':
         # SSP6
         ax3.plot(relevant_channel_ssp6.times, relevant_channel_ssp6.data[0, :] * 10 ** 6, label='SSP6',
                  color='magenta')
-        ax3.set_xlabel('Time [s]')
+        ax3.set_xlabel('Time (s)')
         ax3.set_title('SSP6')
         ax3.set_yticklabels([])
         ax30.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :] * 10 ** 6, label='Uncleaned',
                   linewidth=0.5, linestyle='dashed', color='black')
-        ax30.set_ylabel('Uncleaned Artefact Amplitude [\u03BCV]')
+        ax30.set_ylabel('Uncleaned Artefact Amplitude (\u03BCV)')
         # ax3.spines['left'].set_color('magenta')
         # ax3.tick_params(axis='y', colors='magenta')
 

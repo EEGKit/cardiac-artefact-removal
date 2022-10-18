@@ -39,7 +39,7 @@ if __name__ == '__main__':
                     cond_name = 'median'
                 else:
                     cond_name = 'tibial'
-                    time_point = 23 / 1000
+                    time_point = 22 / 1000
 
                 subject_id = f'sub-{str(subj).zfill(3)}'
 
@@ -84,12 +84,15 @@ if __name__ == '__main__':
             fig = plt.figure()
             plt.title(f'Grand Average Topography, {method}, {trigger_name}')
 
-            time_idx = []
-            tmp = np.argwhere(epo.times >= time_point)
-            # sometimes when data is down sampled  find(epo.times == time_points(ii)) doesn't work
-            time_idx.append(tmp[0])
+            # time_idx = []
+            # tmp = np.argwhere(epo.times >= time_point)
+            # # sometimes when data is down sampled  find(epo.times == time_points(ii)) doesn't work
+            # time_idx.append(tmp[0])
+            # chanvalues = evoked.data[:, time_idx]
 
-            chanvalues = evoked.data[:, time_idx]
+            chanvalues = evoked.crop(tmin=time_point - (2 / 1000), tmax=time_point + (2 / 1000)).data
+            chanvalues = chanvalues.mean(axis=1)
+            # Should then average across time points of interest
             chan_labels = evoked.ch_names
             if method == 'SSP' or method == 'ICA':
                 colorbar_axes = [-0.5, 0.5]

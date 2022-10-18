@@ -12,7 +12,7 @@ import pandas as pd
 import random
 
 if __name__ == '__main__':
-    reduced_trials = True
+    reduced_trials = False
     if reduced_trials:
         no = 500
         trial_indices = random.sample(range(1999), no)  # Need to be all unique to avoid selecting the same trials
@@ -90,6 +90,11 @@ if __name__ == '__main__':
                 if method == 'SSP':
                     cropped.plot_image(picks=channel, combine=None, cmap=cmap, evoked=False, show=False,
                                        title=f'{method}{SSP_proj}, Subject {subject}, Component {str(channel)[-1]}',
+                                       colorbar=False, group_by=None, fig=fig,
+                                       vmin=-0.4, vmax=0.4, units=dict(eeg='V'), scalings=dict(eeg=1))
+                elif method == 'PCA':
+                    cropped.plot_image(picks=channel, combine=None, cmap=cmap, evoked=False, show=False,
+                                       title=f'{method}_OBS, Subject {subject}, Component {str(channel)[-1]}',
                                        colorbar=False, group_by=None, fig=fig,
                                        vmin=-0.4, vmax=0.4, units=dict(eeg='V'), scalings=dict(eeg=1))
                 else:

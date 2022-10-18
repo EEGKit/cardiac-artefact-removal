@@ -42,10 +42,12 @@ if __name__ == '__main__':
             if cond_name == 'tibial':
                 trigger_name = 'qrs'
                 channel = ['Cz']
+                full_name = 'Tibial Nerve Stimulation'
 
             elif cond_name == 'median':
                 trigger_name = 'qrs'
                 channel = ['CP4']
+                full_name = 'Median Nerve Stimulation'
 
             for subject in subjects:  # All subjects
                 subject_id = f'sub-{str(subject).zfill(3)}'
@@ -73,8 +75,12 @@ if __name__ == '__main__':
             averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
                           axes=ax, show=False, colorbar=True, dB=True,
                           tmin=tmin, tmax=tmax, vmin=-400, vmax=-175)
+            im = ax.images
+            cb = im[-1].colorbar
+            cb.set_label('Amplitude [dB]')
 
-            plt.title(f"Channel: {channel[0]}, Condition: {trigger_name}")
+            plt.title(f"Channel: {channel[0]}\n"
+                      f"{full_name}")
             fname = f"{channel[0]}_{trigger_name}_dB.png"
             plt.savefig(image_path + fname)
             plt.clf()
@@ -87,10 +93,12 @@ if __name__ == '__main__':
             if cond_name == 'tibial':
                 trigger_name = 'qrs'
                 channel = ['ECG']
+                full_name = 'Tibial Nerve Stimulation'
 
             elif cond_name == 'median':
                 trigger_name = 'qrs'
                 channel = ['ECG']
+                full_name = 'Median Nerve Stimulation'
 
             for subject in subjects:  # All subjects
                 subject_id = f'sub-{str(subject).zfill(3)}'
@@ -120,8 +128,12 @@ if __name__ == '__main__':
             averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
                           axes=ax, show=False, colorbar=True, dB=True,
                           tmin=tmin, tmax=tmax, vmin=-400, vmax=-175)
+            im = ax.images
+            cb = im[-1].colorbar
+            cb.set_label('Amplitude [dB]')
 
-            plt.title(f"Channel: {channel[0]}, Condition: {trigger_name}")
+            plt.title(f"Channel: {channel[0]}\n"
+                      f"{full_name}")
             fname = f"{channel[0]}_{trigger_name}_{cond_name}_dB.png"
             plt.savefig(image_path + fname)
             plt.clf()

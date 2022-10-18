@@ -10,7 +10,7 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    spinal = True  # If true plots SEPs, if false plots QRS
+    spinal = False  # If true plots SEPs, if false plots QRS
     if spinal:
         freqs = np.arange(5., 400., 3.)
         fmin, fmax = freqs[[0, -1]]
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/TimeFrequencyPlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [True, True, True, True]  # No need to do ICA - can't perform CCA on data
+    methods = [True, True, True, False]
     method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
     ssp = True  # Using files from merging mixed nerve with digits
 
@@ -58,6 +58,7 @@ if __name__ == '__main__':
                 evoked_list = []
 
                 if cond_name == 'tibial':
+                    full_name = 'Tibial Nerve Stimulation'
                     if spinal:
                         trigger_name = 'Tibial - Stimulation'
                     else:
@@ -65,6 +66,7 @@ if __name__ == '__main__':
                     channel = ['L1']
 
                 elif cond_name == 'median':
+                    full_name = 'Median Nerve Stimulation'
                     if spinal:
                         trigger_name = 'Median - Stimulation'
                     else:
@@ -160,8 +162,14 @@ if __name__ == '__main__':
                 averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
                               axes=ax, show=False, colorbar=True, dB=True,
                               tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
-
-                plt.title(f"Method: {method}, Condition: {trigger_name}")
+                im = ax.images
+                cb = im[-1].colorbar
+                cb.set_label('Amplitude [dB]')
+                if method == 'Prep':
+                    plt.title(f"Channel: {channel[0]}\n"
+                              f"{full_name}")
+                else:
+                    plt.title(f"Method: {method}, Condition: {trigger_name}")
                 if spinal:
                     fname = f"{method}_{trigger_name}_{cond_name}_dB.png"
                 else:
@@ -177,6 +185,7 @@ if __name__ == '__main__':
                 evoked_list = []
 
                 if cond_name == 'tibial':
+                    full_name = 'Tibial Nerve Stimulation'
                     if spinal:
                         trigger_name = 'Tibial - Stimulation'
                     else:
@@ -184,6 +193,7 @@ if __name__ == '__main__':
                     channel = ['L1']
 
                 elif cond_name == 'median':
+                    full_name = 'Median Nerve Stimulation'
                     if spinal:
                         trigger_name = 'Median - Stimulation'
                     else:
@@ -223,7 +233,9 @@ if __name__ == '__main__':
                 averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
                               axes=ax, show=False, colorbar=True, dB=True,
                               tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
-
+                im = ax.images
+                cb = im[-1].colorbar
+                cb.set_label('Amplitude [dB]')
                 plt.title(f"Method: {method}, Condition: {trigger_name}")
                 if spinal:
                     fname = f"{method}_{trigger_name}_{cond_name}_dB.png"

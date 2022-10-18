@@ -101,6 +101,17 @@ if __name__ == '__main__':
     # Drop Post-ICA and SSP_5
     df_tib.drop('Post-ICA', axis=1, inplace=True)
     df_tib.drop('SSP_5', axis=1, inplace=True)
+
+    ###################### Get mean and sem of columns ####################
+    print('Median Means')
+    print(df_med.mean())
+    print('Median Standard Error')
+    print(df_med.sem())
+    print('Tibial Means')
+    print(df_tib.mean())
+    print('Tibial Standard Error')
+    print(df_tib.sem())
+
     ###################### Do median and tibial ##########################
     for condition in ['median', 'tibial']:
         if condition == 'median':
@@ -108,21 +119,21 @@ if __name__ == '__main__':
         elif condition == 'tibial':
             df = df_tib.dropna()
 
-        for method in ['PCA']:
-            cc = list(combinations(df.columns, 2))  # All combinations
-            cc = [el for el in cc if el[0] == method]
-            df_comb = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
-            df_comb.columns = pd.Series(cc).map('-'.join)
-            arr = df_comb.to_numpy()
-            print(df_comb.describe())
+        # for method in ['PCA']:
+        cc = list(combinations(df.columns, 2))  # All combinations
+        # cc = [el for el in cc if el[0] == method]
+        df_comb = pd.concat([df[c[1]].sub(df[c[0]]) for c in cc], axis=1, keys=cc)
+        df_comb.columns = pd.Series(cc).map('-'.join)
+        arr = df_comb.to_numpy()
+        print(df_comb.describe())
 
-            T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
+        T_obs, p_values, H0 = mne.stats.permutation_t_test(arr, n_permutations=2000, n_jobs=36)
 
-            formatted_pvals = {}
-            colnames = df_comb.columns
-            for index in np.arange(0, len(p_values)):
-                formatted_pvals.update({colnames[index]: p_values[index]})
+        formatted_pvals = {}
+        colnames = df_comb.columns
+        for index in np.arange(0, len(p_values)):
+            formatted_pvals.update({colnames[index]: p_values[index]})
 
-            df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
-            print(f"{method} {condition} Corrected P-Values")
-            print(df_pvals)
+        df_pvals = pd.DataFrame.from_dict(formatted_pvals, orient='index')
+        print(f"{condition} Corrected P-Values")
+        print(df_pvals)

@@ -6,10 +6,12 @@ import numpy as np
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from mpl_axes_aligner import align
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 if __name__ == '__main__':
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
+    # subjects = [1]
     freqs = np.arange(5., 250., 3.)
     fmin, fmax = freqs[[0, -1]]
     cond_names = ['median', 'tibial']
@@ -91,16 +93,17 @@ if __name__ == '__main__':
         averaged_ssp6 = mne.grand_average(evoked_list_ssp6, interpolate_bads=False, drop_bads=False)
 
         tmin = -0.2
-        tmax = 0.2
-        if cond_name == 'tibial':
-            vmin = -400
-            vmax = -225
-        else:
-            vmin = -400
-            vmax = -250
-        # vmin = -350
-        # vmax = -225
-        fig, ax = plt.subplots(1, 5, figsize=[18, 6], gridspec_kw={"width_ratios": [10, 10, 10, 10, 1]})
+        tmax = 0.4
+        vmin = -400
+        vmax = -240
+        # if cond_name == 'tibial':
+        #     vmin = -400
+        #     vmax = -240
+        # else:
+        #     vmin = -400
+        #     vmax = -250
+        # fig, ax = plt.subplots(1, 5, figsize=[18, 6], gridspec_kw={"width_ratios": [10, 10, 10, 10, 1]})
+        fig, ax = plt.subplots(1, 4, figsize=[24, 6], constrained_layout=True)
         averaged_prep.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
                           axes=ax[0], show=False, colorbar=False, dB=True,
                           tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
@@ -113,7 +116,13 @@ if __name__ == '__main__':
         averaged_ssp6.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
                           axes=ax[3], show=False, colorbar=False, dB=True,
                           tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
-        fig.colorbar(ax[0].images[-1], cax=ax[-1])  # Take colourbar from first image and puts it in last axis
+        # Add axis for colorbar display
+        fig.subplots_adjust(bottom=0.25)
+        cbar_ax = fig.add_axes([0.15, 0.1, 0.7, 0.05])
+        cb = fig.colorbar(ax[0].images[-1], cax=cbar_ax, shrink=0.6, orientation='horizontal')
+
+        # cb = fig.colorbar(ax[0].images[-1], cax=ax[-1])  # Take colourbar from first image and puts it in last axis
+        cb.set_label('Amplitude (dB)')
         ax[0].set_title('Uncleaned')
         ax[1].set_title('PCA_OBS')
         ax[1].set_yticklabels([])

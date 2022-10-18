@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata, Rbf
 from matplotlib.ticker import MaxNLocator
+import matplotlib as mpl
 
 
 # Labels is a list of the names associated with the electrodes with non nan locations
@@ -22,6 +23,8 @@ def get_gridparameters(subjects):
         raw_path = '/data/p_02068/SRMR1_experiment/bids/' + subject_id + '/eeg/'
         fname = raw_path + subject_id + '_space-Other_electrodes.tsv'
         electrode_pos = pd.read_csv(fname, sep='\t')
+        electrode_pos = electrode_pos[electrode_pos.name != 'TH6']  # Remove reference channel
+        electrode_pos.reset_index(drop=True, inplace=True)
 
         # remove electrode positions with NaN value
         # Don't want to drop nan, just want to generate logical indices where they are or are not nan
@@ -86,12 +89,14 @@ def plot_esg_isopotential(chanvalues, colorbar_axes, gridsize, chan_pos_grid, la
 
     rbf = Rbf(x, y, chanvalues, epsilon=2)
     vq = rbf(xq, yq)
-    # plt.contourf(xq, yq, vq, levels=levels, cmap='turbo', origin='upper')
-    levels = MaxNLocator(nbins=150).tick_values(colorbar_axes[0]*10**-6, colorbar_axes[1]*10**-6)
-    cf = axis.contourf(xq, yq, vq, levels=levels, cmap='turbo', origin='upper', extend='both')
+
+    vq *= 1e6
+    levels = MaxNLocator(nbins=150).tick_values(colorbar_axes[0], colorbar_axes[1])
+    cf = axis.contourf(xq, yq, np.clip(vq, a_min=colorbar_axes[0], a_max=colorbar_axes[1]),
+                       levels=levels, cmap='turbo', origin='upper', extend='neither')
     if colorbar:
-        ticks = np.linspace(colorbar_axes[0], colorbar_axes[1], 3, endpoint=True)
-        plt.colorbar(cf, ax=axis, label='Amplitude [\u03BCV]', ticks=ticks)
+        ticks = [colorbar_axes[0], 0, colorbar_axes[1]]
+        plt.colorbar(cf, ax=axis, label='Amplitude (\u03BCV)', ticks=ticks)
     axis.scatter(x, y, c='k', s=12)
     # if time == 13/1000:
     #     plt.text(-5, 60, f'{time} s', fontsize=22)

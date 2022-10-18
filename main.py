@@ -13,6 +13,8 @@ from epoch_data import *
 from Post_ICA import *
 from Archive.add_qrs_asevent import *
 from ICA import run_ica
+from ICA_anterior import run_ica_anterior
+from ICA_separated import run_ica_separatepatches
 from run_CCA import run_CCA
 from run_CCA_variabletrials import run_CCA_variabletrials
 
@@ -30,22 +32,25 @@ if __name__ == '__main__':
     cut_epochs = False  # Epoch the data according to relevant event
 
     ######### Want to clean the heart artefact using SSP? ########
-    SSP_flag = True  # Heart artefact removal by SSP
+    SSP_flag = False  # Heart artefact removal by SSP
 
     ######### Want to perform ICA on the PCA_OBS cleaned data? ########
     post_ica = False  # Run ICA after already running PCA_OBS
 
     ######### Want to perform ICA to clean the heart artefact? ########
-    ica = False  # Run ICA on the 'dirty' data as a baseline comparison
+    ica = False  # Run ICA on the 'dirty'
     # choose_limited should be false - SNR is worse if it's true, over 95% residual intensity and inps under 1.4
     choose_limited = False  # If true only take the top 4 ICA components from find_bads_ecg
+    ica_anterior = False  # Run ICA on anteriorly rereferenced data
+    ica_separate_patches = True  # Run ICA on lumbar and cervical patches separately
 
     ######## Want to use Canonical Correlation Analysis to clean the heart artefact? ########
     CCA_flag = False  # Run CCA on data (from all methods)
     variable_cca_flag = False  # Run CCA with limited trial numbers
 
     n_subjects = 36  # Number of subjects
-    subjects = np.arange(1, 37)  # (1, 37) # 1 through 36 to access subject data
+    subjects = np.arange(1, 37)  # 1 through 36 to access subject data
+    # subjects = [1]
     srmr_nr = 1  # Experiment Number
     conditions = [2, 3]  # Conditions of interest
     sampling_rate = 1000
@@ -94,6 +99,16 @@ if __name__ == '__main__':
         for subject in subjects:
             for condition in conditions:
                 run_ica(subject, condition, srmr_nr, sampling_rate, choose_limited)
+
+    if ica_anterior:
+        for subject in subjects:
+            for condition in conditions:
+                run_ica_anterior(subject, condition, srmr_nr, sampling_rate)
+
+    if ica_separate_patches:
+        for subject in subjects:
+            for condition in conditions:
+                run_ica_separatepatches(subject, condition, srmr_nr, sampling_rate)
 
     ## To remove heart artifact using SSP method in MNE ##
     if SSP_flag:

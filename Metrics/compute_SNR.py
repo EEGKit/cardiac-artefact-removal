@@ -35,8 +35,10 @@ if __name__ == '__main__':
                     'PCA Tukey': False,
                     'PCA Tukey PCHIP': False,
                     'ICA': False,
+                    'ICA-Anterior': False,
+                    'ICA-Separate': False,
                     'Post-ICA': False,
-                    'SSP': True}
+                    'SSP': False}
 
     for i in np.arange(0, len(which_method)):
         method = list(which_method.keys())[i]
@@ -159,6 +161,12 @@ if __name__ == '__main__':
                                 file_name = f'clean_baseline_ica_auto_{cond_name}_lim.fif'
                             else:
                                 file_name = f'clean_baseline_ica_auto_{cond_name}.fif'
+                        elif method == 'ICA-Anterior':
+                            file_path = "/data/pt_02569/tmp_data/baseline_ica_py/"
+                            file_name = f"anterior_clean_baseline_ica_auto_{cond_name}.fif"
+                        elif method == 'ICA-Separate':
+                            file_path = "/data/pt_02569/tmp_data/baseline_ica_py/"
+                            file_name = f"separated_clean_baseline_ica_auto_{cond_name}.fif"
                         elif method == 'Post-ICA':
                             file_path = "/data/pt_02569/tmp_data/ica_py/"
                             file_name = f'clean_ica_auto_{cond_name}.fif'
@@ -223,6 +231,10 @@ if __name__ == '__main__':
                             fn = f"{file_path}snr.h5"
                 if method == 'ICA' and choose_limited:
                     fn = f"{file_path}snr_lim.h5"
+                if method == 'ICA-Anterior':
+                    fn = f"{file_path}snr_anteriorICA.h5"
+                if method == 'ICA-Separate':
+                    fn = f"{file_path}snr_separateICA.h5"
                 if method == 'PCA PCHIP' or method == 'PCA Tukey PCHIP':
                     fn = f"{file_path}snr_pchip.h5"
                 with h5py.File(fn, "w") as outfile:
@@ -237,6 +249,8 @@ if __name__ == '__main__':
                    'PCA Tukey': "/data/pt_02569/tmp_data/ecg_rm_py_tukey/",
                    'PCA Tukey PCHIP': "/data/pt_02569/tmp_data/ecg_rm_py_tukey/",
                    'ICA': "/data/pt_02569/tmp_data/baseline_ica_py/",
+                   'ICA-Anterior': "/data/pt_02569/tmp_data/baseline_ica_py/",
+                   'ICA-Separate': "/data/pt_02569/tmp_data/baseline_ica_py/",
                    'Post-ICA': "/data/pt_02569/tmp_data/ica_py/",
                    'SSP': "/data/p_02569/SSP/"}
 
@@ -246,6 +260,10 @@ if __name__ == '__main__':
         input_path = input_paths[name]
         if name == 'ICA' and choose_limited:
             fn = f"{input_path}snr_lim.h5"
+        elif name == 'ICA-Anterior':
+            fn = f"{input_path}snr_anteriorICA.h5"
+        elif name == 'ICA-Separate':
+            fn = f"{input_path}snr_separateICA.h5"
         elif name == 'PCA Tukey PCHIP' or name == 'PCA PCHIP':
             fn = f"{input_path}snr_pchip.h5"
         else:

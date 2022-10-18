@@ -26,6 +26,7 @@ if __name__ == '__main__':
     iv_baseline = [-100 / 1000, -10 / 1000]
 
     subjects = np.arange(1, 37)
+    # subjects = [1]
 
     trials = [True, False, True, False]
     time = [False, True, True, False]
@@ -48,7 +49,7 @@ if __name__ == '__main__':
                         channel = ['SC6']
                     else:
                         cond_name = 'tibial'
-                        time_point = 23 / 1000
+                        time_point = 22 / 1000
                         channel = ['L1']
 
                     subject_id = f'sub-{str(subj).zfill(3)}'
@@ -71,7 +72,7 @@ if __name__ == '__main__':
                     elif method == 'SSP6':
                         data_path = "/data/p_02569/SSP/" + subject_id + f"/6 projections/epochs_" + cond_name + ".fif"
 
-                    # load some continuous data
+                    # for PCA - want to interpolate the hump for the TFR plot
                     if method == 'PCA':
                         # Read raw so we can interpolate the hump at 0 - save as one type of PCA for topography
                         # This will need to be filtered and rereferenced
@@ -91,20 +92,20 @@ if __name__ == '__main__':
                         event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
                         epochs_interp = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1],
                                          baseline=tuple(iv_baseline), preload=True)
-                        if 'TH6' in epochs_interp.ch_names:
-                            epochs_interp = epochs_interp.copy().drop_channels('TH6')
-                        if 'Fz-TH6' in epochs_interp.ch_names:
-                            epochs_interp = epochs_interp.copy().drop_channels('Fz-TH6')
+                        # if 'TH6' in epochs_interp.ch_names:
+                        #     epochs_interp = epochs_interp.copy().drop_channels('TH6')
+                        # if 'Fz-TH6' in epochs_interp.ch_names:
+                        #     epochs_interp = epochs_interp.copy().drop_channels('Fz-TH6')
                         if reduced_trials:
                             epochs_interp = epochs_interp[0::4]
                         evoked_list_pca_extra.append(epochs_interp.average())
 
                         # Also read in the epochs already constructed and save in normal pca evoked list
                         epochs = mne.read_epochs(data_path_epochs, preload=True)
-                        if 'TH6' in epochs.ch_names:
-                            epochs = epochs.copy().drop_channels('TH6')
-                        if 'Fz-TH6' in epochs.ch_names:
-                            epochs = epochs.copy().drop_channels('Fz-TH6')
+                        # if 'TH6' in epochs.ch_names:
+                        #     epochs = epochs.copy().drop_channels('TH6')
+                        # if 'Fz-TH6' in epochs.ch_names:
+                        #     epochs = epochs.copy().drop_channels('Fz-TH6')
                         if reduced_trials:
                             epochs = epochs[0::4]
                         evoked_list.append(epochs.average())
@@ -112,14 +113,15 @@ if __name__ == '__main__':
                     else:
                         # For all others, read in the epochs we have constructed
                         epochs = mne.read_epochs(data_path, preload=True)
-                        if 'TH6' in epochs.ch_names:
-                            epochs = epochs.copy().drop_channels('TH6')
-                        if 'Fz-TH6' in epochs.ch_names:
-                            epochs = epochs.copy().drop_channels('Fz-TH6')
+                        # if 'TH6' in epochs.ch_names:
+                        #     epochs = epochs.copy().drop_channels('TH6')
+                        # if 'Fz-TH6' in epochs.ch_names:
+                        #     epochs = epochs.copy().drop_channels('Fz-TH6')
                         # Want each channel averaged across all epochs at a given time point
                         if reduced_trials:
                             epochs = epochs[0::4]
                         evoked_list.append(epochs.average())
+
 
                 ##########################################################################################
                 # Plot the time course
@@ -127,7 +129,7 @@ if __name__ == '__main__':
                 grand_average = mne.grand_average(evoked_list, interpolate_bads=False, drop_bads=False)
                 relevant_channel = grand_average.pick_channels(channel, ordered=True)
                 axes[count].plot(relevant_channel.times, np.mean(relevant_channel.data[:, :], axis=0) * 10 ** 6)
-                axes[count].set_ylabel('Amplitude [\u03BCV]')
+                axes[count].set_ylabel('Amplitude (\u03BCV)')
                 if shorter_timescale:
                     axes[count].set_xlim([-0.025, 0.065])
                 else:
@@ -138,8 +140,7 @@ if __name__ == '__main__':
                     axes[count].axvline(x=13 / 1000, color='r', linewidth=0.5, label='13ms')
                 if count == 0:
                     axes[count].set_title('Time Courses')
-                if count == 10:
-                    axes[count].set_xlabel('Time [s]')
+                axes[count].set_xlabel('Time (s)')
                 count += 1
 
                 ################################################################################################
@@ -149,17 +150,21 @@ if __name__ == '__main__':
                 fmin, fmax = freqs[[0, -1]]
                 power_list = []
                 for index in np.arange(0, len(evoked_list)):
-                    if method == 'PCA_OBS':
-                        power = mne.time_frequency.tfr_stockwell(evoked_list_pca_extra[0], fmin=fmin, fmax=fmax,
+                    if method == 'PCA':
+                        power = mne.time_frequency.tfr_stockwell(evoked_list_pca_extra[index], fmin=fmin, fmax=fmax,
                                                                  width=1.0, n_jobs=5)
                     else:
-                        power = mne.time_frequency.tfr_stockwell(evoked_list[0], fmin=fmin, fmax=fmax, width=1.0,
+                        power = mne.time_frequency.tfr_stockwell(evoked_list[index], fmin=fmin, fmax=fmax, width=1.0,
                                                                  n_jobs=5)
                     power = power.pick_channels(channel)
                     # evoked_list.append(evoked)
                     power_list.append(power)
-                tmin = -0.1
-                tmax = 0.1
+                if shorter_timescale:
+                    tmin = -0.025
+                    tmax = 0.065
+                else:
+                    tmin = -0.1
+                    tmax = 0.3
                 vmin = -380
                 vmax = -280
                 averaged = mne.grand_average(power_list, interpolate_bads=False, drop_bads=False)
@@ -168,22 +173,29 @@ if __name__ == '__main__':
                               tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
                 if count == 1:
                     axes[count].set_title('Time-Frequency Representations')
+                im = axes[count].images
+                cb = im[-1].colorbar
+                # cb.set_label('dB', rotation=0, labelpad=15)
+                cb.set_label('Amplitude (dB)')
                 count += 1
 
                 ##########################################################################################
                 # Plot the topography
                 ##########################################################################################
                 evoked = mne.grand_average(evoked_list)
-                time_idx = []
-                tmp = np.argwhere(epochs.times >= time_point)
-                # sometimes when data is down sampled  find(epo.times == time_points(ii)) doesn't work
-                time_idx.append(tmp[0])
+                # time_idx = []
+                # tmp = np.argwhere(epochs.times >= time_point)
+                # # sometimes when data is down sampled  find(epo.times == time_points(ii)) doesn't work
+                # time_idx.append(tmp[0])
+                # chanvalues = evoked.data[:, time_idx]
+                # chan_labels = evoked.ch_names
 
-                chanvalues = evoked.data[:, time_idx]
+                chanvalues = evoked.crop(tmin=time_point-(2/1000), tmax=time_point+(2/1000)).data
+                chanvalues = chanvalues.mean(axis=1)  # Get average in window of interest
+
                 chan_labels = evoked.ch_names
                 colorbar_axes = [-0.5, 0.5]
-                subjects_4grid = np.arange(1, 37)  # subj  # Pass this instead of (1, 37) for 1 subjects
-                # you can also base the grid on an several subjects
+                subjects_4grid = np.arange(1, 37)
                 # then the function takes the average over the channel positions of all those subjects
                 colorbar = True
                 mrmr_esg_isopotentialplot(subjects_4grid, chanvalues, colorbar_axes, chan_labels, colorbar,
@@ -209,13 +221,16 @@ if __name__ == '__main__':
             plt.tight_layout()
             plt.subplots_adjust(left=0.15, top=0.95)
             if reduced_trials and shorter_timescale:
-                fname = f"Combined_{cond_name}_reducedtrials_shorter.png"
+                fname = f"Combined_{cond_name}_reducedtrials_shorter"
             elif reduced_trials and not shorter_timescale:
-                fname = f"Combined_{cond_name}_reducedtrials.png"
+                fname = f"Combined_{cond_name}_reducedtrials"
             elif shorter_timescale and not reduced_trials:
-                fname = f"SCombined_{cond_name}_shorter.png"
+                fname = f"Combined_{cond_name}_shorter"
             else:
-                fname = f"Combined_{cond_name}.png"
+                fname = f"Combined_{cond_name}"
 
-            plt.savefig(save_path+fname)
-            # plt.show
+            plt.savefig(save_path+fname+'.png')
+            # plt.savefig(save_path+fname+'.pdf')
+            # plt.show()
+
+
