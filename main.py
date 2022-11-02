@@ -32,7 +32,7 @@ if __name__ == '__main__':
     cut_epochs = False  # Epoch the data according to relevant event
 
     ######### Want to clean the heart artefact using SSP? ########
-    SSP_flag = False  # Heart artefact removal by SSP
+    SSP_flag = True  # Heart artefact removal by SSP
 
     ######### Want to perform ICA on the PCA_OBS cleaned data? ########
     post_ica = False  # Run ICA after already running PCA_OBS
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # choose_limited should be false - SNR is worse if it's true, over 95% residual intensity and inps under 1.4
     choose_limited = False  # If true only take the top 4 ICA components from find_bads_ecg
     ica_anterior = False  # Run ICA on anteriorly rereferenced data
-    ica_separate_patches = True  # Run ICA on lumbar and cervical patches separately
+    ica_separate_patches = False  # Run ICA on lumbar and cervical patches separately
 
     ######## Want to use Canonical Correlation Analysis to clean the heart artefact? ########
     CCA_flag = False  # Run CCA on data (from all methods)

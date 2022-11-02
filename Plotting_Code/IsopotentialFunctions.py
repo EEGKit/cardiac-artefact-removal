@@ -86,6 +86,7 @@ def plot_esg_isopotential(chanvalues, colorbar_axes, gridsize, chan_pos_grid, la
 
     rbf = Rbf(x, y, chanvalues, epsilon=2)
     vq = rbf(xq, yq)
+
     # plt.contourf(xq, yq, vq, levels=levels, cmap='turbo', origin='upper')
     levels = MaxNLocator(nbins=150).tick_values(colorbar_axes[0]*10**-6, colorbar_axes[1]*10**-6)
     plt.contourf(xq, yq, vq, levels=levels, cmap='turbo', origin='upper')

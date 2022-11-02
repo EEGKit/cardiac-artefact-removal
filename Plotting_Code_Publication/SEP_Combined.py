@@ -190,7 +190,7 @@ if __name__ == '__main__':
                 # chanvalues = evoked.data[:, time_idx]
                 # chan_labels = evoked.ch_names
 
-                chanvalues = evoked.crop(tmin=time_point-(2/1000), tmax=time_point+(2/1000)).data
+                chanvalues = evoked.crop(tmin=time_point-(1/1000), tmax=time_point+(2/1000)).data
                 chanvalues = chanvalues.mean(axis=1)  # Get average in window of interest
 
                 chan_labels = evoked.ch_names

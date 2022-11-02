@@ -136,7 +136,7 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
                                 debug_mode=False, interpol_window_sec=interpol_window,
                                 trigger_indices=trigger_points, fs=sampling_rate_og
                             )
-                            raw.apply_function(PCHIP_interpolation, picks=esg_chans, **PCHIP_kwargs,
+                            raw.apply_function(PCHIP_interpolation, picks=eeg_chans, **PCHIP_kwargs,
                                                n_jobs=len(eeg_chans))
 
             # Downsample the data

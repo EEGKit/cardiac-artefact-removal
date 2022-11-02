@@ -75,8 +75,8 @@ if __name__ == '__main__':
                     'PCA Tukey': False,
                     'PCA Tukey PCHIP': False,
                     'ICA': False,
-                    'ICA-Anterior': True,
-                    'ICA-Separate': True,
+                    'ICA-Anterior': False,
+                    'ICA-Separate': False,
                     'Post-ICA': False,
                     'SSP': False}
 
@@ -267,9 +267,9 @@ if __name__ == '__main__':
             if name == 'ICA' and choose_limited:
                 fn = f"{input_path}inps_yasa_lim.h5"
             elif name == 'ICA-Anterior':
-                fn = f"{file_path}inps_yasa_anteriorICA.h5"
+                fn = f"{input_path}inps_yasa_anteriorICA.h5"
             elif name == 'ICA-Separate':
-                fn = f"{file_path}inps_yasa_separateICA.h5"
+                fn = f"{input_path}inps_yasa_separateICA.h5"
             elif name == 'PCA Tukey PCHIP' or name == 'PCA PCHIP':
                 fn = f"{input_path}inps_yasa_pchip.h5"
             else:
@@ -323,9 +323,9 @@ if __name__ == '__main__':
             if name == 'ICA' and choose_limited:
                 fn = f"{input_path}inps_yasa_lim.h5"
             elif name == 'ICA-Anterior':
-                fn = f"{file_path}inps_yasa_anteriorICA.h5"
+                fn = f"{input_path}inps_yasa_anteriorICA.h5"
             elif name == 'ICA-Separate':
-                fn = f"{file_path}inps_yasa_separateICA.h5"
+                fn = f"{input_path}inps_yasa_separateICA.h5"
             elif name == 'PCA Tukey PCHIP' or name == 'PCA PCHIP':
                 fn = f"{input_path}inps_yasa_pchip.h5"
             else:
