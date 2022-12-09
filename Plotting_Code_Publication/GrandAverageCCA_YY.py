@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from invert import invert
 from mpl_axes_aligner import align
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 def align_yaxis_np(axes):
     """Align zeros of the two axes, zooming them out by same ratio"""
@@ -251,13 +253,13 @@ if __name__ == '__main__':
                 ax3.set_xlim([-100/1000, 300/1000])
 
             if reduced_trials and shorter_timescale:
-                fname = f"CCA_SEPTimeCourse_{cond_name}_reducedtrials_shorter.png"
+                fname = f"CCA_SEPTimeCourse_{cond_name}_reducedtrials_shorter"
             elif reduced_trials and not shorter_timescale:
-                fname = f"CCA_SEPTimeCourse_{cond_name}_reducedtrials.png"
+                fname = f"CCA_SEPTimeCourse_{cond_name}_reducedtrials"
             elif shorter_timescale and not reduced_trials:
-                fname = f"CCA_SEPTimeCourse_{cond_name}_shorter.png"
+                fname = f"CCA_SEPTimeCourse_{cond_name}_shorter"
             else:
-                fname = f"CCA_SEPTimeCourse_{cond_name}.png"
+                fname = f"CCA_SEPTimeCourse_{cond_name}"
 
             # # Align y-axes
             align_yaxis_np([ax1, ax10, ax2, ax20, ax3, ax30])
@@ -284,5 +286,5 @@ if __name__ == '__main__':
             plt.tight_layout()
             # plt.show()
             # exit()
-            plt.savefig(image_path+fname)
-
+            plt.savefig(image_path+fname+'.png')
+            plt.savefig(image_path+fname+'.pdf', bbox_inches='tight', format="pdf")

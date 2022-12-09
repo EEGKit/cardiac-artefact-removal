@@ -6,11 +6,13 @@ import matplotlib.pyplot as plt
 from IsopotentialFunctions_Axis import mrmr_esg_isopotentialplot
 from scipy.io import loadmat
 import os
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 
 if __name__ == '__main__':
     #  First get the evoked list
-    trigger_names = ['Median - Stimulation', 'Tibial - Stimulation']
+    trigger_names = ['Tibial - Stimulation', 'Median - Stimulation']
     save_path = '/data/p_02569/SEP_Combined_D1/'
     os.makedirs(save_path, exist_ok=True)
 
@@ -26,7 +28,11 @@ if __name__ == '__main__':
     iv_baseline = [-100 / 1000, -10 / 1000]
 
     subjects = np.arange(1, 37)
-    # subjects = [1]
+    esg_chans = ['S35', 'S24', 'S36', 'Iz', 'S17', 'S15', 'S32', 'S22',
+                 'S19', 'S26', 'S28', 'S9', 'S13', 'S11', 'S7', 'SC1', 'S4', 'S18',
+                 'S8', 'S31', 'SC6', 'S12', 'S16', 'S5', 'S30', 'S20', 'S34', 'AC',
+                 'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
+                 'S23']
 
     trials = [True, False, True, False]
     time = [False, True, True, False]
@@ -40,9 +46,16 @@ if __name__ == '__main__':
 
             for method in methods:
                 evoked_list = []
+                data_list = []
                 evoked_list_pca_extra = []
 
                 for subj in subjects:
+                    subject_id = f'sub-{str(subj).zfill(3)}'
+
+                    potential_path = f"/data/p_02068/SRMR1_experiment/analyzed_data/esg/{subject_id}/"
+                    fname_pot = 'potential_latency.mat'
+                    matdata = loadmat(potential_path + fname_pot)
+
                     if trigger_name == 'Median - Stimulation':
                         time_point = 13 / 1000
                         cond_name = 'median'
@@ -51,8 +64,6 @@ if __name__ == '__main__':
                         cond_name = 'tibial'
                         time_point = 22 / 1000
                         channel = ['L1']
-
-                    subject_id = f'sub-{str(subj).zfill(3)}'
 
                     if method == 'Uncleaned':
                         data_path = '/data/pt_02569/tmp_data/prepared_py/' + subject_id + \
@@ -101,18 +112,28 @@ if __name__ == '__main__':
                         evoked_list_pca_extra.append(epochs_interp.average())
 
                         # Also read in the epochs already constructed and save in normal pca evoked list
-                        epochs = mne.read_epochs(data_path_epochs, preload=True)
+                        epochs = mne.read_epochs(data_path_epochs, preload=True).reorder_channels(esg_chans)
                         # if 'TH6' in epochs.ch_names:
                         #     epochs = epochs.copy().drop_channels('TH6')
                         # if 'Fz-TH6' in epochs.ch_names:
                         #     epochs = epochs.copy().drop_channels('Fz-TH6')
                         if reduced_trials:
                             epochs = epochs[0::4]
+                        if subj == 34:
+                            evoked = epochs.average().crop(tmin=time_point, tmax=time_point + (2 / 1000))
+                            data = evoked.data.mean(axis=1)
+                            ch_idx = evoked.ch_names.index("S34")
+                            data = np.insert(data, ch_idx, np.nan)
+                            data_list.append(data)
+                        else:
+                            evoked = epochs.average().crop(tmin=time_point, tmax=time_point + (2 / 1000))
+                            data = evoked.data.mean(axis=1)
+                            data_list.append(data)
                         evoked_list.append(epochs.average())
 
                     else:
                         # For all others, read in the epochs we have constructed
-                        epochs = mne.read_epochs(data_path, preload=True)
+                        epochs = mne.read_epochs(data_path, preload=True).reorder_channels(esg_chans)
                         # if 'TH6' in epochs.ch_names:
                         #     epochs = epochs.copy().drop_channels('TH6')
                         # if 'Fz-TH6' in epochs.ch_names:
@@ -120,6 +141,16 @@ if __name__ == '__main__':
                         # Want each channel averaged across all epochs at a given time point
                         if reduced_trials:
                             epochs = epochs[0::4]
+                        if subj == 34:
+                            evoked = epochs.average().crop(tmin=time_point, tmax=time_point + (2 / 1000))
+                            data = evoked.data.mean(axis=1)
+                            ch_idx = evoked.ch_names.index("S34")
+                            data = np.insert(data, ch_idx, np.nan)
+                            data_list.append(data)
+                        else:
+                            evoked = epochs.average().crop(tmin=time_point, tmax=time_point + (2 / 1000))
+                            data = evoked.data.mean(axis=1)
+                            data_list.append(data)
                         evoked_list.append(epochs.average())
 
 
@@ -182,18 +213,14 @@ if __name__ == '__main__':
                 ##########################################################################################
                 # Plot the topography
                 ##########################################################################################
-                evoked = mne.grand_average(evoked_list)
-                # time_idx = []
-                # tmp = np.argwhere(epochs.times >= time_point)
-                # # sometimes when data is down sampled  find(epo.times == time_points(ii)) doesn't work
-                # time_idx.append(tmp[0])
-                # chanvalues = evoked.data[:, time_idx]
+                # evoked = mne.grand_average(evoked_list)
+                # chanvalues = evoked.crop(tmin=time_point - (1 / 1000), tmax=time_point + (2 / 1000)).data
+                # chanvalues = chanvalues.mean(axis=1)  # Get average in window of interest
+                arrays = [np.array(x) for x in data_list]
+                chanvalues = np.array([np.nanmean(k) for k in zip(*arrays)])
+
                 # chan_labels = evoked.ch_names
-
-                chanvalues = evoked.crop(tmin=time_point-(1/1000), tmax=time_point+(2/1000)).data
-                chanvalues = chanvalues.mean(axis=1)  # Get average in window of interest
-
-                chan_labels = evoked.ch_names
+                chan_labels = esg_chans
                 colorbar_axes = [-0.5, 0.5]
                 subjects_4grid = np.arange(1, 37)
                 # then the function takes the average over the channel positions of all those subjects
@@ -221,16 +248,16 @@ if __name__ == '__main__':
             plt.tight_layout()
             plt.subplots_adjust(left=0.15, top=0.95)
             if reduced_trials and shorter_timescale:
-                fname = f"Combined_{cond_name}_reducedtrials_shorter"
+                fname = f"GoodTopo_Combined_{cond_name}_reducedtrials_shorter"
             elif reduced_trials and not shorter_timescale:
-                fname = f"Combined_{cond_name}_reducedtrials"
+                fname = f"GoodTopo_Combined_{cond_name}_reducedtrials"
             elif shorter_timescale and not reduced_trials:
-                fname = f"Combined_{cond_name}_shorter"
+                fname = f"GoodTopo_Combined_{cond_name}_shorter"
             else:
-                fname = f"Combined_{cond_name}"
+                fname = f"GoodTopo_Combined_{cond_name}"
 
             plt.savefig(save_path+fname+'.png')
-            # plt.savefig(save_path+fname+'.pdf')
+            plt.savefig(save_path+fname+'.pdf', bbox_inches='tight', format="pdf")
             # plt.show()
 
 

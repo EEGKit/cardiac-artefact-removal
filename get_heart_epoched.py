@@ -22,8 +22,7 @@ if __name__ == '__main__':
     # Want 200ms before R-peak and 400ms after R-peak
     # Baseline is the 100ms period before the artefact occurs
     iv_baseline = [-300 / 1000, -200 / 1000]
-    # Want 200ms before and 400ms after the R-peak in our epoch - need baseline outside this
-    iv_epoch = [-300 / 1000, 400 / 1000]
+    iv_epoch = [-400 / 1000, 600 / 1000]
 
     esg_chans = ['S35', 'S24', 'S36', 'Iz', 'S17', 'S15', 'S32', 'S22',
                  'S19', 'S26', 'S28', 'S9', 'S13', 'S11', 'S7', 'SC1', 'S4', 'S18',
