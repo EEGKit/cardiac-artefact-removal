@@ -7,12 +7,15 @@ import numpy as np
 from scipy.io import loadmat
 from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 
 if __name__ == '__main__':
-    subjects = np.arange(1, 3)  # 1 through 36 to access subject data
+    subjects = np.arange(1, 37)  # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
+    full = True  # Do up to 2000Hz, otherwise up to 400Hz
 
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
     cfg = loadmat(cfg_path + 'cfg.mat')
@@ -32,7 +35,7 @@ if __name__ == '__main__':
     os.makedirs(image_path, exist_ok=True)
 
     methods = [True, True, True]  # Can't do ICA when cca_flag = True
-    method_names = ['PCA', 'ICA', 'SSP6']  # Will treat SSP separately since there are multiple
+    method_names = ['SSP6', 'PCA', 'ICA']  # Will treat SSP separately since there are multiple
 
     # To use mne grand_average method, need to generate a list of evoked potentials for each subject
     for i in np.arange(0, len(methods)):  # Methods Applied
@@ -86,31 +89,38 @@ if __name__ == '__main__':
                         evoked.reorder_channels(esg_chans)
                         evoked_list_cleaned.append(evoked)
 
+                    elif method == 'SSP6':
+                        input_path = f"/data/p_02569/SSP/{subject_id}/6 projections/"
+                        raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
+                        evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
+                        evoked.reorder_channels(esg_chans)
+                        evoked_list_cleaned.append(evoked)
+
                 averaged_cleaned = mne.grand_average(evoked_list_cleaned, interpolate_bads=False, drop_bads=False)
-                med_channel_clean = averaged_cleaned.pick_channels(med_channel)
-                tib_channel_clean = averaged_cleaned.pick_channels(tib_channel)
-
                 averaged_uncleaned = mne.grand_average(evoked_list_uncleaned, interpolate_bads=False, drop_bads=False)
-                med_channel_unclean = averaged_uncleaned.pick_channels(med_channel)
-                tib_channel_unclean = averaged_uncleaned.pick_channels(tib_channel)
+                if cond_name == 'median':
+                    channel_clean = averaged_cleaned.copy().pick_channels(med_channel)
+                    channel_unclean = averaged_uncleaned.copy().pick_channels(med_channel)
 
-                med_clean_data = np.mean(med_channel_clean.data[:, :], axis=0)
-                tib_clean_data = np.mean(tib_channel_clean.data[:, :], axis=0)
+                elif cond_name == 'tibial':
+                    channel_clean = averaged_cleaned.copy().pick_channels(tib_channel)
+                    channel_unclean = averaged_uncleaned.copy().pick_channels(tib_channel)
 
-                med_unclean_data = np.mean(med_channel_unclean.data[:, :], axis=0)
-                tib_unclean_data = np.mean(med_channel_unclean.data[:, :], axis=0)
+                clean_data = np.mean(channel_clean.data[:, :], axis=0)
+                unclean_data = np.mean(channel_unclean.data[:, :], axis=0)
 
                 plt.figure()
-                plt.psd(med_clean_data, NFFT=512, Fs=1000, label='Cleaned Median Channel')
-                plt.psd(tib_clean_data, NFFT=512, Fs=1000, label='Cleaned Tibial Channel')
-                plt.psd(med_unclean_data, NFFT=512, Fs=1000, label='Original Median Channel')
-                plt.psd(tib_unclean_data, NFFT=512, Fs=1000, label='Original Tibial Channel')
-                plt.xlabel('Frequency [Hz]')
-                plt.ylabel('PSD [dB/Hz]')
+                plt.psd(clean_data, NFFT=512, Fs=1000, label='Cleaned')
+                plt.psd(unclean_data, NFFT=512, Fs=1000, label='Uncleaned')
+                plt.xlabel('Frequency (Hz)')
+                plt.ylabel('PSD (dB/Hz)')
                 plt.xlim([0, 400])
+                plt.ylim([-240, -130])
+                plt.yticks(np.arange(-240, -130, 20.0))
+                fname = f"{method}_{trigger_name}"
+                plt.legend()
 
                 plt.title(f"Method: {method}, Condition: {trigger_name}")
-                fname = f"{method}_{trigger_name}.png"
-
-                plt.savefig(image_path+fname)
+                plt.savefig(image_path+fname+".png")
+                plt.savefig(image_path+fname+".pdf", bbox_inches='tight', format="pdf")
                 plt.close()
