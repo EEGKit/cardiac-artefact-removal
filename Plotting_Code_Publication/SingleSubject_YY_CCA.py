@@ -180,12 +180,12 @@ if __name__ == '__main__':
                 ax10.get_shared_y_axes().join(ax10, ax20, ax30)  # Tie secondary axes
 
                 # Uncleaned
-                ax1.plot(relevant_channel_uncleaned_cca.times, relevant_channel_uncleaned_cca.data[0, :]*10**6,
+                ax1.plot(relevant_channel_uncleaned_cca.times, relevant_channel_uncleaned_cca.data[0, :],
                          label='Uncleaned CCA', color='blue')
-                ax1.set_ylabel('Cleaned SEP Amplitude (\u03BCV)')
+                ax1.set_ylabel('Cleaned SEP Amplitude (A.U.)')
                 ax1.set_xlabel('Time (s)')
                 ax1.set_title('Uncleaned + CCA')
-                ax1.set_yticklabels([])
+                # ax1.set_yticklabels([])
                 ax1.spines['left'].set_color('blue')
                 ax1.tick_params(axis='y', colors='blue')
                 ax10.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :]*10**6, label='Uncleaned',
@@ -193,11 +193,11 @@ if __name__ == '__main__':
                 ax10.set_yticklabels([])
 
                 # PCA
-                ax2.plot(relevant_channel_pca_cca.times, relevant_channel_pca_cca.data[0, :] * 10 ** 6, label='PCA CCA',
+                ax2.plot(relevant_channel_pca_cca.times, relevant_channel_pca_cca.data[0, :], label='PCA CCA',
                          color='orange')
                 ax2.set_xlabel('Time (s)')
                 ax2.set_title('PCA + CCA')
-                ax2.set_yticklabels([])
+                # ax2.set_yticklabels([])
                 ax2.spines['left'].set_color('orange')
                 ax2.tick_params(axis='y', colors='orange')
                 ax20.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :] * 10 ** 6, label='Uncleaned',
@@ -205,11 +205,11 @@ if __name__ == '__main__':
                 ax20.set_yticklabels([])
 
                 # SSP6
-                ax3.plot(relevant_channel_ssp6_cca.times, relevant_channel_ssp6_cca.data[0, :] * 10 ** 6,
+                ax3.plot(relevant_channel_ssp6_cca.times, relevant_channel_ssp6_cca.data[0, :],
                          label='SSP6 CCA', color='magenta')
                 ax3.set_xlabel('Time (s)')
                 ax3.set_title('SSP + CCA')
-                ax3.set_yticklabels([])
+                # ax3.set_yticklabels([])
                 ax30.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :] * 10 ** 6, label='Uncleaned',
                           linewidth=0.5, linestyle='dashed', color='black')
                 ax30.set_ylabel('Uncleaned SEP Amplitude (\u03BCV)')

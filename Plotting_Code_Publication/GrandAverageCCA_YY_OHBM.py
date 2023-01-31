@@ -72,7 +72,9 @@ def align_yaxis_np(axes):
 if __name__ == '__main__':
     pal = sns.color_palette(n_colors=4)
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
-    cond_names = ['median', 'tibial']
+    # subjects = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+    #             29, 30, 31, 32, 33, 35, 36]
+    cond_names = ['tibial', 'median']
     sampling_rate = 1000
 
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment

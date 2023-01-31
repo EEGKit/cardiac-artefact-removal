@@ -65,7 +65,7 @@ def align_yaxis_np(axes):
 
 if __name__ == '__main__':
     # subjects = np.arange(1, 37)   # 1 through 36 to access subject data
-    subjects = [1, 6, 20, 31]
+    subjects = [1, 6, 20, 31, 34]
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 
