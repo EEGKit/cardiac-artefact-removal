@@ -125,7 +125,7 @@ if __name__ == '__main__':
         # cb = fig.colorbar(ax[0].images[-1], cax=ax[-1])  # Take colourbar from first image and puts it in last axis
         cb.set_label('Amplitude (dB)')
         ax[0].set_title('Uncleaned')
-        ax[1].set_title('PCA_OBS')
+        ax[1].set_title('PCA-OBS')
         ax[1].set_yticklabels([])
         ax[1].set_ylabel(None)
         ax[2].set_title('ICA')

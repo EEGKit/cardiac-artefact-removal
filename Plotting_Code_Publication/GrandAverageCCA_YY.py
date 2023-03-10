@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from invert import invert
 from mpl_axes_aligner import align
+import seaborn as sns
 import matplotlib as mpl
 mpl.rcParams['pdf.fonttype'] = 42
 
@@ -68,6 +69,7 @@ def align_yaxis_np(axes):
 
 
 if __name__ == '__main__':
+    pal = sns.color_palette(n_colors=4)
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
@@ -198,7 +200,7 @@ if __name__ == '__main__':
 
             # Uncleaned
             ax1.plot(epochs.times, relevant_channel_prep_cca[0, :], label='Uncleaned CCA',
-                     color='teal')
+                     color=pal[0])
             ax1.set_ylabel('Cleaned SEP Amplitude (AU)')
             ax1.set_xlabel('Time (s)')
             ax1.set_title('Uncleaned + CCA')
@@ -209,10 +211,10 @@ if __name__ == '__main__':
             ax10.set_yticklabels([])
 
             # PCA
-            ax2.plot(epochs.times, relevant_channel_pca_cca[0, :], label='PCA_OBS CCA',
-                     color='blue')
+            ax2.plot(epochs.times, relevant_channel_pca_cca[0, :], label='PCA-OBS CCA',
+                     color=pal[1])
             ax2.set_xlabel('Time (s)')
-            ax2.set_title('PCA_OBS + CCA')
+            ax2.set_title('PCA-OBS + CCA')
             ax2.set_yticklabels([])
             # ax2.spines['left'].set_color('blue')
             # ax2.tick_params(axis='y', colors='blue')
@@ -222,7 +224,7 @@ if __name__ == '__main__':
 
             # SSP6
             ax3.plot(epochs.times, relevant_channel_ssp6_cca[0, :], label='SSP6 CCA',
-                     color='magenta')
+                     color=pal[3])
             ax3.set_xlabel('Time (s)')
             ax3.set_title('SSP6 + CCA')
             ax3.set_yticklabels([])
