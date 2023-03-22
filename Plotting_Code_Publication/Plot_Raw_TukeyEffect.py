@@ -113,14 +113,14 @@ for subject in subjects:
         fig, axes = plt.subplots(1, 1)
         for count in np.arange(0, len(offsets)):
             if count == 0:
-                label = 'PCA_OBS Tukey'
+                label = 'PCA-OBS Tukey'
             else:
                 label = None
             axes.plot(np.linspace(tmin, tmax, 1000), data_tukey[count, :] + offsets[count], color='red', label=label)
 
         for count in np.arange(0, len(offsets)):
             if count == 0:
-                label = 'PCA_OBS'
+                label = 'PCA-OBS'
             else:
                 label = None
             axes.plot(np.linspace(tmin, tmax, 1000), data_pcaobs[count, :] + offsets[count], color='blue', label=label)

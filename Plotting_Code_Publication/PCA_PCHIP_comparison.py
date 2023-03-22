@@ -56,8 +56,8 @@ if __name__ == '__main__':
                     evoked_ch = evoked.pick_channels([ch])
                     evoked_tuk_ch = evoked_tuk.pick_channels([ch])
                     plt.figure()
-                    plt.plot(evoked_ch.times, evoked_ch.data.reshape(-1)*10**6, label='PCA_OBS', color='blue')
-                    plt.plot(evoked_tuk_ch.times, evoked_tuk_ch.data.reshape(-1)*10**6, label='PCA_OBS PCHIP',
+                    plt.plot(evoked_ch.times, evoked_ch.data.reshape(-1)*10**6, label='PCA-OBS', color='blue')
+                    plt.plot(evoked_tuk_ch.times, evoked_tuk_ch.data.reshape(-1)*10**6, label='PCA-OBS PCHIP',
                              color='green')
                     plt.xlim([-0.025, 0.065])
                     plt.legend()
@@ -137,11 +137,11 @@ if __name__ == '__main__':
             if 'PCA' in method_names:
                 relevant_channel_pca = mne.grand_average(evoked_list_pca, interpolate_bads=False, drop_bads=False)
                 plt.plot(relevant_channel_pca.times, np.mean(relevant_channel_pca.data[:, :], axis=0) * 10 ** 6,
-                         label='PCA_OBS', color='blue')
+                         label='PCA-OBS', color='blue')
             if 'PCA PCHIP' in method_names:
                 relevant_channel_pchip = mne.grand_average(evoked_list_pchip, interpolate_bads=False, drop_bads=False)
                 plt.plot(relevant_channel_pchip.times, np.mean(relevant_channel_pchip.data[:, :], axis=0) * 10 ** 6,
-                         label='PCA_OBS PCHIP', color='green')
+                         label='PCA-OBS PCHIP', color='green')
 
             # relevant_channel = averaged.pick_channels(channel)
             plt.ylabel('Amplitude (\u03BCV)')

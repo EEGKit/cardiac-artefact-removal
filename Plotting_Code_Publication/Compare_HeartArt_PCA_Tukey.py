@@ -80,16 +80,16 @@ if __name__ == '__main__':
         relevant_channel_pca_tukey = averaged_pca_tukey.pick_channels([channel])
 
         plt.figure()
-        plt.plot(relevant_channel_pca.times, relevant_channel_pca.data[0, :] * 10 ** 6, label='PCA_OBS', color='blue')
+        plt.plot(relevant_channel_pca.times, relevant_channel_pca.data[0, :] * 10 ** 6, label='PCA-OBS', color='blue')
         plt.plot(relevant_channel_pca_tukey.times, relevant_channel_pca_tukey.data[0, :] * 10 ** 6,
-                 label='PCA_OBS Tukey', color='red')
+                 label='PCA-OBS Tukey', color='red')
         plt.ylabel('Amplitude (\u03BCV)')
         plt.xlabel('Time (s)')
         plt.xlim([-200 / 1000, 400 / 1000])
         plt.title(f"Heart Artefact Grand Average\n"
                   f"{full_name}")
         fname = f"HeartArtComp_{trigger_name}_{channel}.png"
-        plt.legend(loc='upper right')
+        # plt.legend(loc='upper right')
         plt.savefig(image_path + fname)
-        plt.show()
+        # plt.show()
         plt.clf()

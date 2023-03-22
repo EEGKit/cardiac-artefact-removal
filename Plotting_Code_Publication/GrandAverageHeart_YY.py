@@ -142,8 +142,14 @@ if __name__ == '__main__':
 
         # Align y-axes
         if cond_name == 'median':
+            ax1.set_ylim([-1, 0.3])
+            ax2.set_ylim([-1, 0.3])
+            ax3.set_ylim([-1, 0.3])
             align.yaxes(ax1, 0, ax10, 0, 0.75)
         else:
+            ax1.set_ylim([-2, 7])
+            ax2.set_ylim([-2, 7])
+            ax3.set_ylim([-2, 7])
             align.yaxes(ax1, 0, ax10, 0, 0.25)
 
         # Collect labels for legend

@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
                 plt.figure()
                 plt.plot(averaged_prep.times, averaged_prep.data[0, :]*10**6, label='Uncleaned')
-                plt.plot(averaged_pca.times, averaged_pca.data[0, :]*10**6, label='PCA_OBS')
+                plt.plot(averaged_pca.times, averaged_pca.data[0, :]*10**6, label='PCA-OBS')
                 plt.plot(averaged_art.times, averaged_art.data[0, :]*10**6, label='Fitted Artefact')
 
                 # plt.plot(evoked.times, np.mean(evoked.data[:, :], axis=0)*10**6,
@@ -200,7 +200,7 @@ if __name__ == '__main__':
 
             plt.figure()
             plt.plot(averaged_prep.times, averaged_prep.data[0, :] * 10 ** 6, label='Uncleaned')
-            plt.plot(averaged_pca.times, averaged_pca.data[0, :] * 10 ** 6, label='PCA_OBS')
+            plt.plot(averaged_pca.times, averaged_pca.data[0, :] * 10 ** 6, label='PCA-OBS')
             plt.plot(averaged_art.times, averaged_art.data[0, :] * 10 ** 6, label='Fitted Artefact')
 
             # plt.plot(evoked.times, np.mean(evoked.data[:, :], axis=0)*10**6,
@@ -219,7 +219,7 @@ if __name__ == '__main__':
                           f"Cervical Spinal Cord")
 
             plt.axvline(x=0 / 1000, color='r', linewidth=0.7, linestyle='dashed', label=None)
-            fname = f"GrandAverage_PCHIP_{cond_name}_pca_obs.png"
-            plt.legend(loc='upper right')
+            fname = f"GrandAverage_PCHIP_{cond_name}_pca_obs_nolegend.png"
+            # plt.legend(loc='upper right')
             plt.savefig(image_path + fname)
             # plt.show()

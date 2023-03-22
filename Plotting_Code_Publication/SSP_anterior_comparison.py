@@ -130,12 +130,14 @@ if __name__ == '__main__':
                     elif cond_name == 'median':
                         plt.axvline(x=13 / 1000, color='k', linewidth=0.7, linestyle='dashed', label=None)
                         # plt.ylim([-0.8, 0.8])
-                    plt.title(f"{full_name}\n"
-                              f"Evoked Grand Average, Channel: {channel}")
+                    # plt.title(f"{full_name}\n"
+                    #           f"Evoked Grand Average, Channel: {channel}")
+                    plt.title(f"Channel: {channel}")
                     if reduced_epochs:
-                        fname = f"SSP_{n}_{trigger_name}_{channel}_reducedtrials.png"
+                        fname = f"SSP_{n}_{trigger_name}_{channel}_reducedtrials_newleg.png"
                     else:
-                        fname = f"SSP_{n}_{trigger_name}_{channel}.png"
-                    plt.legend(loc='upper right')
+                        fname = f"SSP_{n}_{trigger_name}_{channel}_newleg.png"
+                    if channel == 'S32':
+                        plt.legend(loc='upper right')
                     plt.savefig(figure_path + fname)
                     plt.clf()

@@ -56,8 +56,8 @@ if __name__ == '__main__':
                     evoked_ch = evoked.pick_channels([ch])
                     evoked_tuk_ch = evoked_tuk.pick_channels([ch])
                     plt.figure()
-                    plt.plot(evoked_ch.times, evoked_ch.data.reshape(-1)*10**6, label='PCA_OBS', color='blue')
-                    plt.plot(evoked_tuk_ch.times, evoked_tuk_ch.data.reshape(-1)*10**6, label='PCA_OBS Tukey',
+                    plt.plot(evoked_ch.times, evoked_ch.data.reshape(-1)*10**6, label='PCA-OBS', color='blue')
+                    plt.plot(evoked_tuk_ch.times, evoked_tuk_ch.data.reshape(-1)*10**6, label='PCA-OBS Tukey',
                              color='red')
                     plt.xlim([-0.025, 0.065])
                     plt.legend()
@@ -176,7 +176,7 @@ if __name__ == '__main__':
             if 'PCA' in method_names:
                 relevant_channel_pca = mne.grand_average(evoked_list_pca, interpolate_bads=False, drop_bads=False)
                 plt.plot(relevant_channel_pca.times, np.mean(relevant_channel_pca.data[:, :], axis=0) * 10 ** 6,
-                         label='PCA_OBS', color='blue')
+                         label='PCA-OBS', color='blue')
             if 'PCA MATLAB' in method_names:
                 relevant_channel_mat = mne.grand_average(evoked_list_mat, interpolate_bads=False, drop_bads=False)
                 plt.plot(relevant_channel_mat.times, np.mean(relevant_channel_mat.data[:, :], axis=0) * 10 ** 6,
@@ -188,7 +188,7 @@ if __name__ == '__main__':
             if 'PCA Tukey' in method_names:
                 relevant_channel_tukey = mne.grand_average(evoked_list_tukey, interpolate_bads=False, drop_bads=False)
                 plt.plot(relevant_channel_tukey.times, np.mean(relevant_channel_tukey.data[:, :], axis=0) * 10 ** 6,
-                         label='PCA_OBS Tukey', color='red')
+                         label='PCA-OBS Tukey', color='red')
             if 'PCA Tukey PCHIP' in method_names:
                 relevant_channel_tukey_pchip = mne.grand_average(evoked_list_tukey_pchip, interpolate_bads=False, drop_bads=False)
                 plt.plot(relevant_channel_tukey_pchip.times,
@@ -211,7 +211,7 @@ if __name__ == '__main__':
                 fname = f"GrandAverage_{trigger_name}_reduced.png"
             else:
                 fname = f"GrandAverage_{trigger_name}.png"
-            plt.legend(loc='upper right')
+            # plt.legend(loc='upper right')
             plt.savefig(figure_path + fname)
             plt.show()
             plt.clf()
