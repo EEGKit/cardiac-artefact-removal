@@ -223,10 +223,10 @@ if __name__ == '__main__':
             ax20.set_yticklabels([])
 
             # SSP6
-            ax3.plot(epochs.times, relevant_channel_ssp6_cca[0, :], label='SSP6 CCA',
+            ax3.plot(epochs.times, relevant_channel_ssp6_cca[0, :], label='SSP CCA',
                      color=pal[3])
             ax3.set_xlabel('Time (s)')
-            ax3.set_title('SSP6 + CCA')
+            ax3.set_title('SSP + CCA')
             ax3.set_yticklabels([])
             ax30.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :]*10**6, label='Uncleaned',
                       linewidth=0.5, linestyle='dashed', color='black')

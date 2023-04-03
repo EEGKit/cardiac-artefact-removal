@@ -89,17 +89,17 @@ if __name__ == '__main__':
 
                 if method == 'SSP':
                     cropped.plot_image(picks=channel, combine=None, cmap=cmap, evoked=False, show=False,
-                                       title=f'{method}{SSP_proj}, Subject {subject}, Component {str(channel)[-1]}',
+                                       title=f'{method}, Participant {subject}, Component {str(channel)[-1]}',
                                        colorbar=False, group_by=None, fig=fig,
                                        vmin=-0.4, vmax=0.4, units=dict(eeg='V'), scalings=dict(eeg=1))
                 elif method == 'PCA':
                     cropped.plot_image(picks=channel, combine=None, cmap=cmap, evoked=False, show=False,
-                                       title=f'{method}-OBS, Subject {subject}, Component {str(channel)[-1]}',
+                                       title=f'{method}-OBS, Participant {subject}, Component {str(channel)[-1]}',
                                        colorbar=False, group_by=None, fig=fig,
                                        vmin=-0.4, vmax=0.4, units=dict(eeg='V'), scalings=dict(eeg=1))
                 else:
                     cropped.plot_image(picks=channel, combine=None, cmap=cmap, evoked=False, show=False,
-                                       title=f'{method}, Subject {subject}, Component {str(channel)[-1]}',
+                                       title=f'{method}, Participant {subject}, Component {str(channel)[-1]}',
                                        colorbar=False, group_by=None, fig=fig,
                                        vmin=-0.4, vmax=0.4, units=dict(eeg='V'), scalings=dict(eeg=1))
 

@@ -12,7 +12,8 @@ mpl.rcParams['pdf.fonttype'] = 42
 
 
 if __name__ == '__main__':
-    calculate = False
+    calculate = True
+    plot_image = False
     cond_names = ['median', 'tibial']
     save_path = '/data/p_02569/CardiacVsSpinalAmplitudes_D1/'
     os.makedirs(save_path, exist_ok=True)
@@ -104,33 +105,39 @@ if __name__ == '__main__':
         df.set_index('Subjects')
 
     pd.set_option('expand_frame_repr', False)
+    df["Ratio_Median"] = abs(df["ECG_Median"] / df["ESG_Median"])
+    df["Ratio_Tibial"] = abs(df["ECG_Tibial"] / df["ESG_Tibial"])
+    print(df)
     print(df.describe())
-    df_med = df[['ESG_Median', 'ECG_Median']]
-    df_tib = df[['ESG_Tibial', 'ECG_Tibial']]
-    df_med_long = df_med.melt(var_name='Signal Type', value_name='Amplitude')
-    df_tib_long = df_tib.melt(var_name='Signal Type', value_name='Amplitude')
+    print(df.sem())
 
-    dy = "Amplitude"
-    dx = "Signal Type"
-    ort = "v"
-    pal = sns.color_palette(n_colors=4)
-    i = 0
-    conditons = ['median', 'tibial']
-    for df in [df_med_long, df_tib_long]:
-        cond_name = conditons[i]
-        i += 1
-        f, ax = plt.subplots(figsize=(5, 8))
-        ax = pt.half_violinplot(x=dx, y=dy, data=df, palette=pal, bw=.2, cut=0.,
-                                scale="area", width=.6, inner=None, orient=ort,
-                                linewidth=0.0)
-        ax = sns.stripplot(x=dx, y=dy, data=df, palette=pal, edgecolor="white",
-                           size=3, jitter=1, zorder=0, orient=ort)
-        ax = sns.boxplot(x=dx, y=dy, data=df, color="black", width=.15, zorder=10,
-                         showcaps=True, boxprops={'facecolor': 'none', "zorder": 10},
-                         showfliers=True, whiskerprops={'linewidth': 2, "zorder": 10},
-                         saturation=1, orient=ort)
-        # plt.ylim([0, 25])
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
+    if plot_image:
+        df_med = df[['ESG_Median', 'ECG_Median']]
+        df_tib = df[['ESG_Tibial', 'ECG_Tibial']]
+        df_med_long = df_med.melt(var_name='Signal Type', value_name='Amplitude')
+        df_tib_long = df_tib.melt(var_name='Signal Type', value_name='Amplitude')
 
-    plt.show()
+        dy = "Amplitude"
+        dx = "Signal Type"
+        ort = "v"
+        pal = sns.color_palette(n_colors=4)
+        i = 0
+        conditons = ['median', 'tibial']
+        for df in [df_med_long, df_tib_long]:
+            cond_name = conditons[i]
+            i += 1
+            f, ax = plt.subplots(figsize=(5, 8))
+            ax = pt.half_violinplot(x=dx, y=dy, data=df, palette=pal, bw=.2, cut=0.,
+                                    scale="area", width=.6, inner=None, orient=ort,
+                                    linewidth=0.0)
+            ax = sns.stripplot(x=dx, y=dy, data=df, palette=pal, edgecolor="white",
+                               size=3, jitter=1, zorder=0, orient=ort)
+            ax = sns.boxplot(x=dx, y=dy, data=df, color="black", width=.15, zorder=10,
+                             showcaps=True, boxprops={'facecolor': 'none', "zorder": 10},
+                             showfliers=True, whiskerprops={'linewidth': 2, "zorder": 10},
+                             saturation=1, orient=ort)
+            # plt.ylim([0, 25])
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+
+        plt.show()

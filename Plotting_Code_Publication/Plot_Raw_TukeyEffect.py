@@ -133,7 +133,7 @@ for subject in subjects:
 
         plt.xlabel('Time (s)')
         plt.title(f'Effect of a Tukey Window\n'
-                  f'Subject {subject}, {full_name}')
+                  f'Participant {subject}, {full_name}')
 
         plt.legend()
         # Add scale bar class

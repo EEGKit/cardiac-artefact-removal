@@ -17,7 +17,7 @@ if __name__ == '__main__':
     save_path = '/data/p_02569/SEP_Combined_D1V2/'
     os.makedirs(save_path, exist_ok=True)
 
-    methods = ['Uncleaned', 'PCA', 'ICA', 'SSP6']
+    methods = ['Uncleaned', 'PCA', 'ICA', 'SSP']
 
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
     cfg = loadmat(cfg_path + 'cfg.mat')
@@ -81,7 +81,7 @@ if __name__ == '__main__':
                         data_path = '/data/pt_02569/tmp_data/baseline_ica_py/' + subject_id + \
                                     '/esg/prepro/epochs_' + cond_name + '.fif'
 
-                    elif method == 'SSP6':
+                    elif method == 'SSP':
                         data_path = "/data/p_02569/SSP/" + subject_id + f"/6 projections/epochs_" + cond_name + ".fif"
 
                     # for PCA - want to interpolate the hump for the TFR plot
@@ -157,7 +157,7 @@ if __name__ == '__main__':
                 options = {0: 'Uncleaned',
                            1: 'PCA-OBS',
                            2: 'ICA',
-                           3: 'SSP6'
+                           3: 'SSP'
                            }
                 ##########################################################################################
                 # Plot the time course
@@ -258,7 +258,7 @@ if __name__ == '__main__':
 
             # Final Formatting
             fig.align_ylabels()
-            plt.suptitle('Somatosensory Evoked Potentials', x=0.55)
+            # plt.suptitle('Somatosensory Evoked Potentials', x=0.55)
             plt.tight_layout()
             plt.subplots_adjust(left=0.15, top=0.93)
             if reduced_trials and shorter_timescale:

@@ -163,7 +163,7 @@ if __name__ == '__main__':
             axes[count].set_xlabel('Frequency (Hz)')
             count += 1
             axes[count].plot(frequency_prep, power_spectrum_ssp6 - power_spectrum_prep, color='black')
-            axes[count].set_title('SSP6 - Uncleaned')
+            axes[count].set_title('SSP - Uncleaned')
             axes[count].set_xlim([0, 60])
             axes[count].set_ylabel('Power (\u03BCV\u00b2/Hz)')
             axes[count].set_xlabel('Frequency (Hz)')
@@ -171,7 +171,7 @@ if __name__ == '__main__':
             ###########
             # Format row and headers
             ##########
-            rows = ['Uncleaned', 'PCA-OBS', 'SSP6', 'Power Spectra']
+            rows = ['Uncleaned', 'PCA-OBS', 'SSP', 'Power Spectra']
             pad = 5
             for ax, row in zip(axes_unflat[:, 0], rows):
                 if row in rows[:-1]:

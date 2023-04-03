@@ -131,7 +131,7 @@ if __name__ == '__main__':
         ax[2].set_title('ICA')
         ax[2].set_yticklabels([])
         ax[2].set_ylabel(None)
-        ax[3].set_title('SSP6')
+        ax[3].set_title('SSP')
         ax[3].set_yticklabels([])
         ax[3].set_ylabel(None)
         if cond_name == 'median':
