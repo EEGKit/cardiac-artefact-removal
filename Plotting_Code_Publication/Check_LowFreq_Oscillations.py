@@ -156,13 +156,15 @@ if __name__ == '__main__':
             ############################################################################################
             # Difference in Power Spectra
             ############################################################################################
-            axes[count].plot(frequency_prep, power_spectrum_pca-power_spectrum_prep, color='black')
+            diff_pca = power_spectrum_pca-power_spectrum_prep
+            axes[count].plot(frequency_prep, diff_pca, color='black')
             axes[count].set_title('PCA - Uncleaned')
             axes[count].set_xlim([0, 60])
             axes[count].set_ylabel('Power (\u03BCV\u00b2/Hz)')
             axes[count].set_xlabel('Frequency (Hz)')
             count += 1
-            axes[count].plot(frequency_prep, power_spectrum_ssp6 - power_spectrum_prep, color='black')
+            diff_ssp = power_spectrum_ssp6 - power_spectrum_prep
+            axes[count].plot(frequency_prep, diff_ssp, color='black')
             axes[count].set_title('SSP - Uncleaned')
             axes[count].set_xlim([0, 60])
             axes[count].set_ylabel('Power (\u03BCV\u00b2/Hz)')

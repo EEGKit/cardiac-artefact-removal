@@ -1,5 +1,6 @@
 # Script to plot the time-frequency decomposition in dB about the heartbeat
 # TFRs of the heart artefact in ECG, Spinal and Cortical Channels
+# Plot as a panel, with the ECG and Spinal time courses in a bottom panel
 
 import mne
 import os
@@ -14,7 +15,6 @@ if __name__ == '__main__':
     freqs = np.arange(5., 250., 3.)
     fmin, fmax = freqs[[0, -1]]
     subjects = np.arange(1, 37)
-    # subjects = [1]
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
 
@@ -26,8 +26,8 @@ if __name__ == '__main__':
     # Want 200ms before R-peak and 400ms after R-peak
     # Baseline is the 100ms period before the artefact occurs
     iv_baseline = [-300 / 1000, -200 / 1000]
-    # Want 200ms before and 400ms after the R-peak in our epoch - need baseline outside this
-    iv_epoch = [-300 / 1000, 400 / 1000]
+    # Want 200ms before and 500ms after the R-peak in our epoch - need baseline outside this
+    iv_epoch = [-300 / 1000, 500 / 1000]
 
     esg_chans = ['S35', 'S24', 'S36', 'Iz', 'S17', 'S15', 'S32', 'S22',
                  'S19', 'S26', 'S28', 'S9', 'S13', 'S11', 'S7', 'SC1', 'S4', 'S18',
@@ -35,16 +35,25 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/TimeFrequencyPlots_HeartInset_Dataset1/"
+    image_path = "/data/p_02569/TimeFrequencyPlots_HeartPanel_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     channel_types = ['ECG', 'Spinal', 'Cortical']
-    fig, (ax_ecg, ax_spinal, ax_cortical) = plt.subplots(1, 3, figsize=(20, 6))
 
     # To use mne grand_average method, need to generate a list of evoked potentials for each subject
-    for channel_type in channel_types:
-        for cond_name in cond_names:  # Conditions (median, tibial)
-            evoked_list = []
+    for cond_name in cond_names:
+        fig = plt.figure(figsize=(21, 9))
+        gs = fig.add_gridspec(2, 4, width_ratios=[10, 10, 10, 0.25], height_ratios=[2, 1])
+        ax_ecg = fig.add_subplot(gs[0, 0])
+        ax_spinal = fig.add_subplot(gs[0, 1])
+        ax_cortical = fig.add_subplot(gs[0, 2])
+        cbar_ax = fig.add_subplot(gs[0:2, 3])
+        ax_time = fig.add_subplot(gs[1, 0:3])
+
+        for channel_type in channel_types:
+            # Conditions (median, tibial)
+            evoked_list = []  # Holds all the TFRs
+            time_list = []  # Holds the actual evoked for each subject
 
             if cond_name == 'tibial':
                 full_name = 'Tibial Nerve Stimulation'
@@ -64,13 +73,13 @@ if __name__ == '__main__':
                 trigger_name = 'qrs'
                 if channel_type == 'ECG':
                     channel = ['ECG']
-                    ax = inset_axes(ax_ecg, width='40%', height='35%', loc=1, borderpad=1)
+                    ax = ax_ecg
                 elif channel_type == 'Spinal':
                     channel = ['SC6']
-                    ax = inset_axes(ax_spinal, width='40%', height='35%', loc=1, borderpad=1)
+                    ax = ax_spinal
                 elif channel_type == 'Cortical':
                     channel = ['CP4']
-                    ax = inset_axes(ax_cortical, width='40%', height='35%', loc=1, borderpad=1)
+                    ax = ax_cortical
 
             for subject in subjects:  # All subjects
                 subject_id = f'sub-{str(subject).zfill(3)}'
@@ -93,11 +102,13 @@ if __name__ == '__main__':
                 evoked = evoked.pick_channels(channel)
                 if channel_type == 'ECG':
                     evoked = evoked.set_channel_types({'ECG': 'eeg'})  # Needed to do transform
+                time_list.append(evoked)
                 power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
                 # evoked_list.append(evoked)
                 evoked_list.append(power)
 
             averaged = mne.grand_average(evoked_list, interpolate_bads=False, drop_bads=False)
+            averaged_time = mne.grand_average(time_list, interpolate_bads=False, drop_bads=False)
             # relevant_channel = averaged.pick_channels(channel)
 
             tmin = -0.2
@@ -109,27 +120,29 @@ if __name__ == '__main__':
             averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
                           axes=ax, show=False, colorbar=False, dB=True,
                           tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
-            if cond_name == 'tibial':
+            if channel_type in ['ECG', 'Spinal']:
                 if channel_type == 'ECG':
-                    ax.set_title('ECG Channel')
-                elif channel_type == 'Spinal':
-                    ax.set_title('Spinal Channel')
-                elif channel_type == 'Cortical':
-                    ax.set_title('Cortical Channel')
-
-            if cond_name == 'median':
-                # ax.set_xticks([])
-                # ax.set_yticks([])
-                ax.set_xlabel(None)
+                    style = 'dashed'
+                else:
+                    style = None
+                ax_time.plot(evoked.times, averaged_time.get_data().reshape(-1), color='black', linestyle=style)
+                ax_time.set_xlim([-0.3, 0.5])
+                ax_time.set_xlabel('Time (s)')
+                ax_time.set_ylabel('Amplitude (\u03BCV)')
+            if channel_type == 'ECG':
+                ax.set_title('ECG Channel')
+            elif channel_type == 'Spinal':
+                ax.set_title('Spinal Channel')
+                ax.set_ylabel(None)
+            elif channel_type == 'Cortical':
+                ax.set_title('Cortical Channel')
                 ax.set_ylabel(None)
 
-    # Add colorbar
-    fig.subplots_adjust(bottom=0.1, top=0.9, left=0.1, right=0.8,
-                        wspace=0.2, hspace=0.02)
-    cbar_ax = fig.add_axes([0.83, 0.1, 0.01, 0.8])
-    cb = fig.colorbar(ax_ecg.images[-1], cax=cbar_ax)
-    # cb = im[-1].colorbar
-    cb.set_label('Amplitude (dB)')
-    fname = f"CardiacTFRInset_dB.png"
-    fig.savefig(image_path+fname)
-    plt.clf()
+        cb = fig.colorbar(ax_ecg.images[-1], cax=cbar_ax)
+        cb.set_label('Amplitude (dB)')
+        fname = f"{cond_name}_CardiacTFRandTimeCourse_dB.png"
+        plt.tight_layout()
+        # plt.show()
+        # exit()
+        fig.savefig(image_path+fname)
+        plt.clf()

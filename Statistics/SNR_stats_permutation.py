@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     #################################### Dataframe of Differences #################################
     # Test
-    df = df_med.dropna()  # Drop NA
+    # df = df_med.dropna()  # Drop NA
     # df = df_med.fillna(0)  # Fill NA values with 0
     # df = df_med.fillna(df_med.mean())  # Replace with mean of column
 

@@ -10,10 +10,10 @@ from scipy.signal import filtfilt, firls
 
 
 if __name__ == '__main__':
-    single_subject = False
-    grand_average = True
+    single_subject = True
+    grand_average = False
     if single_subject:
-        subjects = [2, 20]
+        subjects = [2, 6, 13, 20, 27, 31]
     if grand_average:
         subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']

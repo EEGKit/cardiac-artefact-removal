@@ -176,7 +176,7 @@ if __name__ == '__main__':
                 ax1.spines['left'].set_color(pal[1])
                 ax1.tick_params(axis='y', colors=pal[1])
                 ax10.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :]*10**6, label='Uncleaned',
-                          linewidth=0.5, linestyle='dashed', color=pal[0])
+                          linewidth=0.5, linestyle='dashed', color='blue')
                 ax10.set_yticklabels([])
 
                 # ICA
@@ -188,7 +188,7 @@ if __name__ == '__main__':
                 ax2.spines['left'].set_color(pal[2])
                 ax2.tick_params(axis='y', colors=pal[2])
                 ax20.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :] * 10 ** 6, label='Uncleaned',
-                          linewidth=0.5, linestyle='dashed', color=pal[0])
+                          linewidth=0.5, linestyle='dashed', color='blue')
                 ax20.set_yticklabels([])
 
                 # SSP6
@@ -198,10 +198,13 @@ if __name__ == '__main__':
                 ax3.set_title('SSP')
                 # ax3.set_yticklabels([])
                 ax30.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :] * 10 ** 6, label='Uncleaned',
-                          linewidth=0.5, linestyle='dashed', color=pal[0])
+                          linewidth=0.5, linestyle='dashed', color='blue')
                 ax30.set_ylabel('Uncleaned SEP Amplitude (\u03BCV)')
                 ax3.spines['left'].set_color(pal[3])
                 ax3.tick_params(axis='y', colors=pal[3])
+                # ax30.spines['right'].set_color('blue')
+                ax30.yaxis.label.set_color('blue')
+                ax30.tick_params(axis='y', colors='blue')
 
                 # Add vertical line at expected latency
                 if cond_name == 'tibial':
