@@ -15,7 +15,7 @@ if __name__ == '__main__':
     freqs = np.arange(5., 250., 3.)
     fmin, fmax = freqs[[0, -1]]
     subjects = np.arange(1, 37)
-    cond_names = ['median', 'tibial']
+    cond_names = ['tibial', 'median']
     sampling_rate = 1000
 
     cfg_path = "/data/pt_02569/"  # Contains important info about experiment
@@ -122,10 +122,10 @@ if __name__ == '__main__':
                           tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
             if channel_type in ['ECG', 'Spinal']:
                 if channel_type == 'ECG':
-                    style = 'dashed'
-                else:
                     style = None
-                ax_time.plot(evoked.times, averaged_time.get_data().reshape(-1), color='black', linestyle=style)
+                else:
+                    style = 'dashed'
+                ax_time.plot(evoked.times, averaged_time.get_data().reshape(-1)*10**6, color='black', linestyle=style)
                 ax_time.set_xlim([-0.3, 0.5])
                 ax_time.set_xlabel('Time (s)')
                 ax_time.set_ylabel('Amplitude (\u03BCV)')
