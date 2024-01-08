@@ -29,16 +29,15 @@ if __name__ == '__main__':
     iv_baseline = cfg['iv_baseline'][0] / 1000
 
     # Loop through methods and save as required
-    which_method = {'Prep': False,
-                    'PCA': False,
-                    'PCA PCHIP': False,
-                    'PCA Tukey': False,
-                    'PCA Tukey PCHIP': False,
-                    'ICA': False,
-                    'ICA-Anterior': False,
-                    'ICA-Separate': False,
-                    'Post-ICA': False,
-                    'SSP': False}
+    which_method = {'Prep': True,
+                    'PCA': True,
+                    'PCA PCHIP': True,
+                    'PCA Tukey': True,
+                    'PCA Tukey PCHIP': True,
+                    'ICA': True,
+                    'ICA-Anterior': True,
+                    'ICA-Separate': True,
+                    'SSP': True}
 
     for i in np.arange(0, len(which_method)):
         method = list(which_method.keys())[i]
@@ -167,9 +166,6 @@ if __name__ == '__main__':
                         elif method == 'ICA-Separate':
                             file_path = "/data/pt_02569/tmp_data/baseline_ica_py/"
                             file_name = f"separated_clean_baseline_ica_auto_{cond_name}.fif"
-                        elif method == 'Post-ICA':
-                            file_path = "/data/pt_02569/tmp_data/ica_py/"
-                            file_name = f'clean_ica_auto_{cond_name}.fif'
 
                         input_path = file_path + subject_id + "/esg/prepro/"
                         raw = mne.io.read_raw_fif(f"{input_path}{file_name}", preload=True)
@@ -251,7 +247,6 @@ if __name__ == '__main__':
                    'ICA': "/data/pt_02569/tmp_data/baseline_ica_py/",
                    'ICA-Anterior': "/data/pt_02569/tmp_data/baseline_ica_py/",
                    'ICA-Separate': "/data/pt_02569/tmp_data/baseline_ica_py/",
-                   'Post-ICA': "/data/pt_02569/tmp_data/ica_py/",
                    'SSP': "/data/p_02569/SSP/"}
 
     print("\n")

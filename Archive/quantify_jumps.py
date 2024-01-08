@@ -12,7 +12,6 @@ if __name__ == '__main__':
     calc_raw = True
     calc_PCA = True
     calc_ICA = True
-    calc_post_ICA = True
     calc_SSP = True
 
     # Testing with just subject 1 at the moment
@@ -266,70 +265,6 @@ if __name__ == '__main__':
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(savestd, keyword))
 
-
-    #########################################
-    # Post-ICA Calculations
-    #########################################
-    if calc_post_ICA:
-        # Declare class to hold ecg fit information
-        class save_STD():
-            def __init__(self):
-                pass
-
-        # Instantiate class
-        savestd = save_STD()
-
-        # Matrix of dimensions no.subjects x no. channels
-        std_med = np.zeros((len(subjects), 39))
-        std_tib = np.zeros((len(subjects), 39))
-
-        for subject in subjects:
-            for cond_name in cond_names:
-
-                subject_id = f'sub-{str(subject).zfill(3)}'
-
-                # Want the SNR
-                # Load data resulting from preparation script
-                input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                fname = f"clean_ica_auto_{cond_name}.fif"
-                raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-
-                # Load the fit_end times relevant here - is just a list of sample points
-                fn = f"/data/pt_02569/tmp_data/fit_end_timings/fit_end_timings_{cond_name}_{subject}.h5"
-                with h5py.File(fn, "r") as infile:
-                    # Get the data
-                    fit_end = infile['timings'][()].reshape(-1)
-
-                # Want to get the std of the data in a 20ms period about each fit end timing
-                # get_data returns shape (n_channels, n_times)
-                # At the finish, std will be of size (len(fit_end), n_channels)
-                raw.reorder_channels(esg_chans)
-                std = []
-                for point in fit_end:
-                    data = raw.get_data(picks=esg_chans, start=int(point - (10 / 1000) * sampling_rate),
-                                        stop=int(point + (10 / 1000) * sampling_rate))
-                    std.append(np.std(data, axis=1))
-
-                # Then want the average standard deviation for each channel - will give shape (n_channels, )
-                stan_dev = np.mean(std, axis=0)
-
-                # Now have std related to each subject (39 channels) and condition
-                if cond_name == 'median':
-                    std_med[subject - 1, :] = stan_dev
-                elif cond_name == 'tibial':
-                    std_tib[subject - 1, :] = stan_dev
-
-        # Save to file to compare to matlab - only for debugging
-        savestd.snr_med = std_med
-        savestd.snr_tib = std_tib
-        dataset_keywords = [a for a in dir(savestd) if not a.startswith('__')]
-
-        fn = f"/data/pt_02569/tmp_data/ica_py/std.h5"
-
-        with h5py.File(fn, "w") as outfile:
-            for keyword in dataset_keywords:
-                outfile.create_dataset(keyword, data=getattr(savestd, keyword))
-
     #########################################
     # SSP Calculations
     #########################################
@@ -427,16 +362,6 @@ if __name__ == '__main__':
     print(f"STD ICA Medial: {np.mean(std_med_ica, axis=tuple([0, 1])):.4e}")
     print(f"STD ICA Tibial: {np.mean(std_tib_ica, axis=tuple([0, 1])):.4e}")
 
-    # Post-ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/std.h5"
-    with h5py.File(fn, "r") as infile:
-        # Get the data
-        std_med_post_ica = infile[keywords[0]][()]
-        std_tib_post_ica = infile[keywords[1]][()]
-
-    print(f"STD Post-ICA Medial: {np.mean(std_med_post_ica, axis=tuple([0, 1])):.4e}")
-    print(f"STD Post-ICA Tibial: {np.mean(std_tib_post_ica, axis=tuple([0, 1])):.4e}")
-
     # SSP
     for n in np.arange(5, 21):
         fn = f"/data/p_02569/SSP/std_{n}.h5"
@@ -489,16 +414,6 @@ if __name__ == '__main__':
     print(f"STD ICA Medial: {np.mean(std_med_ica[:, median_pos], axis=tuple([0, 1])):.4e}")
     print(f"STD ICA Tibial: {np.mean(std_tib_ica[:, tibial_pos], axis=tuple([0, 1])):.4e}")
 
-    # Post-ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/std.h5"
-    with h5py.File(fn, "r") as infile:
-        # Get the data
-        std_med_post_ica = infile[keywords[0]][()]
-        std_tib_post_ica = infile[keywords[1]][()]
-
-    print(f"STD Post-ICA Medial: {np.mean(std_med_post_ica[:, median_pos], axis=tuple([0, 1])):.4e}")
-    print(f"STD Post-ICA Tibial: {np.mean(std_tib_post_ica[:, tibial_pos], axis=tuple([0, 1])):.4e}")
-
     # SSP
     for n in np.arange(5, 21):
         fn = f"/data/p_02569/SSP/std_{n}.h5"
@@ -540,16 +455,6 @@ if __name__ == '__main__':
 
     print(f"STD ICA Medial: {np.mean((std_med_ica-std_med_prep)/std_med_prep, axis=tuple([0, 1]))*100:.4f}%")
     print(f"STD ICA Tibial: {np.mean((std_tib_ica-std_tib_prep)/std_tib_prep, axis=tuple([0, 1]))*100:.4f}%")
-
-    # Post-ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/std.h5"
-    with h5py.File(fn, "r") as infile:
-        # Get the data
-        std_med_post_ica = infile[keywords[0]][()]
-        std_tib_post_ica = infile[keywords[1]][()]
-
-    print(f"STD Post-ICA Medial: {np.mean((std_med_post_ica-std_med_prep)/std_med_prep, axis=tuple([0, 1]))*100:.4f}%")
-    print(f"STD Post-ICA Tibial: {np.mean((std_tib_post_ica-std_tib_prep)/std_tib_prep, axis=tuple([0, 1]))*100:.4f}%")
 
     # SSP
     for n in np.arange(5, 21):

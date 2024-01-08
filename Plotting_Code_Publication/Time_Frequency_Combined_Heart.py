@@ -7,7 +7,8 @@ from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from mpl_axes_aligner import align
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 if __name__ == '__main__':
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
@@ -123,24 +124,26 @@ if __name__ == '__main__':
         cb = fig.colorbar(ax[0].images[-1], cax=cbar_ax, shrink=0.6, orientation='horizontal')
 
         # cb = fig.colorbar(ax[0].images[-1], cax=ax[-1])  # Take colourbar from first image and puts it in last axis
-        cb.set_label('Amplitude (dB)')
-        ax[0].set_title('Uncleaned')
-        ax[1].set_title('PCA-OBS')
+        cb.set_label('Power (dB)')
+        if cond_name == 'median':
+            ax[0].set_title('Uncleaned')
+            ax[1].set_title('PCA-OBS')
+            ax[2].set_title('ICA')
+            ax[3].set_title('SSP')
         ax[1].set_yticklabels([])
         ax[1].set_ylabel(None)
-        ax[2].set_title('ICA')
         ax[2].set_yticklabels([])
         ax[2].set_ylabel(None)
-        ax[3].set_title('SSP')
         ax[3].set_yticklabels([])
         ax[3].set_ylabel(None)
-        if cond_name == 'median':
-            plt.suptitle(f"Time-Frequency Representation of the Cardiac Artefact\n"
-                         f"Cervical Spinal Cord")
-        else:
-            plt.suptitle(f"Time-Frequency Representation of the Cardiac Artefact\n"
-                         f"Lumbar Spinal Cord")
+        # if cond_name == 'median':
+        #     plt.suptitle(f"Time-Frequency Representation of the Cardiac Artefact\n"
+        #                  f"Cervical Spinal Cord")
+        # else:
+        #     plt.suptitle(f"Time-Frequency Representation of the Cardiac Artefact\n"
+        #                  f"Lumbar Spinal Cord")
         fname = f"Heart_{cond_name}"
         # fname = f"Heart_{cond_name}_HigherFreq"
-        plt.savefig(image_path+fname)
+        plt.savefig(image_path+fname+'.png')
+        plt.savefig(image_path + fname + '.pdf', bbox_inches='tight', format="pdf")
         plt.show()

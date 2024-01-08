@@ -28,7 +28,6 @@ if __name__ == '__main__':
     calc_raw = False
     calc_PCA = False
     calc_ICA = False
-    calc_post_ICA = False
     calc_SSP = True
 
     # Testing with just subject 1 at the moment
@@ -232,61 +231,6 @@ if __name__ == '__main__':
                 outfile.create_dataset(keyword, data=getattr(saverms, keyword))
 
     #########################################
-    # Post ICA RMS Calculations
-    #########################################
-    if calc_post_ICA:
-        # Declare class to hold ecg fit information
-        class save_RMS():
-            def __init__(self):
-                pass
-
-        # Instantiate class
-        saverms = save_RMS()
-
-        # Matrix of dimensions no.subjects x no. projections
-        rms_med = np.zeros((len(subjects), 39))
-        rms_tib = np.zeros((len(subjects), 39))
-
-        for subject in subjects:
-            for cond_name in cond_names:
-
-                subject_id = f'sub-{str(subject).zfill(3)}'
-
-                # Want the SNR
-                # Load data resulting from ICA script
-                input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                fname = f"clean_ica_auto_{cond_name}.fif"
-                raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-
-                # Extract relevant epochs
-                events, event_ids = mne.events_from_annotations(raw)
-                event_id_dict = {key: value for key, value in event_ids.items() if key == 'qrs'}
-                epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1])
-
-                evoked = epochs.average()
-
-                # Now we have an evoked potential about the heartbeat
-                # Want to compute the RMS for baseline period
-                rms = compute_rms(evoked, iv_b, esg_chans)
-
-                # Now have rms snr related to each subject (39 channels) and condition
-                if cond_name == 'median':
-                    rms_med[subject - 1, :] = rms
-                elif cond_name == 'tibial':
-                    rms_tib[subject - 1, :] = rms
-
-        # Save to file to compare to matlab - only for debugging
-        saverms.snr_med = rms_med
-        saverms.snr_tib = rms_tib
-        dataset_keywords = [a for a in dir(saverms) if not a.startswith('__')]
-
-        fn = f"/data/pt_02569/tmp_data/ica_py/rms_baseline.h5"
-
-        with h5py.File(fn, "w") as outfile:
-            for keyword in dataset_keywords:
-                outfile.create_dataset(keyword, data=getattr(saverms, keyword))
-
-    #########################################
     # SSP RMS Calculations
     #########################################
     if calc_SSP:
@@ -379,19 +323,6 @@ if __name__ == '__main__':
     print(f"Residual ICA Medial: {residual_med_ica:.4f}%")
     print(f"Residual ICA Tibial: {residual_tib_ica:.4f}%")
 
-    # Post-ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/rms_baseline.h5"
-    with h5py.File(fn, "r") as infile:
-        # Get the data
-        res_med_post_ica = infile[keywords[0]][()]
-        res_tib_post_ica = infile[keywords[1]][()]
-
-    residual_med_post_ica = (np.mean(res_med_post_ica / res_med_prep, axis=tuple([0, 1]))) * 100
-    residual_tib_post_ica = (np.mean(res_tib_post_ica / res_tib_prep, axis=tuple([0, 1]))) * 100
-
-    print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4f}%")
-    print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4f}%")
-
     # SSP
     for n in np.arange(5, 21):
         fn = f"/data/p_02569/SSP/rms_baseline_{n}.h5"
@@ -454,21 +385,6 @@ if __name__ == '__main__':
 
     print(f"Residual ICA Medial: {residual_med_ica:.4f}%")
     print(f"Residual ICA Tibial: {residual_tib_ica:.4f}%")
-
-    # Post-ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/rms_baseline.h5"
-    with h5py.File(fn, "r") as infile:
-        # Get the data
-        res_med_post_ica = infile[keywords[0]][()]
-        res_tib_post_ica = infile[keywords[1]][()]
-
-    residual_med_post_ica = (np.mean(res_med_post_ica[:, median_pos] / res_med_prep[:, median_pos],
-                                     axis=tuple([0, 1]))) * 100
-    residual_tib_post_ica = (np.mean(res_tib_post_ica[:, tibial_pos] / res_tib_prep[:, tibial_pos],
-                                     axis=tuple([0, 1]))) * 100
-
-    print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4f}%")
-    print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4f}%")
 
     # SSP
     for n in np.arange(5, 21):

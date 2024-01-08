@@ -27,7 +27,6 @@ if __name__ == '__main__':
 
     calc_prepared = False
     calc_PCA = False
-    calc_post_ICA = False
     calc_ICA = False
     choose_limited = False  # If true use ICA data with top 4 components chosen - use FALSE, see main
     calc_SSP = False
@@ -285,77 +284,6 @@ if __name__ == '__main__':
                 for keyword in dataset_keywords:
                     outfile.create_dataset(keyword, data=getattr(savepow, keyword))
 
-
-        ##########################################################################
-        # Calculate Power for Post ICA Data
-        ##########################################################################
-        if calc_post_ICA:
-            class save_pow():
-                def __init__(self):
-                    pass
-
-            # Instantiate class
-            savepow = save_pow()
-
-            # Matrix of dimensions no.subjects x no. channels
-            pow_med_post_ica = np.zeros((len(subjects), 39))
-            pow_tib_post_ica = np.zeros((len(subjects), 39))
-
-            for subject in subjects:
-                for cond_name in cond_names:
-                    if cond_name == 'tibial':
-                        trigger_name = 'qrs'
-                        nerve = 2
-                    elif cond_name == 'median':
-                        trigger_name = 'qrs'
-                        nerve = 1
-
-                    subject_id = f'sub-{str(subject).zfill(3)}'
-
-                    # Want the RMS of the data
-                    # Load epochs resulting from ICA the data
-                    input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                    fname = f"clean_ica_auto_{cond_name}.fif"
-                    raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-
-                    freq = get_harmonics(raw, trigger_name, sampling_rate)
-
-                    # Now we have the raw data in the filtered form
-                    # We have the fundamental frequency and harmonics for this subject
-                    # Compute power at the frequencies
-                    freq = np.around(freq, decimals=1)
-                    data = raw.pick_channels(esg_chans).reorder_channels(esg_chans)._data * 1e6
-                    # PSD will have units uV^2 now
-                    # Need a frequency resolution of 0.1Hz - win set to 10 seconds
-                    # This outputs a dataframe
-                    bp = yasa.bandpower(data, sf=sampling_rate, ch_names=esg_chans, win_sec=10, relative=True,
-                                        bandpass=False,
-                                        bands=[(freq[0], freq[0] + band, 'f0')],
-                                        kwargs_welch={'scaling': 'spectrum', 'average': 'median', 'window': 'hamming'})
-
-                    # Extract the absolute power from the relative powers output above
-                    bands = ['f0']
-                    bp_abs = (bp[bands] * bp['TotalAbsPow'].values[..., None])
-                    bp_abs['Sum'] = bp_abs.sum(axis=1)  # Get the sum across fundamental frequency and harmonics
-                    power = bp_abs['Sum'].values  # Extract value of interest
-
-                    # Now have power for each subject, insert it into the correct condition array
-                    if cond_name == 'median':
-                        pow_med_post_ica[subject - 1, :] = power
-                    elif cond_name == 'tibial':
-                        pow_tib_post_ica[subject - 1, :] = power
-
-            # Save to file
-            savepow.pow_med = pow_med_post_ica
-            savepow.pow_tib = pow_tib_post_ica
-            dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
-
-            fn = f"/data/pt_02569/tmp_data/ica_py/inps_yasa_{band}.h5"
-
-            with h5py.File(fn, "w") as outfile:
-                for keyword in dataset_keywords:
-                    outfile.create_dataset(keyword, data=getattr(savepow, keyword))
-
         ##########################################################################
         # Calculate Power for SSP Data
         ##########################################################################
@@ -474,21 +402,7 @@ if __name__ == '__main__':
         print(f"Residual ICA Medial: {residual_med_ica:.4e}")
         print(f"Residual ICA Tibial: {residual_tib_ica:.4e}")
 
-        # Post ICA
-        fn = f"/data/pt_02569/tmp_data/ica_py/inps_yasa_{band}.h5"
-        with h5py.File(fn, "r") as infile:
-            # Get the data
-            pow_med_post_ica = infile[keywords[0]][()]
-            pow_tib_post_ica = infile[keywords[1]][()]
-
-        # Changing to mean of means after ratio is already calculated
-        residual_med_post_ica = (np.mean(pow_med_prep / pow_med_post_ica, axis=tuple([0, 1])))
-        residual_tib_post_ica = (np.mean(pow_tib_prep / pow_tib_post_ica, axis=tuple([0, 1])))
-
-        print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4e}")
-        print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4e}")
-
-        # Post SSP
+        # SSP
         for n in np.arange(5, 7):
             fn = f"/data/p_02569/SSP/inps_yasa_{n}_{band}.h5"
             with h5py.File(fn, "r") as infile:
@@ -556,19 +470,6 @@ if __name__ == '__main__':
 
         print(f"Residual ICA Medial: {residual_med_ica:.4e}")
         print(f"Residual ICA Tibial: {residual_tib_ica:.4e}")
-
-        # Post-ICA
-        fn = f"/data/pt_02569/tmp_data/ica_py/inps_yasa_{band}.h5"
-        with h5py.File(fn, "r") as infile:
-            # Get the data
-            pow_med_post_ica = infile[keywords[0]][()]
-            pow_tib_post_ica = infile[keywords[1]][()]
-
-        residual_med_post_ica = (np.mean(pow_med_prep[:, median_pos] / pow_med_post_ica[:, median_pos], axis=tuple([0, 1])))
-        residual_tib_post_ica = (np.mean(pow_tib_prep[:, tibial_pos] / pow_tib_post_ica[:, tibial_pos], axis=tuple([0, 1])))
-
-        print(f"Residual Post-ICA Medial: {residual_med_post_ica:.4e}")
-        print(f"Residual Post-ICA Tibial: {residual_tib_post_ica:.4e}")
 
         # SSP
         for n in np.arange(5, 7):

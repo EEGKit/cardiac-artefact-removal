@@ -26,7 +26,6 @@ if __name__ == '__main__':
     which_method = {'Prep': True,
                     'PCA': True,
                     'ICA': True,
-                    'Post-ICA': True,
                     'SSP_5': True,
                     'SSP_6': True}
 
@@ -72,9 +71,6 @@ if __name__ == '__main__':
                     elif method == 'ICA':
                         file_path = "/data/pt_02569/tmp_data/baseline_ica_py/"
                         file_name = f'clean_baseline_ica_auto_{cond_name}.fif'
-                    elif method == 'Post-ICA':
-                        file_path = "/data/pt_02569/tmp_data/ica_py/"
-                        file_name = f'clean_ica_auto_{cond_name}.fif'
                     elif method == 'SSP_5' or method == 'SSP_6':
                         file_path = "/data/p_02569/SSP/"
                         file_name = f'ssp_cleaned_{cond_name}.fif'

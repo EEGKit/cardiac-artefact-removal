@@ -19,7 +19,6 @@ esg_bp_freq = cfg['esg_bp_freq'][0]
 prepared = True
 PCA = False
 PCA_tukey = True
-Post_ICA = False
 ICA = False
 SSP = False
 
@@ -90,13 +89,6 @@ for subject in subjects:
             # raw.plot(duration=4, start=518.75, clipping=6, scalings=60e-6)
             raw.plot(duration=1, start=784, clipping=6, scalings=30e-6)
             plt.show()
-
-        if Post_ICA:
-            input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-            fname = f"clean_ica_auto_{cond_name}.fif"
-            raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-            raw.pick_channels(channels)
-            raw.plot(duration=1.5, start=1164, clipping=6, scalings=60e-6)
 
         if ICA:
             # Some editing here to avoid plotting fit_end and fit_start

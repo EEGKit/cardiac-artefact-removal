@@ -32,8 +32,8 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/GrandAveragePlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [True, True, True]
-    method_names = ['Prep', 'PCA', 'Post-ICA']  # Will treat SSP separately since there are multiple
+    methods = [True, True]
+    method_names = ['Prep', 'PCA']  # Will treat SSP separately since there are multiple
 
     for i in np.arange(0, len(methods)):  # Methods Applied
         if methods[i]:  # Allows us to apply to only methods of interest
@@ -77,19 +77,6 @@ if __name__ == '__main__':
                         inv = df.loc[subject_id, f"PCA_{cond_name}_inv"]
                         if inv == 'inv' or inv == '!inv':
                             epochs.apply_function(invert, picks=channel)
-                        evoked = epochs.average(picks=[channel])
-                        data = evoked.data
-                        evoked_list.append(data)
-
-                    elif method == 'Post-ICA':
-                        input_path = "/data/pt_02569/tmp_data/ica_py_cca/" + subject_id + "/esg/prepro/"
-                        fname = f"clean_ica_auto_{cond_name}.fif"
-                        epochs = mne.read_epochs(input_path + fname, preload=True)
-                        channel = df.loc[subject_id, f"Post-ICA_{cond_name}"]
-                        inv = df.loc[subject_id, f"Post-ICA_{cond_name}_inv"]
-                        if inv == 'inv' or inv == '!inv':
-                            epochs.apply_function(invert, picks=channel)
-                        channel = df.loc[subject_id, f"Post-ICA_{cond_name}"]
                         evoked = epochs.average(picks=[channel])
                         data = evoked.data
                         evoked_list.append(data)

@@ -25,15 +25,14 @@ if __name__ == '__main__':
     prep_path = '/data/pt_02569/tmp_data/prepared_py/'
     pca_path = '/data/pt_02569/tmp_data/ecg_rm_py/'
     ica_path = '/data/pt_02569/tmp_data/baseline_ica_py/'
-    postica_path = '/data/pt_02569/tmp_data/ica_py/'
     ssp_path = '/data/p_02569/SSP/'
     figure_path = '/data/p_02569/StatsGraphs_Dataset1/'
     os.makedirs(figure_path, exist_ok=True)
 
     ################################# Make Dataframe ###################################
-    file_paths = [prep_path, pca_path, ica_path, postica_path, ssp_path]
-    names = ['Prep', 'PCA', 'ICA', 'Post-ICA', 'SSP']
-    names_indf = ['Prep', 'PCA', 'ICA', 'Post-ICA', 'SSP_5', 'SSP_6']
+    file_paths = [prep_path, pca_path, ica_path, ssp_path]
+    names = ['Prep', 'PCA', 'ICA', 'SSP']
+    names_indf = ['Prep', 'PCA', 'ICA', 'SSP_5', 'SSP_6']
     # Pull each subjects value out
     keywords = ['snr_med', 'snr_tib']
     count = 0

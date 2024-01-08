@@ -31,8 +31,8 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/PSD_Plots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [False, False, False, False]  # Can't do ICA when cca_flag = True
-    method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
+    methods = [False, False, False]  # Can't do ICA when cca_flag = True
+    method_names = ['Prep', 'PCA', 'ICA']  # Will treat SSP separately since there are multiple
     ssp_flag = True
     cca_flag = False
 
@@ -105,21 +105,6 @@ if __name__ == '__main__':
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                         evoked.reorder_channels(esg_chans)
                         evoked_list.append(evoked)
-
-                    elif method == 'Post-ICA':
-                        if cca_flag:
-                            input_path = "/data/pt_02569/tmp_data/ica_py_cca/" + subject_id + "/esg/prepro/"
-                            fname = f"clean_ica_auto_{cond_name}.fif"
-                            epochs = mne.read_epochs(input_path + fname, preload=True)
-                            evoked = epochs[trigger_name].average()
-                            evoked_list.append(evoked)
-                        else:
-                            input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                            fname = f"clean_ica_auto_{cond_name}.fif"
-                            raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                            evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
-                            evoked.reorder_channels(esg_chans)
-                            evoked_list.append(evoked)
 
                 averaged = mne.grand_average(evoked_list, interpolate_bads=False, drop_bads=False)
                 relevant_channel = averaged.pick_channels(channel)

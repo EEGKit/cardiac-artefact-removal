@@ -46,7 +46,6 @@ if __name__ == '__main__':
     which_method = {'Prep': False,
                     'PCA': False,
                     'ICA': True,
-                    'Post-ICA': False,
                     'SSP_5': False,
                     'SSP_6': False}
 
@@ -62,9 +61,6 @@ if __name__ == '__main__':
                 file_name = 'amplitudes.h5'
             elif method == 'ICA':
                 file_path = '/data/pt_02569/tmp_data/baseline_ica_py/'
-                file_name = 'amplitudes.h5'
-            elif method == 'Post-ICA':
-                file_path = '/data/pt_02569/tmp_data/ica_py/'
                 file_name = 'amplitudes.h5'
             elif method == 'SSP_5':
                 file_path = '/data/p_02569/SSP/'

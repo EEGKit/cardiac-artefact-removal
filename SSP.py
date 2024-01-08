@@ -39,7 +39,7 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
     fname = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
 
     # for n in np.arange(5, 21):
-    for n in np.arange(5, 7):
+    for n in np.arange(1, 21):
         raw = mne.io.read_raw_fif(load_path + fname, preload=True)
 
         ############################################# SSP ##############################################
@@ -65,10 +65,10 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
         raw_FzRef = rereference_data(clean_raw, 'Fz-TH6')
 
         # anterior reference
-        if nerve == 1:
-            raw_antRef = rereference_data(clean_raw, 'AC')
-        elif nerve == 2:
-            raw_antRef = rereference_data(clean_raw, 'AL')
+        # if nerve == 1:
+        #     raw_antRef = rereference_data(clean_raw, 'AC')
+        # elif nerve == 2:
+        #     raw_antRef = rereference_data(clean_raw, 'AL')
 
         # add reference channel to data - make sure recording reference is included
         mne.add_reference_channels(clean_raw, ref_channels=['TH6'], copy=False)  # Modifying in place
@@ -79,12 +79,12 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
                          iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
         # raw_FzRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_FzRef.ch_names), method='iir',
         #                  iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-        raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
-                          iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+        # raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
+        #                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
 
         clean_raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
         # raw_FzRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_FzRef.ch_names), method='fir', phase='zero')
-        raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
+        # raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
 
         ######################################### Plots ##############################################
         # Epoch around spinal triggers and plot
@@ -99,5 +99,5 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
 
         # Save the SSP cleaned data for future comparison
         clean_raw.save(f"{savename}ssp_cleaned_{cond_name}.fif", fmt='double', overwrite=True)
-        raw_antRef.save(f"{savename}ssp_cleaned_{cond_name}_antRef.fif", fmt='double', overwrite=True)
+        # raw_antRef.save(f"{savename}ssp_cleaned_{cond_name}_antRef.fif", fmt='double', overwrite=True)
         # raw_FzRef.save(f"{savename}ssp_cleaned_{cond_name}_FzRef.fif", fmt='double', overwrite=Tr

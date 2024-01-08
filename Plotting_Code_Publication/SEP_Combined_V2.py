@@ -212,7 +212,7 @@ if __name__ == '__main__':
                 if count_method != 0:
                     axes[count_row, count_method].set_ylabel(None)
                 cb = fig.colorbar(axes[count_row, count_method].images[-1], cax=axes[count_row, 4])
-                cb.set_label('Amplitude (dB)')
+                cb.set_label('Power (dB)')
                 count_row += 1
 
                 ##########################################################################################

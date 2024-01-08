@@ -51,12 +51,6 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
         save_path = "/data/pt_02569/tmp_data/baseline_ica_py_cca/" + subject_id + "/esg/prepro/"
         os.makedirs(save_path, exist_ok=True)
 
-    elif data_string == 'Post-ICA':
-        input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-        fname = f'clean_ica_auto_{cond_name}.fif'
-        save_path = "/data/pt_02569/tmp_data/ica_py_cca/" + subject_id + "/esg/prepro/"
-        os.makedirs(save_path, exist_ok=True)
-
     elif data_string == 'SSP':
 
         input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
@@ -236,7 +230,7 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
             chan_labels = epochs.ch_names
             colorbar = True
             time = 0.0
-            mrmr_esg_isopotentialplot([subject], A_st[:, icomp], colorbar_axes, chan_labels, colorbar, time)
+            mrmr_esg_isopotentialplot([subject], A_st[:, icomp], colorbar_axes, chan_labels, colorbar, time, srmr_nr)
 
         if data_string == 'SSP':
             plt.tight_layout()

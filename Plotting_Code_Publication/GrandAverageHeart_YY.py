@@ -103,7 +103,8 @@ if __name__ == '__main__':
                  color=pal[1])
         ax1.set_ylabel('Cleaned Artefact Amplitude (\u03BCV)')
         ax1.set_xlabel('Time (s)')
-        ax1.set_title('PCA-OBS')
+        if cond_name == 'median':
+            ax1.set_title('PCA-OBS')
         # ax1.spines['left'].set_color('blue')
         # ax1.tick_params(axis='y', colors='blue')
         ax10.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :]*10**6, label='Uncleaned',
@@ -114,7 +115,8 @@ if __name__ == '__main__':
         ax2.plot(relevant_channel_ica.times, relevant_channel_ica.data[0, :] * 10 ** 6, label='ICA',
                  color=pal[2])
         ax2.set_xlabel('Time (s)')
-        ax2.set_title('ICA')
+        if cond_name == 'median':
+            ax2.set_title('ICA')
         ax2.set_yticklabels([])
         # ax2.spines['left'].set_color('orange')
         # ax2.tick_params(axis='y', colors='orange')
@@ -126,7 +128,8 @@ if __name__ == '__main__':
         ax3.plot(relevant_channel_ssp6.times, relevant_channel_ssp6.data[0, :] * 10 ** 6, label='SSP',
                  color=pal[3])
         ax3.set_xlabel('Time (s)')
-        ax3.set_title('SSP')
+        if cond_name == 'median':
+            ax3.set_title('SSP')
         ax3.set_yticklabels([])
         ax30.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :] * 10 ** 6, label='Uncleaned',
                   linewidth=0.5, linestyle='dashed', color='blue')  # pal[0]
@@ -153,20 +156,12 @@ if __name__ == '__main__':
             ax3.set_ylim([-2, 7])
             align.yaxes(ax1, 0, ax10, 0, 0.25)
 
-        # Collect labels for legend
-        # lines, labels = ax1.get_legend_handles_labels()
-        # lines2, labels2 = ax2.get_legend_handles_labels()
-        # lines3, labels3 = ax3.get_legend_handles_labels()
-        # lines30, labels30 = ax30.get_legend_handles_labels()
-        # plt.legend(lines + lines2 + lines3 + lines30, labels + labels2 + labels3 + labels30, loc='lower left',
-        #            bbox_to_anchor=(1, 0))
-
-        if cond_name == 'median':
-            plt.suptitle(f"Cardiac Artefact Time Courses\n"
-                         f"Cervical Spinal Cord")
-        else:
-            plt.suptitle(f"Cardiac Artefact Time Courses\n"
-                         f"Lumbar Spinal Cord")
+        # if cond_name == 'median':
+        #     plt.suptitle(f"Cardiac Artefact Time Courses\n"
+        #                  f"Cervical Spinal Cord")
+        # else:
+        #     plt.suptitle(f"Cardiac Artefact Time Courses\n"
+        #                  f"Lumbar Spinal Cord")
         plt.tight_layout()
         plt.savefig(image_path+fname)
         plt.savefig(image_path + fname + '.pdf', bbox_inches='tight', format="pdf")

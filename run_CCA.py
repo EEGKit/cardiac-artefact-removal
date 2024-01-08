@@ -52,12 +52,6 @@ def run_CCA(subject, condition, srmr_nr, data_string, n):
         save_path = "/data/pt_02569/tmp_data/baseline_ica_py_cca/" + subject_id + "/esg/prepro/"
         os.makedirs(save_path, exist_ok=True)
 
-    elif data_string == 'Post-ICA':
-        input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-        fname = f'clean_ica_auto_{cond_name}.fif'
-        save_path = "/data/pt_02569/tmp_data/ica_py_cca/" + subject_id + "/esg/prepro/"
-        os.makedirs(save_path, exist_ok=True)
-
     elif data_string == 'SSP':
         input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
         fname = f"ssp_cleaned_{cond_name}.fif"

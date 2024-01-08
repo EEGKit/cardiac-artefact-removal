@@ -33,8 +33,8 @@ if __name__ == '__main__':
     save_path = "/data/pt_02569/tmp_data/EvokedLists_Dataset1/"
     os.makedirs(save_path, exist_ok=True)
 
-    methods = [True, True, True, True]
-    method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
+    methods = [True, True, True]
+    method_names = ['Prep', 'PCA', 'ICA']  # Will treat SSP separately since there are multiple
     SSP = True
 
     # To use mne grand_average method, need to generate a list of evoked potentials for each subject
@@ -89,16 +89,6 @@ if __name__ == '__main__':
                     elif method == 'ICA':
                         input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
                         fname = f"clean_baseline_ica_auto_{cond_name}.fif"
-                        raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                        events, event_ids = mne.events_from_annotations(raw)
-                        event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
-                        epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1],
-                                            baseline=tuple(iv_baseline))
-                        epochs.save(fname=input_path + f'epochs_{cond_name}_qrs.fif', overwrite=True)
-
-                    elif method == 'Post-ICA':
-                        input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                        fname = f"clean_ica_auto_{cond_name}.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         events, event_ids = mne.events_from_annotations(raw)
                         event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}

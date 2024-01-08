@@ -5,10 +5,13 @@
 import mne
 import os
 import numpy as np
+import pandas as pd
 from scipy.io import loadmat
 from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 
 if __name__ == '__main__':
@@ -39,16 +42,18 @@ if __name__ == '__main__':
     os.makedirs(image_path, exist_ok=True)
 
     channel_types = ['ECG', 'Spinal', 'Cortical']
+    # dict = {}
 
     # To use mne grand_average method, need to generate a list of evoked potentials for each subject
     for cond_name in cond_names:
         fig = plt.figure(figsize=(21, 9))
-        gs = fig.add_gridspec(2, 4, width_ratios=[10, 10, 10, 0.25], height_ratios=[2, 1])
+        gs = fig.add_gridspec(2, 4, width_ratios=[10, 10, 10, 0.35], height_ratios=[2, 1])
         ax_ecg = fig.add_subplot(gs[0, 0])
         ax_spinal = fig.add_subplot(gs[0, 1])
         ax_cortical = fig.add_subplot(gs[0, 2])
         cbar_ax = fig.add_subplot(gs[0:2, 3])
         ax_time = fig.add_subplot(gs[1, 0:3])
+        ax_time_twin = ax_time.twinx()
 
         for channel_type in channel_types:
             # Conditions (median, tibial)
@@ -108,6 +113,10 @@ if __name__ == '__main__':
                 evoked_list.append(power)
 
             averaged = mne.grand_average(evoked_list, interpolate_bads=False, drop_bads=False)
+            # dict[f'{cond_name}, {channel_type}, min'] = 10*np.log10(averaged.data).min()  # Not working as expected
+            # dict[f'{cond_name}, {channel_type}, max'] = 10*np.log10(averaged.data).max()
+            # print(f"{channel_type} min: {10*np.log10(averaged.data).min()}")
+            # print(f"{channel_type} max: {10*np.log10(averaged.data).max()}")
             averaged_time = mne.grand_average(time_list, interpolate_bads=False, drop_bads=False)
             # relevant_channel = averaged.pick_channels(channel)
 
@@ -117,9 +126,18 @@ if __name__ == '__main__':
             vmax = -175
 
             # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
-            averaged.plot([0], baseline=iv_baseline, mode='mean', cmap='jet',
+            # TFR plots
+            averaged.plot(picks=[0], baseline=iv_baseline, mode='mean', cmap='jet',
                           axes=ax, show=False, colorbar=False, dB=True,
                           tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
+
+            # Try to get max value in dB
+            average_data = np.squeeze(averaged.crop(tmin=-0.1, tmax=0.1, fmin=0, fmax=50).data)
+            data_dB = 10*np.log10(average_data)
+            print(f'{channel_type}, {cond_name}, maximum: {np.max(data_dB)}')
+            print(f'{channel_type}, {cond_name}, minimum: {np.min(data_dB)}')
+
+            # Time Plots
             if channel_type in ['ECG', 'Spinal']:
                 if channel_type == 'ECG':
                     style = None
@@ -129,6 +147,13 @@ if __name__ == '__main__':
                 ax_time.set_xlim([-0.3, 0.5])
                 ax_time.set_xlabel('Time (s)')
                 ax_time.set_ylabel('Amplitude (\u03BCV)')
+            elif channel_type == 'Cortical':
+                style = 'dotted'
+                ax_time_twin.plot(evoked.times, averaged_time.get_data().reshape(-1) * 10 ** 6, color='black',
+                             linestyle=style)
+                ax_time_twin.set_ylabel(f'Amplitude (\u03BCV)')
+
+            # Labelling
             if channel_type == 'ECG':
                 ax.set_title('ECG Channel')
             elif channel_type == 'Spinal':
@@ -140,9 +165,11 @@ if __name__ == '__main__':
 
         cb = fig.colorbar(ax_ecg.images[-1], cax=cbar_ax)
         cb.set_label('Amplitude (dB)')
-        fname = f"{cond_name}_CardiacTFRandTimeCourse_dB.png"
+        fname = f"{cond_name}_CardiacTFRandTimeCourse_dB"
+        # print(dict)
         plt.tight_layout()
         # plt.show()
         # exit()
-        fig.savefig(image_path+fname)
+        fig.savefig(image_path+fname+'.png')
+        plt.savefig(image_path + fname + '.pdf', bbox_inches='tight', format="pdf")
         plt.clf()

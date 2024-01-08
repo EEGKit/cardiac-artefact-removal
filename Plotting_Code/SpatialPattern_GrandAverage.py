@@ -11,7 +11,7 @@ import os
 
 
 if __name__ == '__main__':
-    # methods = ['Prep', 'PCA', 'ICA', 'Post-ICA', 'SSP']  # Methods to do
+    # methods = ['Prep', 'PCA', 'ICA', 'SSP']  # Methods to do
     methods = ['ICA', 'SSP']  # Methods to do
     n_proj = 6
 
@@ -54,10 +54,6 @@ if __name__ == '__main__':
                 elif method == 'ICA':
                     data_path = '/data/pt_02569/tmp_data/baseline_ica_py/' + subject_id + \
                                 '/esg/prepro/clean_baseline_ica_auto_' + cond_name + '.fif'
-
-                elif method == 'Post-ICA':
-                    data_path = '/data/pt_02569/tmp_data/ica_py/' + subject_id + \
-                                '/esg/prepro/clean_ica_auto_' + cond_name + '.fif'
 
                 elif method == 'SSP':
                     data_path = "/data/p_02569/SSP/" + subject_id + f"/{n_proj} projections/ssp_cleaned_" + cond_name + ".fif"

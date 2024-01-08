@@ -31,7 +31,7 @@ if __name__ == '__main__':
     df = pd.read_excel(xls, 'Dataset 1')
     df.set_index('Subject', inplace=True)
 
-    for method in ['Uncleaned', 'PCA', 'Post-ICA', 'SSP']:
+    for method in ['Uncleaned', 'PCA', 'SSP']:
         for subject in subjects:
             for cond_name in cond_names:
                 if cond_name == 'median':
@@ -56,15 +56,6 @@ if __name__ == '__main__':
                     epochs = mne.read_epochs(input_path + fname, preload=True)
                     channel = df.loc[subject_id, f"PCA_{cond_name}"]
                     inv = df.loc[subject_id, f"PCA_{cond_name}_inv"]
-                    if inv == 'inv' or inv == '!inv':
-                        epochs.apply_function(invert, picks=channel)
-
-                elif method == 'Post-ICA':
-                    input_path = "/data/pt_02569/tmp_data/ica_py_cca/" + subject_id + "/esg/prepro/"
-                    fname = f"clean_ica_auto_{cond_name}.fif"
-                    epochs = mne.read_epochs(input_path + fname, preload=True)
-                    channel = df.loc[subject_id, f"Post-ICA_{cond_name}"]
-                    inv = df.loc[subject_id, f"Post-ICA_{cond_name}_inv"]
                     if inv == 'inv' or inv == '!inv':
                         epochs.apply_function(invert, picks=channel)
 

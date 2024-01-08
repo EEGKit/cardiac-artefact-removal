@@ -16,7 +16,6 @@ if __name__ == '__main__':
     prep_path = '/data/pt_02569/tmp_data/prepared_py/'
     pca_path = '/data/pt_02569/tmp_data/ecg_rm_py/'
     ica_path = '/data/pt_02569/tmp_data/baseline_ica_py/'
-    postica_path = '/data/pt_02569/tmp_data/ica_py/'
     ssp_path = '/data/p_02569/SSP/'
     figure_path = '/data/p_02569/StatsGraphs_Dataset1/'
     os.makedirs(figure_path, exist_ok=True)
@@ -37,9 +36,9 @@ if __name__ == '__main__':
         median_pos.append(esg_chans.index(channel))
 
     ################################# Make Dataframe ###################################
-    file_paths = [prep_path, pca_path, ica_path, postica_path, ssp_path]
-    names = ['Prep', 'PCA', 'ICA', 'Post-ICA', 'SSP_5', 'SSP_6']  # To make dataframe
-    names_indf = ['PCA', 'ICA', 'Post-ICA', 'SSP_5', 'SSP_6']  # To access columns in df
+    file_paths = [prep_path, pca_path, ica_path, ssp_path]
+    names = ['Prep', 'PCA', 'ICA', 'SSP_5', 'SSP_6']  # To make dataframe
+    names_indf = ['PCA', 'ICA', 'SSP_5', 'SSP_6']  # To access columns in df
     # Pull each subjects value out
     keywords = ['pow_med', 'pow_tib']
     count = 0
@@ -89,11 +88,9 @@ if __name__ == '__main__':
 
 
     #################################### Dataframe of Differences #################################
-    # Drop Post-ICA and SSP_5
-    df_med.drop('Post-ICA', axis=1, inplace=True)
+    # Drop SSP_5
     df_med.drop('SSP_5', axis=1, inplace=True)
-    # Drop Post-ICA and SSP_5
-    df_tib.drop('Post-ICA', axis=1, inplace=True)
+    # Drop SSP_5
     df_tib.drop('SSP_5', axis=1, inplace=True)
 
     ###################### Get mean and sem of columns ####################

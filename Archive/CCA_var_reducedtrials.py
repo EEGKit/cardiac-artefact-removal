@@ -1,12 +1,12 @@
 # Taking the peak-peak value in the potential window of interest, and seeing how this varies across trials both before
-# and after CCA - Prepared, PCA, Post-ICA and SSP 5&6
+# and after CCA - Prepared, PCA, and SSP 5&6
 # Using the coefficient of variance as the metric
 # Computing for CCA with 1000, 500 and 250 trials used
 # Using the same components to compute as are used for the 2000 trials version
 
 import h5py
 from scipy.io import loadmat
-from SNR_functions import *
+from Metrics.SNR_functions import *
 import pandas as pd
 from invert import invert
 from scipy.stats import variation
@@ -16,7 +16,6 @@ if __name__ == '__main__':
     mean = False  # If true, use the mean and not the coeff of variation
     calc_prepared = True
     calc_PCA = True
-    calc_post_ICA = True
     calc_SSP = True
 
     # Testing with just subject 1 at the moment
@@ -180,79 +179,6 @@ if __name__ == '__main__':
                 for keyword in dataset_keywords:
                     outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
 
-
-    ################################### Post-ICA Calculations #################################
-    if calc_post_ICA:
-        for no in [1000, 500, 250]:
-            class save_SNR():
-                def __init__(self):
-                    pass
-
-            # Instantiate class
-            savesnr = save_SNR()
-
-            # Matrix of dimensions no.subjects x no. projections
-            var_med = np.zeros((len(subjects), 1))
-            var_tib = np.zeros((len(subjects), 1))
-
-            for subject in subjects:
-                for cond_name in cond_names:
-                    if cond_name == 'tibial':
-                        trigger_name = 'Tibial - Stimulation'
-                        # Possibly change for dataset 2 - shorter time window for SNR
-                        potential_window = [12 / 1000, 32 / 1000]
-
-                    elif cond_name == 'median':
-                        trigger_name = 'Median - Stimulation'
-                        potential_window = [8 / 1000, 18 / 1000]
-
-                    subject_id = f'sub-{str(subject).zfill(3)}'
-
-                    # Want the SNR
-                    # Load epochs resulting from CCA on prepared
-                    input_path = "/data/pt_02569/tmp_data/ica_py_cca/" + subject_id + "/esg/prepro/"
-                    fname = f"clean_ica_auto_{cond_name}{no}.fif"
-                    epochs = mne.read_epochs(input_path + fname, preload=True)
-                    channel = df.loc[subject_id, f"Post-ICA_{cond_name}"]
-                    inv = df.loc[subject_id, f"Post-ICA_{cond_name}_inv"]
-                    if inv == 'inv' or inv == '!inv':
-                        epochs.apply_function(invert, picks=channel)
-
-                    # Now we have epochs for correct channel, want to find peak-peak in potential window for each epoch
-                    epochs = epochs.crop(tmin=potential_window[0], tmax=potential_window[1])
-                    data = epochs.get_data(picks=channel)  # n_epochs, n_channels, n_times
-                    data = np.squeeze(data)  # Remove channel dimension as we only select one
-                    peak_peak_amp = np.ptp(data, axis=1,
-                                           keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
-                    if std:
-                        var = np.std(peak_peak_amp, axis=0)  # Gets the standard deviation in each potential window
-                    elif mean:
-                        var = np.mean(peak_peak_amp, axis=0)  # Gets the standard deviation in each potential window
-                    else:
-                        # Then get variance of these peak-peak vals
-                        var = variation(peak_peak_amp, axis=0, nan_policy='omit')[0]  # Just one number
-
-                    # Now have one snr related to each subject and condition
-                    if cond_name == 'median':
-                        var_med[subject - 1, 0] = var
-                    elif cond_name == 'tibial':
-                        var_tib[subject - 1, 0] = var
-
-            # Save to file to compare to matlab - only for debugging
-            savesnr.var_med = var_med
-            savesnr.var_tib = var_tib
-            dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
-
-            if std:
-                fn = f"/data/pt_02569/tmp_data/ica_py_cca/variance{no}_std.h5"
-            elif mean:
-                fn = f"/data/pt_02569/tmp_data/ica_py_cca/variance{no}_mean.h5"
-            else:
-                fn = f"/data/pt_02569/tmp_data/ica_py_cca/variance{no}.h5"
-            with h5py.File(fn, "w") as outfile:
-                for keyword in dataset_keywords:
-                    outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
-
     ################################### SSP Calculations #################################
     if calc_SSP:
         for no in [1000, 500, 250]:
@@ -329,10 +255,9 @@ if __name__ == '__main__':
     keywords = ['var_med', 'var_tib']
     input_paths = ["/data/pt_02569/tmp_data/prepared_py_cca/",
                    "/data/pt_02569/tmp_data/ecg_rm_py_cca/",
-                   "/data/pt_02569/tmp_data/ica_py_cca/",
                    "/data/p_02569/SSP_cca/"]
 
-    names = ['Prepared', 'PCA', 'Post-ICA', 'SSP']
+    names = ['Prepared', 'PCA', 'SSP']
 
     for no in [1000, 500, 250]:
         print("\n")

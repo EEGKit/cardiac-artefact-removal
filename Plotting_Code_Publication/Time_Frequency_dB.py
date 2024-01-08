@@ -45,8 +45,8 @@ if __name__ == '__main__':
     image_path = "/data/p_02569/TimeFrequencyPlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
-    methods = [True, True, True, False]
-    method_names = ['Prep', 'PCA', 'ICA', 'Post-ICA']  # Will treat SSP separately since there are multiple
+    methods = [True, True, True]
+    method_names = ['Prep', 'PCA', 'ICA']  # Will treat SSP separately since there are multiple
     ssp = True  # Using files from merging mixed nerve with digits
 
     # To use mne grand_average method, need to generate a list of evoked potentials for each subject
@@ -117,17 +117,6 @@ if __name__ == '__main__':
                     elif method == 'ICA':
                         input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
                         fname = f"clean_baseline_ica_auto_{cond_name}.fif"
-                        raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                        evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
-                        evoked.reorder_channels(esg_chans)
-                        evoked = evoked.pick_channels(channel)
-                        power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
-                        # evoked_list.append(evoked)
-                        evoked_list.append(power)
-
-                    elif method == 'Post-ICA':
-                        input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                        fname = f"clean_ica_auto_{cond_name}.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                         evoked.reorder_channels(esg_chans)

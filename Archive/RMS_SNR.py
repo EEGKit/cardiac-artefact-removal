@@ -32,7 +32,6 @@ if __name__ == '__main__':
     calc_raw = True
     calc_PCA = True
     calc_ICA = True
-    calc_post_ICA = True
     calc_SSP = True
 
     # Testing with just subject 1 at the moment
@@ -239,61 +238,6 @@ if __name__ == '__main__':
                 outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
 
     #########################################
-    # Post ICA SNR Calculations
-    #########################################
-    if calc_post_ICA:
-        # Declare class to hold ecg fit information
-        class save_SNR():
-            def __init__(self):
-                pass
-
-        # Instantiate class
-        savesnr = save_SNR()
-
-        # Matrix of dimensions no.subjects x no. projections
-        snr_med = np.zeros((len(subjects), 39))
-        snr_tib = np.zeros((len(subjects), 39))
-
-        for subject in subjects:
-            for cond_name in cond_names:
-
-                subject_id = f'sub-{str(subject).zfill(3)}'
-
-                # Want the SNR
-                # Load epochs resulting from Post-ICA
-                input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                fname = f"clean_ica_auto_{cond_name}.fif"
-                raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-
-                # Extract relevant epochs
-                events, event_ids = mne.events_from_annotations(raw)
-                event_id_dict = {key: value for key, value in event_ids.items() if key == 'qrs'}
-                epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1])
-
-                evoked = epochs.average()
-
-                # Now we have an evoked potential about the heartbeat
-                # Want to compute the RMS for heartbeat versus baseline
-                rms = compute_rms_snr(evoked, iv_b, iv_h, esg_chans)
-
-                # Now have rms snr related to each subject (39 channels) and condition
-                if cond_name == 'median':
-                    snr_med[subject - 1, :] = rms
-                elif cond_name == 'tibial':
-                    snr_tib[subject - 1, :] = rms
-
-        # Save to file to compare to matlab - only for debugging
-        savesnr.snr_med = snr_med
-        savesnr.snr_tib = snr_tib
-        dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
-
-        fn = f"/data/pt_02569/tmp_data/ica_py/rms_snr_heart.h5"
-
-        with h5py.File(fn, "w") as outfile:
-            for keyword in dataset_keywords:
-                outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
-
-    #########################################
     # SSP SNR Calculations
     #########################################
     if calc_SSP:
@@ -383,16 +327,6 @@ if __name__ == '__main__':
     print(f"ICA Medial: {np.mean(snr_med_ica, axis=tuple([0, 1])):.4}")
     print(f"ICA Tibial: {np.mean(snr_tib_ica, axis=tuple([0, 1])):.4}")
 
-    # Post-ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/rms_snr_heart.h5"
-    with h5py.File(fn, "r") as infile:
-        # Get the data
-        snr_med_post_ica = infile[keywords[0]][()]
-        snr_tib_post_ica = infile[keywords[1]][()]
-
-    print(f"Post-ICA Medial: {np.mean(snr_med_post_ica, axis=tuple([0, 1])):.4}")
-    print(f"Post-ICA Tibial: {np.mean(snr_tib_post_ica, axis=tuple([0, 1])):.4}")
-
     # SSP
     for n in np.arange(5, 21):
         fn = f"/data/p_02569/SSP/rms_snr_heart_{n}.h5"
@@ -444,16 +378,6 @@ if __name__ == '__main__':
 
     print(f"ICA Medial: {np.mean(snr_med_ica[:, median_pos], axis=tuple([0, 1])):.4}")
     print(f"ICA Tibial: {np.mean(snr_tib_ica[:, tibial_pos], axis=tuple([0, 1])):.4}")
-
-    # Post-ICA
-    fn = f"/data/pt_02569/tmp_data/ica_py/rms_snr_heart.h5"
-    with h5py.File(fn, "r") as infile:
-        # Get the data
-        snr_med_post_ica = infile[keywords[0]][()]
-        snr_tib_post_ica = infile[keywords[1]][()]
-
-    print(f"Post-ICA Medial: {np.mean(snr_med_post_ica[:, median_pos], axis=tuple([0, 1])):.4}")
-    print(f"Post-ICA Tibial: {np.mean(snr_tib_post_ica[:, tibial_pos], axis=tuple([0, 1])):.4}")
 
     # SSP
     for n in np.arange(5, 21):

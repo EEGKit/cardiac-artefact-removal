@@ -19,7 +19,6 @@ if __name__ == '__main__':
     Prepared_flag = True
     PCA_flag = True
     ICA_flag = False
-    post_ICA_flag = False
     SSP_flag = False
     reduced_epochs = False
 
@@ -150,37 +149,6 @@ if __name__ == '__main__':
                         plt.savefig(f"{figure_path}ICA_{ch}_{cond_name}_reduced.jpg")
                     else:
                         plt.savefig(f"{figure_path}ICA_{ch}_{cond_name}.jpg")
-                    plt.close()
-
-    if post_ICA_flag:
-        for subject in subjects:
-            subject_id = f'sub-{str(subject).zfill(3)}'
-            figure_path = "/data/p_02569/Evoked_heart_images/" + subject_id + "/"
-            os.makedirs(figure_path, exist_ok=True)
-
-            for cond_name in cond_names:
-                if cond_name == 'tibial':
-                    trigger_name = 'qrs'
-                    channels = ['S23', 'L1', 'S31']
-                elif cond_name == 'median':
-                    trigger_name = 'qrs'
-                    channels = ['S6', 'SC6', 'S14']
-
-                input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                raw = mne.io.read_raw_fif(f"{input_path}clean_ica_auto_{cond_name}.fif")
-
-                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
-
-                for ch in channels:
-                    fig = evoked.plot(picks=[ch], exclude='bads', unit=True, show=False,
-                                      xlim=tuple([-0.2, 0.2]), proj=True)
-                    plt.title(ch)
-
-                    # plt.show()
-                    if reduced_epochs:
-                        plt.savefig(f"{figure_path}post_ICA_{ch}_{cond_name}_reduced.jpg")
-                    else:
-                        plt.savefig(f"{figure_path}post_ICA_{ch}_{cond_name}.jpg")
                     plt.close()
 
     if SSP_flag:

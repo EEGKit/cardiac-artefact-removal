@@ -24,7 +24,8 @@ def get_cropped_epochs(raw_data, epoch_interval, baseline_interval, interest_win
 
     return epos
 
-def get_coeffofvariation(epos, ch):
+
+def get_coeffofvariation_old(epos, ch):
     data = epos.get_data(picks=ch)  # n_epochs, n_channels, n_times
     data = np.squeeze(data)  # Remove channel dimension as we only have one
     peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
@@ -33,12 +34,36 @@ def get_coeffofvariation(epos, ch):
 
     return coeff_var
 
+# Controlling peak-peak such that positivity must be before negativity
+def get_coeffofvariation(epos, ch):
+    data = epos.get_data(picks=ch)  # n_epochs, n_channels, n_times
+    data = np.squeeze(data)  # Remove channel dimension as we only have one, shape (2000, 11)
+    # Loop through each epoch
+    ptp = []
+    # count=0
+    for row in data:
+        min = np.min(row)
+        idx = np.argmin(row)
+        # truncate the epoch so we only keep values before occurrence of minimum
+        # If minimum if in the first position of the time window, the ptp will be nan
+        if idx == 0:
+            ptp.append(np.nan)
+            # count += 1
+        else:
+            row_max = row[0:idx]
+            max = np.max(row_max)
+            ptp.append(max-min)
+    # Then get variance of these peak-peak vals
+    coeff_var = variation(ptp, axis=0, nan_policy='omit')  # Just one number
+
+    return coeff_var
+
 
 if __name__ == '__main__':
     which_method = {'Prep': True,
                     'PCA': True,
                     'SSP': True}
-    cca_flag = False  # Compute for CCA corrected data (True) or normal (False)
+    cca_flag = True  # Compute for CCA corrected data (True) or normal (False)
 
     subjects = np.arange(1, 37)  # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
@@ -138,7 +163,7 @@ if __name__ == '__main__':
                 savevar.var_tib = var_tib
                 dataset_keywords = [a for a in dir(savevar) if not a.startswith('__')]
 
-                fn = f"{file_path}variance.h5"
+                fn = f"{file_path}variance_controlptp.h5"
                 with h5py.File(fn, "w") as outfile:
                     for keyword in dataset_keywords:
                         outfile.create_dataset(keyword, data=getattr(savevar, keyword))
@@ -209,7 +234,7 @@ if __name__ == '__main__':
                 savevar.var_tib = var_tib
                 dataset_keywords = [a for a in dir(savevar) if not a.startswith('__')]
 
-                fn = f"{file_path}variance.h5"
+                fn = f"{file_path}variance_controlptp.h5"
                 with h5py.File(fn, "w") as outfile:
                     for keyword in dataset_keywords:
                         outfile.create_dataset(keyword, data=getattr(savevar, keyword))
@@ -234,7 +259,7 @@ if __name__ == '__main__':
         for i in np.arange(0, len(input_paths)):
             input_path = input_paths[i]
             name = names[i]
-            fn = f"{input_path}variance.h5"
+            fn = f"{input_path}variance_controlptp.h5"
             with h5py.File(fn, "r") as infile:
                 # Get the data
                 var_med = infile[keywords[0]][()]
@@ -256,7 +281,7 @@ if __name__ == '__main__':
         for i in np.arange(0, len(input_paths)):
             input_path = input_paths[i]
             name = names[i]
-            fn = f"{input_path}variance.h5"
+            fn = f"{input_path}variance_controlptp.h5"
             # All have shape (24, 1) bar SSP which is (24, 16)
             with h5py.File(fn, "r") as infile:
                 # Get the data

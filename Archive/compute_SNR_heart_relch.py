@@ -25,7 +25,6 @@ if __name__ == '__main__':
     # Set which to run
     calc_raw_snr = True
     calc_PCA_snr = True
-    calc_post_ICA_snr = True
     calc_ICA_snr = True
     calc_SSP_snr = True
     ant_ref = False  # Use the data that has been anteriorly referenced instead
@@ -191,68 +190,6 @@ if __name__ == '__main__':
             for keyword in dataset_keywords:
                 outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
 
-        # print(snr_med)
-        # print(snr_tib)
-
-    ######################################## PCA + ICA SNR Calculations ########################################
-    if calc_post_ICA_snr:
-        # Declare class to hold ecg fit information
-        class save_SNR():
-            def __init__(self):
-                pass
-
-        # Instantiate class
-        savesnr = save_SNR()
-
-        # Matrix of dimensions no.subjects x no. projections
-        snr_med = np.zeros((len(subjects), 1))
-        snr_tib = np.zeros((len(subjects), 1))
-
-        for subject in subjects:
-            for cond_name in cond_names:
-                if cond_name == 'tibial':
-                    trigger_name = 'Tibial - Stimulation'
-                elif cond_name == 'median':
-                    trigger_name = 'Median - Stimulation'
-
-                subject_id = f'sub-{str(subject).zfill(3)}'
-
-                # Want the SNR
-                # Load data resulting from preparation script
-                input_path = "/data/pt_02569/tmp_data/ica_py/" + subject_id + "/esg/prepro/"
-                if ant_ref:
-                    fname = f"clean_ica_auto_antRef_{cond_name}.fif"
-                else:
-                    fname = f"clean_ica_auto_{cond_name}.fif"
-                raw = mne.io.read_raw_fif(input_path + fname)
-
-                evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
-
-                snr = calculate_heart_SNR_evoked_ch(evoked, cond_name, iv_baseline, reduced_window)
-
-                # Now have one snr related to each subject and condition
-                if cond_name == 'median':
-                    snr_med[subject - 1, 0] = snr
-                elif cond_name == 'tibial':
-                    snr_tib[subject - 1, 0] = snr
-
-        # Save to file to compare to matlab - only for debugging
-        savesnr.snr_med = snr_med
-        savesnr.snr_tib = snr_tib
-        dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
-        if reduced_window:
-            if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ch_ant_smallwin.h5"
-            else:
-                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ch_smallwin.h5"
-        else:
-            if ant_ref:
-                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ch_ant.h5"
-            else:
-                fn = f"/data/pt_02569/tmp_data/ica_py/snr_heart_ch.h5"
-        with h5py.File(fn, "w") as outfile:
-            for keyword in dataset_keywords:
-                outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
         # print(snr_med)
         # print(snr_tib)
 
