@@ -203,7 +203,8 @@ if __name__ == '__main__':
                      color=pal[0])
             ax1.set_ylabel('Cleaned SEP Amplitude (AU)')
             ax1.set_xlabel('Time (s)')
-            ax1.set_title('Uncleaned + CCA')
+            if cond_name == 'median':
+                ax1.set_title('Uncleaned + CCA')
             # ax1.spines['left'].set_color('teal')
             # ax1.tick_params(axis='y', colors='teal')
             ax10.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :]*10**6, label='Uncleaned',
@@ -214,7 +215,8 @@ if __name__ == '__main__':
             ax2.plot(epochs.times, relevant_channel_pca_cca[0, :], label='PCA-OBS CCA',
                      color=pal[1])
             ax2.set_xlabel('Time (s)')
-            ax2.set_title('PCA-OBS + CCA')
+            if cond_name == 'median':
+                ax2.set_title('PCA-OBS + CCA')
             ax2.set_yticklabels([])
             # ax2.spines['left'].set_color('blue')
             # ax2.tick_params(axis='y', colors='blue')
@@ -226,7 +228,8 @@ if __name__ == '__main__':
             ax3.plot(epochs.times, relevant_channel_ssp6_cca[0, :], label='SSP CCA',
                      color=pal[3])
             ax3.set_xlabel('Time (s)')
-            ax3.set_title('SSP + CCA')
+            if cond_name == 'median':
+                ax3.set_title('SSP + CCA')
             ax3.set_yticklabels([])
             ax30.plot(relevant_channel_prep.times, relevant_channel_prep.data[0, :]*10**6, label='Uncleaned',
                       linewidth=0.5, linestyle='dashed', color='black')
@@ -265,25 +268,13 @@ if __name__ == '__main__':
 
             # # Align y-axes
             align_yaxis_np([ax1, ax10, ax2, ax20, ax3, ax30])
-            # alignYaxes([ax1, ax10, ax2, ax20, ax3, ax30], [0, 0, 0, 0, 0, 0])
-            # align.yaxes(ax2, 0, ax10, 0)
-            # align.yaxes(ax1, 0, ax10, 0)
-            # align.yaxes(ax2, 0, ax10, 0)
 
-            # Collect labels for legend
-            # lines, labels = ax1.get_legend_handles_labels()
-            # lines2, labels2 = ax2.get_legend_handles_labels()
-            # lines3, labels3 = ax3.get_legend_handles_labels()
-            # lines30, labels30 = ax30.get_legend_handles_labels()
-            # plt.legend(lines + lines2 + lines3 + lines30, labels + labels2 + labels3 + labels30, loc='lower left',
-            #            bbox_to_anchor=(1, 0))
-
-            if cond_name == 'median':
-                plt.suptitle(f"SEP Time Courses\n"
-                             f"Cervical Spinal Cord")
-            else:
-                plt.suptitle(f"SEP Time Courses\n"
-                             f"Lumbar Spinal Cord")
+            # if cond_name == 'median':
+            #     plt.suptitle(f"SEP Time Courses\n"
+            #                  f"Cervical Spinal Cord")
+            # else:
+            #     plt.suptitle(f"SEP Time Courses\n"
+            #                  f"Lumbar Spinal Cord")
 
             plt.tight_layout()
             # plt.show()

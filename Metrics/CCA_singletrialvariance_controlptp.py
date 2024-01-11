@@ -24,23 +24,13 @@ def get_cropped_epochs(raw_data, epoch_interval, baseline_interval, interest_win
 
     return epos
 
-
-def get_coeffofvariation_old(epos, ch):
-    data = epos.get_data(picks=ch)  # n_epochs, n_channels, n_times
-    data = np.squeeze(data)  # Remove channel dimension as we only have one
-    peak_peak_amp = np.ptp(data, axis=1, keepdims=True)  # Returns peak-peak val of each epoch (2000, 1)
-    # Then get variance of these peak-peak vals
-    coeff_var = variation(peak_peak_amp, axis=0)[0]  # Just one number
-
-    return coeff_var
-
 # Controlling peak-peak such that positivity must be before negativity
 def get_coeffofvariation(epos, ch):
     data = epos.get_data(picks=ch)  # n_epochs, n_channels, n_times
     data = np.squeeze(data)  # Remove channel dimension as we only have one, shape (2000, 11)
     # Loop through each epoch
     ptp = []
-    # count=0
+    count=0
     for row in data:
         min = np.min(row)
         idx = np.argmin(row)
@@ -48,7 +38,7 @@ def get_coeffofvariation(epos, ch):
         # If minimum if in the first position of the time window, the ptp will be nan
         if idx == 0:
             ptp.append(np.nan)
-            # count += 1
+            count += 1
         else:
             row_max = row[0:idx]
             max = np.max(row_max)
@@ -56,14 +46,17 @@ def get_coeffofvariation(epos, ch):
     # Then get variance of these peak-peak vals
     coeff_var = variation(ptp, axis=0, nan_policy='omit')  # Just one number
 
-    return coeff_var
+    return count, coeff_var
 
 
 if __name__ == '__main__':
+    pd.set_option('display.max_rows', 500)
+    pd.set_option('display.max_columns', 500)
+    pd.set_option('display.width', 150)
     which_method = {'Prep': True,
                     'PCA': True,
                     'SSP': True}
-    cca_flag = True  # Compute for CCA corrected data (True) or normal (False)
+    cca_flag = False  # Compute for CCA corrected data (True) or normal (False)
 
     subjects = np.arange(1, 37)  # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
@@ -80,6 +73,12 @@ if __name__ == '__main__':
     xls = pd.ExcelFile('/data/p_02569/Components.xls')
     df = pd.read_excel(xls, 'Dataset 1')
     df.set_index('Subject', inplace=True)
+
+    df_median = pd.DataFrame(columns=['Prep', 'PCA', 'SSP'])
+    df_tibial = pd.DataFrame(columns=['Prep', 'PCA', 'SSP'])
+    # for df_setup in [df_median, df_tibial]:
+    #     df_setup['Subjects'] = np.arange(1, 37)
+        # df_setup.set_index('Subjects', inplace=True)
 
     for i in np.arange(0, len(which_method)):
         method = list(which_method.keys())[i]
@@ -136,11 +135,15 @@ if __name__ == '__main__':
                                     epochs.apply_function(invert, picks=channel)
 
                                 epochs = epochs.crop(tmin=potential_window[0], tmax=potential_window[1])
-                                var = get_coeffofvariation(epochs, channel)
+                                no_drops, var = get_coeffofvariation(epochs, channel)
                                 if cond_name == 'median':
                                     var_med[subject - 1, n - 5] = var
+                                    if n == 6:
+                                        df_median.at[f'{subject-1}', f'{method}'] = no_drops
                                 elif cond_name == 'tibial':
                                     var_tib[subject - 1, n - 5] = var
+                                    if n == 6:
+                                        df_tibial.at[f'{subject-1}', f'{method}'] = no_drops
 
                         # Process all other methods
                         else:
@@ -152,11 +155,13 @@ if __name__ == '__main__':
                                 epochs.apply_function(invert, picks=channel)
 
                             epochs = epochs.crop(tmin=potential_window[0], tmax=potential_window[1])
-                            var = get_coeffofvariation(epochs, channel)
+                            no_drops, var = get_coeffofvariation(epochs, channel)
                             if cond_name == 'median':
                                 var_med[subject - 1, 0] = var
+                                df_median.at[f'{subject-1}', f'{method}'] = no_drops
                             elif cond_name == 'tibial':
                                 var_tib[subject - 1, 0] = var
+                                df_tibial.at[f'{subject-1}', f'{method}'] = no_drops
 
                 # Save to file
                 savevar.var_med = var_med
@@ -202,12 +207,16 @@ if __name__ == '__main__':
                                 raw = mne.io.read_raw_fif(f"{input_path}{file_name}", preload=True)
                                 # Create epochs
                                 epochs = get_cropped_epochs(raw, iv_epoch, iv_baseline, potential_window, trigger_name)
-                                var = get_coeffofvariation(epochs, channel)
+                                no_drops, var = get_coeffofvariation(epochs, channel)
                                 # Now have one snr related to each subject and condition
                                 if cond_name == 'median':
                                     var_med[subject - 1, n-5] = var
+                                    if n == 6:
+                                        df_median.at[f'{subject-1}', f'{method}'] = no_drops
                                 elif cond_name == 'tibial':
                                     var_tib[subject - 1, n-5] = var
+                                    if n == 6:
+                                        df_tibial.at[f'{subject-1}', f'{method}'] = no_drops
 
                         # Process all other methods
                         else:
@@ -223,11 +232,13 @@ if __name__ == '__main__':
                                 raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                             epochs = get_cropped_epochs(raw, iv_epoch, iv_baseline, potential_window, trigger_name)
-                            var = get_coeffofvariation(epochs, channel)
+                            no_drops, var = get_coeffofvariation(epochs, channel)
                             if cond_name == 'median':
                                 var_med[subject - 1, 0] = var
+                                df_median.at[f'{subject-1}', f'{method}'] = no_drops
                             elif cond_name == 'tibial':
                                 var_tib[subject - 1, 0] = var
+                                df_tibial.at[f'{subject-1}', f'{method}'] = no_drops
 
                 # Save to file
                 savevar.var_med = var_med
@@ -241,6 +252,8 @@ if __name__ == '__main__':
 
 
     ########################## Print to screen #################################
+    df_median = df_median.astype('float32')
+    df_tibial= df_tibial.astype('float32')
     keywords = ['var_med', 'var_tib']
     if cca_flag:
         input_paths = ["/data/pt_02569/tmp_data/prepared_py_cca/",
@@ -275,6 +288,13 @@ if __name__ == '__main__':
             else:
                 print(f'Var {name} Median: {average_med[0]:.4f}')
                 print(f'Var {name} Tibial: {average_tib[0]:.4f}')
+        print('DROPS AFTER CCA')
+        print('median')
+        print(df_median)
+        print(df_median.describe())
+        print('tibial')
+        print(df_tibial)
+        print(df_tibial.describe())
     else:
         print("\n")
         print('Prior to CCA Results')
@@ -298,4 +318,10 @@ if __name__ == '__main__':
             else:
                 print(f'Var {name} Median: {average_med[0]:.4f}')
                 print(f'Var {name} Tibial: {average_tib[0]:.4f}')
-
+        print('DROPS BEFORE CCA')
+        print('median')
+        print(df_median)
+        print(df_median.describe())
+        print('tibial')
+        print(df_tibial)
+        print(df_tibial.describe())

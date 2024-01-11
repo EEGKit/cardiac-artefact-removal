@@ -11,6 +11,8 @@ from scipy.io import loadmat
 import matplotlib.pyplot as plt
 import seaborn as sns
 from Metrics.inps_yasa import get_harmonics
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 if __name__ == '__main__':
     pal = sns.color_palette(n_colors=4)
@@ -186,6 +188,7 @@ if __name__ == '__main__':
             plt.tight_layout()
             plt.subplots_adjust(left=0.17, top=0.95)
             plt.savefig(image_path+f"{subject_id}_{cond_name}.png")
+            plt.savefig(image_path+f"{subject_id}_{cond_name}.pdf", bbox_inches='tight', format="pdf")
             # plt.show()
 
 

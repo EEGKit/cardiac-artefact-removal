@@ -13,7 +13,7 @@ mpl.rcParams['pdf.fonttype'] = 42
 
 if __name__ == '__main__':
     calculate = True
-    plot_image = False
+    plot_image = True
     cond_names = ['median', 'tibial']
     save_path = '/data/p_02569/CardiacVsSpinalAmplitudes_D1/'
     os.makedirs(save_path, exist_ok=True)

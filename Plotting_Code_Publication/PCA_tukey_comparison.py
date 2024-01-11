@@ -6,13 +6,14 @@ import os
 import numpy as np
 from scipy.io import loadmat
 from Metrics.SNR_functions import evoked_from_raw
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 if __name__ == '__main__':
-    reduced_epochs = True
+    reduced_epochs = False
     single_subject = False
     grand_average = True
 
-    # Testing with random subjects atm
     if single_subject:
         subjects = [1, 20]
     if grand_average:
@@ -205,13 +206,15 @@ if __name__ == '__main__':
             elif cond_name == 'median':
                 plt.axvline(x=13 / 1000, color='k', linewidth=0.7, linestyle='dashed', label=None)
                 # plt.ylim([-0.8, 0.8])
-            plt.title(f"Grand Average Evoked Response\n"
-                      f"{full_name}")
+            # plt.title(f"Grand Average Evoked Response\n"
+            #           f"{full_name}")
             if reduced_epochs:
                 fname = f"GrandAverage_{trigger_name}_reduced.png"
             else:
                 fname = f"GrandAverage_{trigger_name}.png"
-            # plt.legend(loc='upper right')
+            if cond_name == 'tibial':
+                plt.legend(loc='upper right')
             plt.savefig(figure_path + fname)
+            plt.savefig(figure_path+fname+f".pdf", bbox_inches='tight', format="pdf")
             plt.show()
             plt.clf()

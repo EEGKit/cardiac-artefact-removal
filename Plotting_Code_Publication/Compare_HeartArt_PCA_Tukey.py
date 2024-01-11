@@ -6,10 +6,14 @@ import numpy as np
 from scipy.io import loadmat
 from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 
 if __name__ == '__main__':
     reduced_trials = False  # Should always be false in this script
+    if reduced_trials:
+        raise RuntimeError('reduced_trials must be false')
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
     sampling_rate = 1000
@@ -91,5 +95,6 @@ if __name__ == '__main__':
         fname = f"HeartArtComp_{trigger_name}_{channel}.png"
         # plt.legend(loc='upper right')
         plt.savefig(image_path + fname)
+        plt.savefig(image_path + fname + f".pdf", bbox_inches='tight', format="pdf")
         # plt.show()
         plt.clf()

@@ -53,7 +53,6 @@ if __name__ == '__main__':
         ax_cortical = fig.add_subplot(gs[0, 2])
         cbar_ax = fig.add_subplot(gs[0:2, 3])
         ax_time = fig.add_subplot(gs[1, 0:3])
-        ax_time_twin = ax_time.twinx()
 
         for channel_type in channel_types:
             # Conditions (median, tibial)
@@ -123,19 +122,14 @@ if __name__ == '__main__':
             tmin = -0.2
             tmax = 0.4
             vmin = -400
-            vmax = -175
+            # vmax = -175
+            vmax = -140
 
             # power = mne.time_frequency.tfr_stockwell(relevant_channel, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
             # TFR plots
             averaged.plot(picks=[0], baseline=iv_baseline, mode='mean', cmap='jet',
                           axes=ax, show=False, colorbar=False, dB=True,
                           tmin=tmin, tmax=tmax, vmin=vmin, vmax=vmax)
-
-            # Try to get max value in dB
-            average_data = np.squeeze(averaged.crop(tmin=-0.1, tmax=0.1, fmin=0, fmax=50).data)
-            data_dB = 10*np.log10(average_data)
-            print(f'{channel_type}, {cond_name}, maximum: {np.max(data_dB)}')
-            print(f'{channel_type}, {cond_name}, minimum: {np.min(data_dB)}')
 
             # Time Plots
             if channel_type in ['ECG', 'Spinal']:
@@ -147,11 +141,6 @@ if __name__ == '__main__':
                 ax_time.set_xlim([-0.3, 0.5])
                 ax_time.set_xlabel('Time (s)')
                 ax_time.set_ylabel('Amplitude (\u03BCV)')
-            elif channel_type == 'Cortical':
-                style = 'dotted'
-                ax_time_twin.plot(evoked.times, averaged_time.get_data().reshape(-1) * 10 ** 6, color='black',
-                             linestyle=style)
-                ax_time_twin.set_ylabel(f'Amplitude (\u03BCV)')
 
             # Labelling
             if channel_type == 'ECG':

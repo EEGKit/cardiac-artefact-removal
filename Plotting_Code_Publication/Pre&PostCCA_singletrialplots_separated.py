@@ -10,6 +10,8 @@ import os
 import matplotlib as mpl
 import pandas as pd
 import random
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 if __name__ == '__main__':
     reduced_trials = True
@@ -152,6 +154,8 @@ if __name__ == '__main__':
             plt.tight_layout()
             if reduced_trials:
                 plt.savefig(figure_path_st + f'{cond_name}_reducedtrials.png')
+                plt.savefig(figure_path_st+f'{cond_name}_reducedtrials.pdf', bbox_inches='tight', format="pdf")
             else:
                 plt.savefig(figure_path_st + f'{cond_name}.png')
+                plt.savefig(figure_path_st+f'{cond_name}.pdf', bbox_inches='tight', format="pdf")
             plt.close(fig)
