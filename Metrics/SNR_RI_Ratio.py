@@ -87,6 +87,13 @@ if __name__ == '__main__':
                     latency = np.nan
                     amplitude = np.nan
 
+                iv_baseline_idx = evoked_channel.time_as_index([iv_baseline[0], iv_baseline[1]])
+                base = evoked_channel.data[0, iv_baseline_idx[0]:iv_baseline_idx[1]]  # only one channel, baseline time period
+                stan_dev = np.std(base, axis=0)
+
+                # Compute snr
+                snr = abs(amplitude) / abs(stan_dev)
+
                 ################################################################################
                 # Load rms value for this method type
                 ################################################################################
@@ -117,10 +124,10 @@ if __name__ == '__main__':
                 # Get ratio
                 ###################################################################
                 if cond_name == 'median':
-                    ratio = amplitude/res_med
+                    ratio = snr/res_med
                     df_med.at[f'{subject-1}', f'{method}'] = ratio
                 else:
-                    ratio = amplitude/res_tib
+                    ratio = snr/res_tib
                     df_tib.at[f'{subject-1}', f'{method}'] = ratio
 
     df_med = df_med.astype('float32')
