@@ -31,11 +31,11 @@ Scripts contained in **/Statistics** are used to determine statistical significa
 for the SNR, RI, INPSR and CoV results.
 
 ### Plotting_Code_Publication ###
-Scripts contained in /Plotting_Code_Publication are used to generate all manuscript and supplement figures, 
+Scripts contained in **/Plotting_Code_Publication** are used to generate all manuscript and supplement figures, 
 as seen in the above mentioned manuscript.
 
 ### QRS Timing ###
-The R-peak latencies for each subject and condition has been provided for convenience. To run the PCA_OBS method in particular, 
+The R-peak latencies for each subject and condition has been provided for convenience in **/QRS_Timing**. To run the PCA_OBS method in particular, 
 precise knowledge of the timing of each R-peak is required. These QRS timings should be copied into the relevant data folder 
 and this file path should then be substituted for import_path_m within the following files:
 
@@ -47,7 +47,7 @@ These timings are generated using the method used by Nierula et al., 2022 (https
 and the accompanying code can be found at: https://github.com/eippertlab/spinal_sep1
 
 ### Archive ###
-Scripts contained in /Archive contain old code and alternative versions of scripts which are no longer in use.
+Scripts contained in **/Archive** contain old code and alternative versions of scripts which are no longer in use.
 
 ## Required Software ##
 All scripts run with python 3.9 and MNE 1.0.3, for an extensive list of required packages see requirements.txt
