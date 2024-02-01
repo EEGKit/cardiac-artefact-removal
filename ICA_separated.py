@@ -1,5 +1,4 @@
 # Run auto method of ICA on the prepared data separately for lumbar and cervical patches
-# From MNE package - removes components with correlation coefficient greater than 0.9 with the ECG channel
 
 import os
 import mne

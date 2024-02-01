@@ -1,29 +1,53 @@
-# Python_Cardiac
+# Python_Cardiac #
 
-########################################################
+This repository is associated with the following [manuscript] and the corresponding [dataset]. If you have any questions related 
+this code, please feel free to contact bailey@cbs.mpg.de
 
-Emma Bailey, 08/11/2021
+## Content ##
+This repository contains the preprocessing and analysis code used to remove the cardiac artefact from spinal electrophysiology 
+data as presented in the above-mentioned manuscript. 
 
-########################################################
+### Main Processing ###
+**main.py** is a wrapper script which can be used to detail the stages of analysis to run. These steps include:
 
-Set of scripts used to remove the cardiac artefact from spinal electrophysiology data using a variety of methods, namely:
-PCA_OBS - Principal Component Analysis Optimal Basis Sets,
-ICA - Independent Components Analysis,
-ICA after PCA_OBS,
-SSP - Signal Space Projection with varying numbers of projectors,
-CCA - Canonical Correlation Analysis
+* Data Import (incl. downsampling, r-peak event annotation, stimulus artefact removal, file concatenation)
+* Cardiac artefact removal via:
+  * PCA_OBS (Principal Component Analysis Optimal Basis Sets)
+  * ICA (Independent Components Analysis, including variants involving anteriorly re-referenced data and applying ICA
+  separately to the lumbar and cervical spinal patch of electrodes)
+  * SSP (Signal Space Projection with varying numbers of projectors)
+* Signal enhancement analysis via:
+  * CCA (Canonical Correlation Analysis)
 
-main.py is a wrapper script to run the alternative methods listed above.
+### Metrics ###
+Scripts contained in **/Metrics** are used to compute the:
+* SNR (Signal-to-Noise Ratio of the SEPs)
+* RI (Residual Intensity of the cardiac artefact)
+* INPSR (Improved Normalised Power Spectrum Ratio of the cardiac artefact)
+* CoV (Coefficient of Variation)
 
-Scripts contained in /Metrics are used to compute the SNR, Residual Intensity, Improved Normalised Power Spectrum Ratio
-and the Coefficient of Variation. There is also a script to extract the negative amplitude of each trial in the expected 
-latency of a somatosensory evoked potential.
+### Statistics ###
+Scripts contained in **/Statistics** are used to determine statistical significance via one-sample permutation t-tests 
+for the SNR, RI, INPSR and CoV results.
 
-Scripts contained in /Statistics are used to perform a reliability assessment of each method tested, as well as obtain
-p-values via paired sample permutation t-tests for the SNR, Residual Intensity and Improved Normalise Power Spectrum
-results.
+### Plotting_Code_Publication ###
+Scripts contained in /Plotting_Code_Publication are used to generate all manuscript and supplement figures, 
+as seen in the above mentioned manuscript.
 
-Scripts contained in /Plotting_Code are used to generate all images, both for debugging and visualisation purposes.
+### QRS Timing ###
+The R-peak latencies for each subject and condition has been provided for convenience. To run the PCA_OBS method in particular, 
+precise knowledge of the timing of each R-peak is required. These QRS timings should be copied into the relevant data folder 
+and this file path should then be substituted for import_path_m within the following files:
 
-All scripts run with python 3.9 and MNE 1.0.3, and https://github.com/neurophysics/meet (to run CCA) installed in 
-the project environment, for an extensive list of required packages see requirements.txt
+* import_data.py
+* rm_heart_artefact.py
+* rm_heart_artefact_tukey.py
+
+These timings are generated using the method used by Nierula et al., 2022 (https://www.biorxiv.org/content/10.1101/2022.12.05.519148v1) 
+and the accompanying code can be found at: https://github.com/eippertlab/spinal_sep1
+
+### Archive ###
+Scripts contained in /Archive contain old code and alternative versions of scripts which are no longer in use.
+
+## Required Software ##
+All scripts run with python 3.9 and MNE 1.0.3, for an extensive list of required packages see requirements.txt

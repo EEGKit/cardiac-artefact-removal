@@ -14,3 +14,6 @@ scikit-learn==1.0.2
 yasa==0.6.1
 future==0.18.2
 setuptools==60.2.0
+ptitprince==0.2.6
+pycircstat==0.0.2
+meet @ git+https://github.com/neurophysics/meet.git

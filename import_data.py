@@ -1,6 +1,6 @@
 ##########################################################################################
 #                               This Script
-# 1) imports the blocks based on the condition name in EEGLAB form from the BIDS directory
+# 1) imports the blocks based on the condition name from the BIDS directory
 # 2) removes the stimulus artifact iv: -1.5 to 1.5 ms, for ESG use -7 to 7s
 # 3) downsample the signal to 1000 Hz, r peak detection performed, save location of r-peaks separately
 # 4) Append mne raws of the same condition

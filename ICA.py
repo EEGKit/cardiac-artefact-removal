@@ -1,5 +1,5 @@
 # Run auto method of ICA on the prepared data as a comparison
-# From MNE package - removes components with correlation coefficient greater than 0.9 with the ECG channel
+# From MNE package - removes components related to ECG channel
 
 import os
 import mne
