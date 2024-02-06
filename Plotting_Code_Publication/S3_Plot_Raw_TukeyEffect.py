@@ -11,6 +11,8 @@ import matplotlib.offsetbox
 from matplotlib.lines import Line2D
 import numpy as np
 import os
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
 
 # Testing with random subjects atm
 subjects = [20]  # 20
@@ -168,6 +170,8 @@ for subject in subjects:
                                pad=1, sep=4, linekw=dict(color="black"), )
         axes.add_artist(ob)
         plt.savefig(image_path + f"EffectOfWindow_{subject_id}_{cond_name}")
+        plt.savefig(image_path + f"EffectOfWindow_{subject_id}_{cond_name}.pdf", bbox_inches='tight', format="pdf")
+
         plt.show()
         # raw.plot(duration=1, start=784, clipping=6, scalings=30e-6)
         # plt.show()
