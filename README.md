@@ -1,7 +1,9 @@
-# Python_Cardiac #
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository is associated with the following [manuscript] and the corresponding [dataset]. If you have any questions related 
-this code, please feel free to contact bailey@cbs.mpg.de
+# cardiac-artefact-removal #
+
+This repository is associated with the following [manuscript] and the corresponding [dataset](https://openneuro.org/datasets/ds004388). If you have any questions related 
+to this code, please feel free to contact bailey@cbs.mpg.de.
 
 ## Content ##
 This repository contains the preprocessing and analysis code used to remove the cardiac artefact from spinal electrophysiology 
@@ -43,8 +45,8 @@ and this file path should then be substituted for import_path_m within the follo
 * rm_heart_artefact.py
 * rm_heart_artefact_tukey.py
 
-These timings are generated using the method used by Nierula et al., 2022 (https://www.biorxiv.org/content/10.1101/2022.12.05.519148v1) 
-and the accompanying code can be found at: https://github.com/eippertlab/spinal_sep1
+These timings are generated using the method employed by [Nierula et al., 2024](https://www.biorxiv.org/content/10.1101/2022.12.05.519148v2) 
+and the accompanying code can be found in the [associated repository](https://github.com/eippertlab/spinal_sep1).
 
 ### Archive ###
 Scripts contained in **/Archive** contain old code and alternative versions of scripts which are no longer in use.
