@@ -4,7 +4,7 @@
 
 # cardiac-artefact-removal #
 
-This repository is associated with the following [manuscript] and the corresponding [dataset](https://openneuro.org/datasets/ds004388). If you have any questions related 
+This repository is associated with the following [manuscript](https://www.biorxiv.org/content/10.1101/2024.09.05.611423v1) and the corresponding [dataset](https://openneuro.org/datasets/ds004388). If you have any questions related 
 to this code, please feel free to contact bailey@cbs.mpg.de.
 
 ## Content ##
