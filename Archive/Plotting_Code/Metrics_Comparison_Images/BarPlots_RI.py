@@ -19,7 +19,7 @@ if __name__ == '__main__':
     prep_path = '/data/pt_02569/tmp_data/prepared_py/'
     pca_path = '/data/pt_02569/tmp_data/ecg_rm_py/'
     ica_path = '/data/pt_02569/tmp_data/baseline_ica_py/'
-    ssp_path = '/data/p_02569/SSP/'
+    ssp_path = '/data/pt_02569/tmp_data/ssp_py/'
 
     esg_chans = ['S35', 'S24', 'S36', 'Iz', 'S17', 'S15', 'S32', 'S22',
                  'S19', 'S26', 'S28', 'S9', 'S13', 'S11', 'S7', 'SC1', 'S4', 'S18',

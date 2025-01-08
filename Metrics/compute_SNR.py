@@ -68,7 +68,7 @@ if __name__ == '__main__':
                         # Want the SNR for each projection tried from 1 to 20
                         for n in np.arange(1, 21):  # (5, 21)
                             # Load SSP projection data
-                            input_path = "/data/p_02569/SSP/" + subject_id
+                            input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id
                             savename = input_path + "/" + str(n) + " projections/"
                             if ant_ref:
                                 raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}_antRef.fif")
@@ -96,25 +96,25 @@ if __name__ == '__main__':
                 if reduced_window:
                     if reduced_epochs:
                         if ant_ref:
-                            fn = f"/data/p_02569/SSP/snr_reduced_ant_smallwin.h5"
+                            fn = f"/data/pt_02569/tmp_data/ssp_py/snr_reduced_ant_smallwin.h5"
                         else:
-                            fn = f"/data/p_02569/SSP/snr_reduced_smallwin.h5"
+                            fn = f"/data/pt_02569/tmp_data/ssp_py/snr_reduced_smallwin.h5"
                     else:
                         if ant_ref:
-                            fn = f"/data/p_02569/SSP/snr_ant_smallwin.h5"
+                            fn = f"/data/pt_02569/tmp_data/ssp_py/snr_ant_smallwin.h5"
                         else:
-                            fn = f"/data/p_02569/SSP/snr_smallwin.h5"
+                            fn = f"/data/pt_02569/tmp_data/ssp_py/snr_smallwin.h5"
                 else:
                     if reduced_epochs:
                         if ant_ref:
-                            fn = f"/data/p_02569/SSP/snr_reduced_ant.h5"
+                            fn = f"/data/pt_02569/tmp_data/ssp_py/snr_reduced_ant.h5"
                         else:
-                            fn = f"/data/p_02569/SSP/snr_reduced.h5"
+                            fn = f"/data/pt_02569/tmp_data/ssp_py/snr_reduced.h5"
                     else:
                         if ant_ref:
-                            fn = f"/data/p_02569/SSP/snr_ant.h5"
+                            fn = f"/data/pt_02569/tmp_data/ssp_py/snr_ant.h5"
                         else:
-                            fn = f"/data/p_02569/SSP/snr.h5"
+                            fn = f"/data/pt_02569/tmp_data/ssp_py/snr.h5"
 
                 with h5py.File(fn, "w") as outfile:
                     for keyword in dataset_keywords:
@@ -167,17 +167,8 @@ if __name__ == '__main__':
                             file_path = "/data/pt_02569/tmp_data/baseline_ica_py/"
                             file_name = f"separated_clean_baseline_ica_auto_{cond_name}.fif"
 
-                        input_path = file_path + subject_id + "/esg/prepro/"
+                        input_path = file_path + subject_id
                         raw = mne.io.read_raw_fif(f"{input_path}{file_name}", preload=True)
-
-                        if (method == 'Prep' or method == 'PCA' or method == 'PCA Tukey' or method == 'PCA PCHIP' or
-                                method == 'PCA Tukey PCHIP'):
-                            # add reference channel to data
-                            mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                            raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                                       method='iir',
-                                       iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                            raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                         if ant_ref:
                             # anterior reference
@@ -247,7 +238,7 @@ if __name__ == '__main__':
                    'ICA': "/data/pt_02569/tmp_data/baseline_ica_py/",
                    'ICA-Anterior': "/data/pt_02569/tmp_data/baseline_ica_py/",
                    'ICA-Separate': "/data/pt_02569/tmp_data/baseline_ica_py/",
-                   'SSP': "/data/p_02569/SSP/"}
+                   'SSP': "/data/pt_02569/tmp_data/ssp_py/"}
 
     print("\n")
     for i in np.arange(0, len(input_paths)):

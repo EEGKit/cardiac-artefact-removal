@@ -13,7 +13,7 @@ numbers = []
 for subject in subjects:
     subject_id = f'sub-{str(subject).zfill(3)}'
 
-    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 

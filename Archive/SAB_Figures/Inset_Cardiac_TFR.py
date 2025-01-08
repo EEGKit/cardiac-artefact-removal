@@ -38,7 +38,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/TimeFrequencyPlots_HeartInset_Dataset1/"
+    image_path = "/data/p_02569/Images/TimeFrequencyPlots_HeartInset_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     channel_types = ['ECG', 'Spinal', 'Cortical']
@@ -83,19 +83,14 @@ if __name__ == '__main__':
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
                 if channel_type == 'ECG' or channel_type == 'Cortical':
-                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                     raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif",
                                               preload=True)
                 elif channel_type == 'Spinal':
-                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                     raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif",
                                               preload=True)
 
-                # mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                           method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                 evoked = evoked.pick_channels(channel)
                 if channel_type == 'ECG':

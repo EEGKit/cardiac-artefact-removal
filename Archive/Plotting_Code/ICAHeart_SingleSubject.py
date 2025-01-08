@@ -45,7 +45,7 @@ if __name__ == '__main__':
         for subject in subjects:  # All subjects
             subject_id = f'sub-{str(subject).zfill(3)}'
 
-            input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+            input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
             fname = f"epochs_{cond_name}_qrs.fif"
             epochs = mne.read_epochs(input_path + fname, preload=True)
             evoked_ica = epochs.average()

@@ -28,7 +28,7 @@ if __name__ == '__main__':
     if single_subject:
         for subject in subjects:
             subject_id = f'sub-{str(subject).zfill(3)}'
-            figure_path = "/data/p_02569/SSP_anterior_comparison_images/" + subject_id + "/"
+            figure_path = "/data/p_02569/Images/SSP_anterior_comparison_images/" + subject_id + "/"
             os.makedirs(figure_path, exist_ok=True)
 
             for cond_name in cond_names:
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
                 for n in np.arange(6, 7):
                     # Load epochs resulting from SSP cleaning
-                    input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
+                    input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + "/" + str(n) + " projections/"
                     raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif")
                     raw_ant = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}_antRef.fif")
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     if grand_average:
         for n in np.arange(6, 7):  # Methods Applied
-            figure_path = "/data/p_02569/SSP_anterior_comparison_images/"
+            figure_path = "/data/p_02569/Images/SSP_anterior_comparison_images/"
             os.makedirs(figure_path, exist_ok=True)
 
             for cond_name in cond_names:  # Conditions (median, tibial)
@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
                     for subject in subjects:  # All subjects
                         subject_id = f'sub-{str(subject).zfill(3)}'
-                        input_path = f"/data/p_02569/SSP/{subject_id}/{n} projections/"
+                        input_path = f"/data/pt_02569/tmp_data/ssp_py/{subject_id}/{n} projections/"
                         raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
                         raw_ant = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}_antRef.fif", preload=True)
 

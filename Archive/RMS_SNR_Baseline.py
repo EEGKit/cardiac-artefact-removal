@@ -72,17 +72,9 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Load data resulting from preparation script
-                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                 fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-
-                # add reference channel to data
-                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                 # Extract relevant epochs
                 events, event_ids = mne.events_from_annotations(raw)
@@ -135,17 +127,9 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Load data resulting from PCA script
-                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
                 fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-
-                # add reference channel to data
-                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                 # Extract relevant epochs
                 events, event_ids = mne.events_from_annotations(raw)
@@ -198,7 +182,7 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Load data resulting from ICA script
-                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
                 fname = f"clean_baseline_ica_auto_{cond_name}.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
@@ -254,7 +238,7 @@ if __name__ == '__main__':
 
                     # Want the SNR
                     # Load data resulting from SSP script
-                    input_path = "/data/p_02569/SSP/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id
                     savename = input_path + "/" + str(n) + " projections/"
                     raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}.fif")
 
@@ -280,7 +264,7 @@ if __name__ == '__main__':
             saverms.snr_tib = rms_tib
             dataset_keywords = [a for a in dir(saverms) if not a.startswith('__')]
 
-            fn = f"/data/p_02569/SSP/rms_baseline_{n}.h5"
+            fn = f"/data/pt_02569/tmp_data/ssp_py/rms_baseline_{n}.h5"
 
             with h5py.File(fn, "w") as outfile:
                 for keyword in dataset_keywords:
@@ -325,7 +309,7 @@ if __name__ == '__main__':
 
     # SSP
     for n in np.arange(5, 21):
-        fn = f"/data/p_02569/SSP/rms_baseline_{n}.h5"
+        fn = f"/data/pt_02569/tmp_data/ssp_py/rms_baseline_{n}.h5"
         with h5py.File(fn, "r") as infile:
             # Get the data
             res_med_ssp = infile[keywords[0]][()]
@@ -388,7 +372,7 @@ if __name__ == '__main__':
 
     # SSP
     for n in np.arange(5, 21):
-        fn = f"/data/p_02569/SSP/rms_baseline_{n}.h5"
+        fn = f"/data/pt_02569/tmp_data/ssp_py/rms_baseline_{n}.h5"
         with h5py.File(fn, "r") as infile:
             # Get the data
             res_med_ssp = infile[keywords[0]][()]

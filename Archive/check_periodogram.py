@@ -21,26 +21,18 @@ ICA = False
 PCA = True
 
 if ICA:
-    input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+    input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
     fname = f"clean_baseline_ica_auto_{cond_name}.fif"
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
 elif Prepared:
-    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
     raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sf}_{cond_name}_withqrs.fif", preload=True)
-    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
 elif PCA:
-    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
 # Extract data
 data = raw.get_data(picks=[channel])

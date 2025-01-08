@@ -15,7 +15,7 @@ if __name__ == '__main__':
     fname = 'variance.h5'  # variance or variance_controlptp
     prep_path = '/data/pt_02569/tmp_data/prepared_py_cca/'
     pca_path = '/data/pt_02569/tmp_data/ecg_rm_py_cca/'
-    ssp_path = '/data/p_02569/SSP_cca/'
+    ssp_path = '/data/pt_02569/tmp_data/ssp_py_cca/'
     # figure_path = '/data/p_02569/StatsGraphs_Dataset1/'
     # os.makedirs(figure_path, exist_ok=True)
 

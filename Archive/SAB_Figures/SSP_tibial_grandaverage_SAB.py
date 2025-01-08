@@ -31,7 +31,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/GrandAveragePlots_Dataset1/"
+    image_path = "/data/p_02569/Images/GrandAveragePlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     SSP = True
@@ -53,7 +53,7 @@ if __name__ == '__main__':
                 for subject in subjects:  # All subjects
                     subject_id = f'sub-{str(subject).zfill(3)}'
 
-                    input_path = f"/data/p_02569/SSP/{subject_id}/{n} projections/"
+                    input_path = f"/data/pt_02569/tmp_data/ssp_py/{subject_id}/{n} projections/"
                     raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                     evoked.reorder_channels(esg_chans)

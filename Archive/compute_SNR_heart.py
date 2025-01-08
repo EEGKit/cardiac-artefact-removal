@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Load data resulting from preparation script
-                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                 fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
@@ -75,17 +75,9 @@ if __name__ == '__main__':
                         raw = rereference_data(raw, 'AC')
                     elif nerve == 2:
                         raw = rereference_data(raw, 'AL')
-                else:
-                    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
 
                 cfg_path = "/data/pt_02569/"  # Contains important info about experiment
                 cfg = loadmat(cfg_path + 'cfg.mat')
-                notch_freq = cfg['notch_freq'][0]
-                esg_bp_freq = cfg['esg_bp_freq'][0]
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
@@ -146,7 +138,7 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Data in this folder hasn't been filtered and rereferenced - do it here instead
-                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
                 fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                 # add reference channel to data
@@ -156,17 +148,9 @@ if __name__ == '__main__':
                         raw = rereference_data(raw, 'AC')
                     elif nerve == 2:
                         raw = rereference_data(raw, 'AL')
-                else:
-                    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
 
                 cfg_path = "/data/pt_02569/"  # Contains important info about experiment
                 cfg = loadmat(cfg_path + 'cfg.mat')
-                notch_freq = cfg['notch_freq'][0]
-                esg_bp_freq = cfg['esg_bp_freq'][0]
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, 'qrs', reduced_epochs)
 
@@ -224,7 +208,7 @@ if __name__ == '__main__':
 
                 # Want the SNR
                 # Load data resulting from preparation script
-                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
                 if ant_ref:
                     fname = f"clean_baseline_ica_auto_antRef_{cond_name}.fif"
                 else:
@@ -288,7 +272,7 @@ if __name__ == '__main__':
                 # Want the SNR for each projection tried from 5 to 20
                 for n in np.arange(5, 21):
                     # Load SSP projection data
-                    input_path = "/data/p_02569/SSP/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id
                     savename = input_path + "/" + str(n) + " projections/"
                     if ant_ref:
                         raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}_antRef.fif")
@@ -311,14 +295,14 @@ if __name__ == '__main__':
         dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
         if reduced_window:
             if ant_ref:
-                fn = f"/data/p_02569/SSP/snr_heart_ant_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/snr_heart_ant_smallwin.h5"
             else:
-                fn = f"/data/p_02569/SSP/snr_heart_smallwin.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/snr_heart_smallwin.h5"
         else:
             if ant_ref:
-                fn = f"/data/p_02569/SSP/snr_heart_ant.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/snr_heart_ant.h5"
             else:
-                fn = f"/data/p_02569/SSP/snr_heart.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/snr_heart.h5"
 
         with h5py.File(fn, "w") as outfile:
             for keyword in dataset_keywords:

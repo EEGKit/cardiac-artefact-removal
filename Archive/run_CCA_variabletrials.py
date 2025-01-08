@@ -34,28 +34,28 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
 
     # Select the right files based on the data_string
     if data_string == 'PCA':
-        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
         fname = f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'
-        save_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + "/esg/prepro/"
+        save_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id
         os.makedirs(save_path, exist_ok=True)
 
     elif data_string == 'Prep':
-        input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+        input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
         fname = f'noStimart_sr1000_{cond_name}_withqrs.fif'
-        save_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + "/esg/prepro/"
+        save_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id
         os.makedirs(save_path, exist_ok=True)
 
     elif data_string == 'ICA':
-        input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+        input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
         fname = f'clean_baseline_ica_auto_{cond_name}.fif'
-        save_path = "/data/pt_02569/tmp_data/baseline_ica_py_cca/" + subject_id + "/esg/prepro/"
+        save_path = "/data/pt_02569/tmp_data/baseline_ica_py_cca/" + subject_id
         os.makedirs(save_path, exist_ok=True)
 
     elif data_string == 'SSP':
 
-        input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
+        input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + "/" + str(n) + " projections/"
         fname = f"ssp_cleaned_{cond_name}.fif"
-        save_path = "/data/p_02569/SSP_cca/" + subject_id + "/" + str(n) + " projections/"
+        save_path = "/data/pt_02569/tmp_data/ssp_py_cca/" + subject_id + "/" + str(n) + " projections/"
         os.makedirs(save_path, exist_ok=True)
 
     else:
@@ -71,13 +71,6 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
     brainstem_chans, cervical_chans, lumbar_chans, ref_chan = get_esg_channels()
 
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-
-    # PCA and Prep data has to be filtered before running CCA, all others have been filtered previously
-    if data_string == 'PCA' or data_string == 'Prep':
-        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
     # now create epochs based on the trigger names
     events, event_ids = mne.events_from_annotations(raw)
@@ -210,7 +203,7 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
     cca_epochs.save(os.path.join(save_path, fname[:-4]+f'{np.size(trial_indices)}.fif'), fmt='double', overwrite=True)
 
     ################################ Plotting Graphs #######################################
-    figure_path_spatial = f'/data/p_02569/ComponentIsopotentialPlots_Dataset1_Variable/{subject_id}/'
+    figure_path_spatial = f'/data/p_02569/Images/ComponentIsopotentialPlots_Dataset1_Variable/{subject_id}/'
     os.makedirs(figure_path_spatial, exist_ok=True)
 
     if plot_graphs:
@@ -243,7 +236,7 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
 
         ############ Time Course of First 4 components ###############
         # cca_epochs and cca_epochs_d both already baseline corrected before this point
-        figure_path_time = f'/data/p_02569/ComponentTimePlots_Dataset1/{subject_id}/'
+        figure_path_time = f'/data/p_02569/Images/ComponentTimePlots_Dataset1/{subject_id}/'
         os.makedirs(figure_path_time, exist_ok=True)
 
         fig = plt.figure()
@@ -275,7 +268,7 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
 
         ######################## Plot image for cca_epochs ############################
         # cca_epochs and cca_epochs_d both already baseline corrected before this point
-        figure_path_st = f'/data/p_02569/ComponentSinglePlots_Dataset1/{subject_id}/'
+        figure_path_st = f'/data/p_02569/Images/ComponentSinglePlots_Dataset1/{subject_id}/'
         os.makedirs(figure_path_st, exist_ok=True)
 
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
@@ -302,7 +295,7 @@ def run_CCA_variabletrials(subject, condition, srmr_nr, data_string, n, trial_in
         plt.close(fig)
 
         ############################ Combine to one Image ##########################
-        figure_path = f'/data/p_02569/ComponentPlots_Dataset1/{subject_id}/'
+        figure_path = f'/data/p_02569/Images/ComponentPlots_Dataset1/{subject_id}/'
         os.makedirs(figure_path, exist_ok=True)
 
         if data_string == 'SSP':

@@ -44,27 +44,19 @@ if __name__ == '__main__':
 
                 if method == 'SSP':
                     # Load SSP projection data
-                    file_path = "/data/p_02569/SSP/"
+                    file_path = "/data/pt_02569/tmp_data/ssp_py/"
                     file_name = f"{subject_id}/6 projections/ssp_cleaned_{cond_name}.fif"
                 elif method == 'Prep':
                     file_path = f"/data/pt_02569/tmp_data/prepared_py/"
-                    file_name = f'{subject_id}/esg/prepro/noStimart_sr1000_{cond_name}_withqrs.fif'
+                    file_name = f'{subject_id}/noStimart_sr1000_{cond_name}_withqrs.fif'
                 elif method == 'PCA':
                     file_path = f"/data/pt_02569/tmp_data/ecg_rm_py/"
-                    file_name = f'{subject_id}/esg/prepro/data_clean_ecg_spinal_{cond_name}_withqrs.fif'
+                    file_name = f'{subject_id}/data_clean_ecg_spinal_{cond_name}_withqrs.fif'
                 elif method == 'ICA':
                     file_path = f"/data/pt_02569/tmp_data/baseline_ica_py/"
-                    file_name = f'{subject_id}/esg/prepro/clean_baseline_ica_auto_{cond_name}.fif'
+                    file_name = f'{subject_id}/clean_baseline_ica_auto_{cond_name}.fif'
 
                 raw = mne.io.read_raw_fif(f"{file_path}{file_name}", preload=True)
-
-                if (method == 'Prep' or method == 'PCA'):
-                    # add reference channel to data
-                    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                               method='iir',
-                               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                 ##################################################################################
                 # Get amplitude of SEP
@@ -111,7 +103,7 @@ if __name__ == '__main__':
                     median_pos.append(esg_chans.index(channel))
 
                 if method == 'SSP':
-                    fn = f"/data/p_02569/SSP/res_6.h5"
+                    fn = f"/data/pt_02569/tmp_data/ssp_py/res_6.h5"
                 else:
                     fn = f'{file_path}/res.h5'
 

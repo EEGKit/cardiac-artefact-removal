@@ -33,7 +33,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/TFR_Heart_Dataset1/"
+    image_path = "/data/p_02569/Images/TFR_Heart_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     for cond_name in cond_names:  # Conditions (median, tibial)
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         for subject in subjects:  # All subjects
             subject_id = f'sub-{str(subject).zfill(3)}'
 
-            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
             fname = f"epochs_{cond_name}_qrs.fif"
             epochs = mne.read_epochs(input_path+fname, preload=True)
             evoked = epochs.average()
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
             evoked_list_prep.append(power)
 
-            input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+            input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
             fname = f"epochs_{cond_name}_qrs.fif"
             epochs = mne.read_epochs(input_path + fname, preload=True)
             evoked = epochs.average()
@@ -71,7 +71,7 @@ if __name__ == '__main__':
             power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
             evoked_list_pca.append(power)
 
-            input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+            input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
             fname = f"epochs_{cond_name}_qrs.fif"
             epochs = mne.read_epochs(input_path + fname, preload=True)
             evoked = epochs.average()
@@ -80,7 +80,7 @@ if __name__ == '__main__':
             power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
             evoked_list_ica.append(power)
 
-            input_path = f"/data/p_02569/SSP/{subject_id}/6 projections/"
+            input_path = f"/data/pt_02569/tmp_data/ssp_py/{subject_id}/6 projections/"
             fname = f"epochs_{cond_name}_qrs.fif"
             epochs = mne.read_epochs(input_path + fname, preload=True)
             evoked = epochs.average()

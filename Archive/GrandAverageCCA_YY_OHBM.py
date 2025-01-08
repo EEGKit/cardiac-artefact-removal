@@ -88,7 +88,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/GrandAverageYY_Dataset1/"
+    image_path = "/data/p_02569/Images/GrandAverageYY_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     xls = pd.ExcelFile('/data/p_02569/Components.xls')
@@ -123,7 +123,7 @@ if __name__ == '__main__':
                 ################################################################################
                 # Fully Uncleaned
                 ################################################################################
-                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                 fname = f"epochs_{cond_name}.fif"
                 epochs = mne.read_epochs(input_path + fname, preload=True)
                 if reduced_trials:
@@ -135,7 +135,7 @@ if __name__ == '__main__':
                 ################################################################################
                 # Uncleaned CCA
                 ###############################################################################
-                input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id
                 epochs = mne.read_epochs(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                                          , preload=True)
                 channel = df.loc[subject_id, f"Prep_{cond_name}"]
@@ -152,7 +152,7 @@ if __name__ == '__main__':
                 # ##############################################################################
                 # # PCA_OBS
                 # ##############################################################################
-                # input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                # input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
                 # fname = f"epochs_{cond_name}.fif"
                 # epochs = mne.read_epochs(input_path + fname, preload=True)
                 # if reduced_trials:
@@ -164,7 +164,7 @@ if __name__ == '__main__':
                 ##############################################################################
                 # PCA_OBS with CCA
                 ##############################################################################
-                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id
                 fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                 epochs = mne.read_epochs(input_path + fname, preload=True)
                 channel = df.loc[subject_id, f"PCA_{cond_name}"]
@@ -181,7 +181,7 @@ if __name__ == '__main__':
                 # #############################################################################
                 # # SSP 6
                 # #############################################################################
-                # input_path = f"/data/p_02569/SSP/{subject_id}/6 projections/"
+                # input_path = f"/data/pt_02569/tmp_data/ssp_py/{subject_id}/6 projections/"
                 # fname = f"epochs_{cond_name}.fif"
                 # epochs = mne.read_epochs(input_path + fname, preload=True)
                 # if reduced_trials:
@@ -193,7 +193,7 @@ if __name__ == '__main__':
                 #############################################################################
                 # SSP 6 with CCA
                 #############################################################################
-                input_path = f"/data/p_02569/SSP_cca/{subject_id}/6 projections/"
+                input_path = f"/data/pt_02569/tmp_data/ssp_py_cca/{subject_id}/6 projections/"
                 epochs = mne.read_epochs(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
                 channel = df.loc[subject_id, f"SSP6_{cond_name}"]
                 inv = df.loc[subject_id, f"SSP6_{cond_name}_inv"]

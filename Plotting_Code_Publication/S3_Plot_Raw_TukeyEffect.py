@@ -27,7 +27,7 @@ iv_baseline = cfg['iv_baseline'][0] / 1000
 notch_freq = cfg['notch_freq'][0]
 esg_bp_freq = cfg['esg_bp_freq'][0]
 
-image_path = "/data/p_02569/PCA_tukey_comparison_images/"
+image_path = "/data/p_02569/Images/PCA_tukey_comparison_images/"
 os.makedirs(image_path, exist_ok=True)
 
 tmin = 784
@@ -53,16 +53,9 @@ for subject in subjects:
         # # Uncleaned
         # ############################################################
         # # Load epochs resulting from PCA OBS cleaning - the raw data in this folder has not been rereferenced
-        # input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+        # input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
         # raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr1000_{cond_name}_withqrs.fif", preload=True)
         # # add reference channel to data
-        # mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-        #
-        # raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-        #            iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-        #
-        # raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-        #
         # raw.pick_channels(channels)
         # data_uncleaned = raw.get_data(tmin=tmin, tmax=tmax)
 
@@ -70,14 +63,9 @@ for subject in subjects:
         # PCA_OBS
         ##################################################################
         # Some editing here to avoid plotting fit_end and fit_start
-        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
         raw.pick_channels(channels)
         data_pcaobs = raw.get_data(tmin=tmin, tmax=tmax)
 
@@ -85,14 +73,9 @@ for subject in subjects:
         #############################################################################
         # PCA_Tukey
         ############################################################################
-        input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + "/esg/prepro/"
+        input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id
         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
         data_tukey = raw.get_data(tmin=tmin, tmax=tmax)
 
         ################################################################################

@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # Want 200ms before and 400ms after the R-peak in our epoch - need baseline outside this
     iv_epoch = [-300 / 1000, 400 / 1000]
 
-    image_path = "/data/p_02569/TimeFrequencyPlots_Dataset1/"
+    image_path = "/data/p_02569/Images/TimeFrequencyPlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     # To use mne grand_average method, need to generate a list of evoked potentials for each subject
@@ -52,13 +52,8 @@ if __name__ == '__main__':
             for subject in subjects:  # All subjects
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
-                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                 raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif", preload=True)
-                # mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                           method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                 evoked = evoked.pick_channels(channel)
                 power = mne.time_frequency.tfr_stockwell(evoked, fmin=fmin, fmax=fmax, width=1.0, n_jobs=5)
@@ -103,14 +98,9 @@ if __name__ == '__main__':
             for subject in subjects:  # All subjects
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
-                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                 raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif",
                                           preload=True)
-                # mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                           method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                 evoked = evoked.pick_channels(channel)
                 evoked = evoked.set_channel_types({'ECG': 'eeg'})  # Needed to do transform

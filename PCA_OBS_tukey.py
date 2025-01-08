@@ -18,13 +18,12 @@ def PCA_OBS_tukey(data, **kwargs):
     pca_info = PCAInfo()
 
     # Check all necessary arguments sent in
-    required_kws = ["debug_mode", "qrs", "filter_coords", "sr", "savename", "ch_names", "sub_nr", "condition", "current_channel"]
+    required_kws = ["debug_mode", "qrs", "sr", "savename", "ch_names", "sub_nr", "condition", "current_channel"]
     assert all([kw in kwargs.keys() for kw in required_kws]), "Error. Some KWs not passed into PCA_OBS."
 
     # Extract all kwargs
     debug_mode = kwargs['debug_mode']
     qrs = kwargs['qrs']
-    filter_coords = kwargs['filter_coords']
     sr = kwargs['sr']
     ch_names = kwargs['ch_names']
     sub_nr = kwargs['sub_nr']
@@ -83,15 +82,12 @@ def PCA_OBS_tukey(data, **kwargs):
     steps = 1 * pa
     peak_count = pa
 
-    # Filter channel
-    eegchan = filtfilt(filter_coords, 1, data)
-
     # build PCA matrix(heart - beat - epoch x window - length)
     pcamat = np.zeros((peak_count - 1, 2*peak_range+1))  # [epoch x time]
     # dpcamat = pcamat # [epoch x time]
     # picking out heartbeat epochs
     for p in range(1, peak_count):
-        pcamat[p-1, :] = eegchan[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range+1]
+        pcamat[p-1, :] = data[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range+1]
 
     # detrending matrix(twice)
     pcamat = detrend(pcamat, type='constant', axis=1)  # [epoch x time] - detrended along the epoch
@@ -191,7 +187,7 @@ def PCA_OBS_tukey(data, **kwargs):
                 print(f'Cannot fit first ECG epoch. Reason: {e}')
 
         # Deals with last edge of data
-        elif p == peak_count:
+        elif p == peak_count - 1:
             plot_tukey = False
             print('On last section - almost there!')
             try:
@@ -242,7 +238,6 @@ def PCA_OBS_tukey(data, **kwargs):
         if plotChannel == 1:
             fig = plt.figure()
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), data[:].T, zorder=0)
-            plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), eegchan[:].T, 'r', zorder=5)
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), fitted_art[:].T, 'g', zorder=10)
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), (np.subtract(data[:], fitted_art[:])).T, 'm', zorder=15)
             plt.legend(['raw data', 'filtered', 'fitted_art', 'clean'], loc='upper right').set_zorder(20)
@@ -258,6 +253,7 @@ def PCA_OBS_tukey(data, **kwargs):
 
     # data -= fitted_art
 
+    # There is a one sample delay between the R-peak timings detected in matlab and the python data - account for it here
     data_ = np.zeros(len(data))
     data_[0] = data[0]
     data_[1:] = data[1:] - fitted_art[:-1]

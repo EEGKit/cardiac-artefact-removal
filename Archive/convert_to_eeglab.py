@@ -21,7 +21,7 @@ for subject in subjects:
         cond_info = get_conditioninfo(condition, srmr_nr)
         cond_name = cond_info.cond_name
 
-        input_path = f"/data/pt_02569/tmp_data/ecg_rm_py/{subject_id}/esg/prepro/"
+        input_path = f"/data/pt_02569/tmp_data/ecg_rm_py/{subject_id}/"
         fname = f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'
         raw = mne.io.read_raw_fif(input_path+fname)
 
@@ -36,7 +36,7 @@ for subject in subjects:
         cond_info = get_conditioninfo(condition, srmr_nr)
         cond_name = cond_info.cond_name
 
-        input_path = f"/data/pt_02569/tmp_data/ica_py/{subject_id}/esg/prepro/"
+        input_path = f"/data/pt_02569/tmp_data/ica_py/{subject_id}/"
         fname = f'clean_ica_auto_{cond_name}.fif'
         raw = mne.io.read_raw_fif(input_path+fname)
 
@@ -51,7 +51,7 @@ for subject in subjects:
         cond_info = get_conditioninfo(condition, srmr_nr)
         cond_name = cond_info.cond_name
 
-        input_path = f"/data/pt_02569/tmp_data/baseline_ica_py/{subject_id}/esg/prepro/"
+        input_path = f"/data/pt_02569/tmp_data/baseline_ica_py/{subject_id}/"
         fname = f'clean_baseline_ica_auto_{cond_name}.fif'
         raw = mne.io.read_raw_fif(input_path+fname)
 
@@ -67,7 +67,7 @@ for subject in subjects:
             cond_info = get_conditioninfo(condition, srmr_nr)
             cond_name = cond_info.cond_name
 
-            input_path = f"/data/p_02569/SSP/{subject_id}/{str(n)} projections/"
+            input_path = f"/data/pt_02569/tmp_data/ssp_py/{subject_id}/{str(n)} projections/"
             fname = f'ssp_cleaned_{cond_name}.fif'
             raw = mne.io.read_raw_fif(input_path + fname)
 

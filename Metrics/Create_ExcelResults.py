@@ -26,7 +26,7 @@ if __name__ == '__main__':
     input_paths = {'Prepared': "/data/pt_02569/tmp_data/prepared_py/",
                    'PCA': "/data/pt_02569/tmp_data/ecg_rm_py/",
                    'ICA': "/data/pt_02569/tmp_data/baseline_ica_py/",
-                   'SSP': "/data/p_02569/SSP/"}
+                   'SSP': "/data/pt_02569/tmp_data/ssp_py/"}
 
     print("\n")
     for i in np.arange(0, len(input_paths)):
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     #############################################################
     input_paths = {'PCA': "/data/pt_02569/tmp_data/ecg_rm_py/",
                    'ICA': "/data/pt_02569/tmp_data/baseline_ica_py/",
-                   'SSP': "/data/p_02569/SSP/"}
+                   'SSP': "/data/pt_02569/tmp_data/ssp_py/"}
     methods_nonssp = ['PCA', 'ICA']
     methods_ssp = [f'SSP{n}' for n in np.arange(1, 21)]
     methods = methods_nonssp + methods_ssp
@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
         if name == 'SSP':
             for n in np.arange(1, 21):  # 5, 21
-                fn = f"/data/p_02569/SSP/inps_yasa_{n}.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/inps_yasa_{n}.h5"
                 with h5py.File(fn, "r") as infile:
                     # Get the data
                     pow_med = infile[keywords[0]][()]
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         if name == 'SSP':
             # SSP
             for n in np.arange(1, 21):  # 5, 21
-                fn = f"/data/p_02569/SSP/res_{n}.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/res_{n}.h5"
                 with h5py.File(fn, "r") as infile:
                     # Get the data
                     res_med = infile[keywords[0]][()]

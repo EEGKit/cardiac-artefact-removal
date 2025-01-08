@@ -28,7 +28,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/SingleSubjectPlots_Dataset1/"
+    image_path = "/data/p_02569/Images/SingleSubjectPlots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     if plot_time:
@@ -46,14 +46,9 @@ if __name__ == '__main__':
             for subject in subjects:  # All subjects
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
-                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
                 fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                           method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                 evoked.reorder_channels(esg_chans)
                 evoked = evoked.pick_channels(channel, ordered=True)
@@ -91,14 +86,9 @@ if __name__ == '__main__':
             for subject in subjects:  # All subjects
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
-                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
                 fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                           method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                 events, event_ids = mne.events_from_annotations(raw)
                 event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
                 epochs = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1],

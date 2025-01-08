@@ -42,7 +42,7 @@ if __name__ == '__main__':
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
                 if method == 'Uncleaned':
-                    input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id
                     epochs = mne.read_epochs(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                                              , preload=True)
                     channel = df.loc[subject_id, f"Prep_{cond_name}"]
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                         epochs.apply_function(invert, picks=channel)
 
                 elif method == 'PCA':
-                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id
                     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                     epochs = mne.read_epochs(input_path + fname, preload=True)
                     channel = df.loc[subject_id, f"PCA_{cond_name}"]
@@ -60,7 +60,7 @@ if __name__ == '__main__':
                         epochs.apply_function(invert, picks=channel)
 
                 elif method == 'SSP':
-                    input_path = f"/data/p_02569/SSP_cca/{subject_id}/{SSP_proj} projections/"
+                    input_path = f"/data/pt_02569/tmp_data/ssp_py_cca/{subject_id}/{SSP_proj} projections/"
                     epochs = mne.read_epochs(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
                     channel = df.loc[subject_id, f"SSP{SSP_proj}_{cond_name}"]
                     inv = df.loc[subject_id, f"SSP{SSP_proj}_{cond_name}_inv"]
@@ -68,7 +68,7 @@ if __name__ == '__main__':
                         epochs.apply_function(invert, picks=channel)
 
                 # cca_epochs and cca_epochs_d both already baseline corrected before this point
-                figure_path_st = f'/data/p_02569/1ComponentSinglePlots_Dataset1/{subject_id}/'
+                figure_path_st = f'/data/p_02569/Images/1ComponentSinglePlots_Dataset1/{subject_id}/'
                 os.makedirs(figure_path_st, exist_ok=True)
 
                 fig, ax = plt.subplots(figsize=(5.2, 7))

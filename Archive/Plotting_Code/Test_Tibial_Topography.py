@@ -21,7 +21,7 @@ if __name__ == '__main__':
     #  First get the evoked list
     # trigger_names = ['Tibial - Stimulation', 'Median - Stimulation']
     trigger_names = ['Tibial - Stimulation']
-    save_path = '/data/p_02569/SEP_Test/'
+    save_path = '/data/p_02569/Images/SEP_Test/'
     os.makedirs(save_path, exist_ok=True)
 
     # methods = ['Uncleaned', 'PCA']
@@ -78,11 +78,11 @@ if __name__ == '__main__':
 
                     if method == 'Uncleaned':
                         data_path = '/data/pt_02569/tmp_data/prepared_py/' + subject_id + \
-                                    '/esg/prepro/epochs_' + cond_name + '.fif'
+                                    '/epochs_' + cond_name + '.fif'
 
                     elif method == 'PCA':
                         data_path = '/data/pt_02569/tmp_data/ecg_rm_py/' + subject_id + \
-                                        '/esg/prepro/epochs_' + cond_name + '.fif'
+                                        '/epochs_' + cond_name + '.fif'
 
                     # For all others, read in the epochs we have constructed
                     epochs = mne.read_epochs(data_path, preload=True).reorder_channels(esg_chans)

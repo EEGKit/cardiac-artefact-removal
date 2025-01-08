@@ -79,18 +79,11 @@ if __name__ == '__main__':
 
                     # Want the RMS of the data
                     # Load epochs resulting from importing the data - the raw data in this folder has not been rereferenced
-                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                     raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif",
                                               preload=True)
 
                     freq = get_harmonics(raw, trigger_name, sampling_rate)
-
-                    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
-                    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-                    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                     # Compute power at the harmonics
                     # Rounding to 1 decimal place - want to keep frequency resolution as high as possible
@@ -155,18 +148,11 @@ if __name__ == '__main__':
 
                     # Want the RMS of the data
                     # Load epochs resulting from PCA - the raw data in this folder has not been rereferenced
-                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
                     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                     raw = mne.io.read_raw_fif(input_path+fname, preload=True)
 
                     freq = get_harmonics(raw, trigger_name, sampling_rate)
-
-                    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
-                    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-                    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                     # Now we have the raw data in the filtered form
                     # We have the fundamental frequency and harmonics for this subject
@@ -233,7 +219,7 @@ if __name__ == '__main__':
 
                     # Want the RMS of the data
                     # Load epochs resulting from ICA
-                    input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
                     if choose_limited:
                         fname = f"clean_baseline_ica_auto_{cond_name}_lim.fif"
                     else:
@@ -313,7 +299,7 @@ if __name__ == '__main__':
 
                         # Want the RMS of the data
                         # Load epochs resulting from SSP the data
-                        input_path = "/data/p_02569/SSP/" + subject_id
+                        input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id
                         savename = input_path + "/" + str(n) + " projections/"
                         raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}.fif")
 
@@ -351,7 +337,7 @@ if __name__ == '__main__':
                 savepow.pow_tib = pow_tib_ssp
                 dataset_keywords = [a for a in dir(savepow) if not a.startswith('__')]
 
-                fn = f"/data/p_02569/SSP/inps_yasa_{n}_{band}.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/inps_yasa_{n}_{band}.h5"
 
                 with h5py.File(fn, "w") as outfile:
                     for keyword in dataset_keywords:
@@ -404,7 +390,7 @@ if __name__ == '__main__':
 
         # SSP
         for n in np.arange(5, 7):
-            fn = f"/data/p_02569/SSP/inps_yasa_{n}_{band}.h5"
+            fn = f"/data/pt_02569/tmp_data/ssp_py/inps_yasa_{n}_{band}.h5"
             with h5py.File(fn, "r") as infile:
                 # Get the data
                 pow_med_ssp = infile[keywords[0]][()]
@@ -473,7 +459,7 @@ if __name__ == '__main__':
 
         # SSP
         for n in np.arange(5, 7):
-            fn = f"/data/p_02569/SSP/inps_yasa_{n}_{band}.h5"
+            fn = f"/data/pt_02569/tmp_data/ssp_py/inps_yasa_{n}_{band}.h5"
             with h5py.File(fn, "r") as infile:
                 # Get the data
                 pow_med_ssp = infile[keywords[0]][()]

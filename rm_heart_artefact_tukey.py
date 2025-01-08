@@ -9,8 +9,6 @@ from get_channels import *
 
 
 def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
-    matlab = False  # If this is true, use the data 'prepared' by matlab - testing
-
     # Set variables
     subject_id = f'sub-{str(subject).zfill(3)}'
     cond_info = get_conditioninfo(condition, srmr_nr)
@@ -20,9 +18,9 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
     trigger_name = cond_info.trigger_name
 
     # Setting paths
-    input_path = "/data/pt_02569/tmp_data/prepared_py/"+subject_id+"/esg/prepro/"
-    input_path_m = "/data/pt_02569/tmp_data/prepared/"+subject_id+"/esg/prepro/"
-    save_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/"+subject_id+"/esg/prepro/"
+    input_path = "/data/pt_02569/tmp_data/prepared_py/"+subject_id
+    input_path_m = "/data/pt_02569/tmp_data/prepared/"+subject_id
+    save_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/"+subject_id
     os.makedirs(save_path, exist_ok=True)
 
     figure_path = save_path
@@ -32,34 +30,16 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
     _, esg_chans, _ = get_channels(subject, False, False, srmr_nr)  # Ignoring ECG and EOG channels
 
     # Dyanmically set filename
-    if matlab:
-        fname = f"raw_{sampling_rate}_spinal_{cond_name}.set"
-        raw = mne.io.read_raw_eeglab(input_path_m + fname, preload=True)
+    if pchip:
+        fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs_pchip"
     else:
-        if pchip:
-            fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs_pchip"
-            # Read .fif file from the previous step (import_data)
-        else:
-            fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs"
-            # Read .fif file from the previous step (import_data)
-        raw = mne.io.read_raw_fif(input_path + fname + '.fif', preload=True)
+        fname = f"noStimart_sr{sampling_rate}_{cond_name}_withqrs"
+    raw = mne.io.read_raw_fif(input_path + fname + '.fif', preload=True)
 
     # Read .mat file with QRS events
     fname_m = f"raw_{sampling_rate}_spinal_{cond_name}"
     matdata = loadmat(input_path_m+fname_m+'.mat')
     QRSevents_m = matdata['QRSevents']
-    fwts = matdata['fwts']
-
-    # Read .h5 file with alternative QRS events
-    # with h5py.File(input_path+fname+'.h5', "r") as infile:
-    #     QRSevents_p = infile["QRS"][()]
-
-    # Create filter coefficients
-    fs = sampling_rate
-    a = [0, 0, 1, 1]
-    f = [0, 0.4/(fs/2), 0.9/(fs / 2), 1] # 0.9 Hz highpass filter
-    ord = round(3*fs/0.5)
-    fwts = firls(ord+1, f, a)
 
     # Run once with a single channel and debug_mode = True to get window information
     for ch in debug_channel:
@@ -73,7 +53,7 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
             name = 'pca_chan_'+ch
         # run PCA_OBS
         PCA_OBS_kwargs = dict(
-            debug_mode=True, qrs=QRSevents_m, filter_coords=fwts, sr=sampling_rate,
+            debug_mode=True, qrs=QRSevents_m, sr=sampling_rate,
             savename=save_path+name,
             ch_names=channelNames, sub_nr=subject_id,
             condition=cond_name, current_channel=ch
@@ -108,7 +88,7 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
     # run PCA_OBS
     # In this case ch_names, current_channel and savename are dummy vars - not necessary really
     PCA_OBS_kwargs = dict(
-        debug_mode=False, qrs=QRSevents_m, filter_coords=fwts, sr=sampling_rate,
+        debug_mode=False, qrs=QRSevents_m, sr=sampling_rate,
         savename=save_path + 'pca_chan',
         ch_names=channelNames, sub_nr=subject_id,
         condition=cond_name, current_channel=ch
@@ -118,14 +98,9 @@ def rm_heart_artefact_tukey(subject, condition, srmr_nr, sampling_rate, pchip):
     raw.apply_function(PCA_OBS_tukey, picks=esg_chans, **PCA_OBS_kwargs, n_jobs=len(esg_chans))
 
     # Save the new mne structure with the cleaned data
-    # Save data without stim artefact and downsampled to 1000
-    if matlab:
-        raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_mat.fif'), fmt='double',
+    if pchip:
+        raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif'), fmt='double',
                  overwrite=True)
     else:
-        if pchip:
-            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif'), fmt='double',
-                     overwrite=True)
-        else:
-            raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double',
-                     overwrite=True)
+        raw.save(os.path.join(save_path, f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'), fmt='double',
+                 overwrite=True)

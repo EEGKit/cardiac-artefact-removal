@@ -121,7 +121,7 @@ if __name__ == '__main__':
                             file_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/"
                             file_name = f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'
                         elif method == 'SSP':
-                            file_path = "/data/p_02569/SSP_cca/"
+                            file_path = "/data/pt_02569/tmp_data/ssp_py_cca/"
                             file_name = f'ssp_cleaned_{cond_name}.fif'
 
                         # Process SSP data
@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
                         # Process all other methods
                         else:
-                            input_path = file_path + subject_id + "/esg/prepro/"
+                            input_path = file_path + subject_id
                             epochs = mne.read_epochs(f"{input_path}{file_name}", preload=True)
                             channel = df.loc[subject_id, f"{method}_{cond_name}"]
                             inv = df.loc[subject_id, f"{method}_{cond_name}_inv"]
@@ -197,7 +197,7 @@ if __name__ == '__main__':
                             file_path = "/data/pt_02569/tmp_data/ecg_rm_py/"
                             file_name = f'data_clean_ecg_spinal_{cond_name}_withqrs.fif'
                         elif method == 'SSP':
-                            file_path = "/data/p_02569/SSP/"
+                            file_path = "/data/pt_02569/tmp_data/ssp_py/"
                             file_name = f'ssp_cleaned_{cond_name}.fif'
 
                         # Process SSP data
@@ -220,16 +220,8 @@ if __name__ == '__main__':
 
                         # Process all other methods
                         else:
-                            input_path = file_path + subject_id + "/esg/prepro/"
+                            input_path = file_path + subject_id
                             raw = mne.io.read_raw_fif(f"{input_path}{file_name}", preload=True)
-
-                            if method == 'Prep' or method == 'PCA':
-                                # add reference channel to data
-                                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                                           method='iir',
-                                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                             epochs = get_cropped_epochs(raw, iv_epoch, iv_baseline, potential_window, trigger_name)
                             no_drops, var = get_coeffofvariation(epochs, channel)
@@ -258,11 +250,11 @@ if __name__ == '__main__':
     if cca_flag:
         input_paths = ["/data/pt_02569/tmp_data/prepared_py_cca/",
                        "/data/pt_02569/tmp_data/ecg_rm_py_cca/",
-                       "/data/p_02569/SSP_cca/"]
+                       "/data/pt_02569/tmp_data/ssp_py_cca/"]
     else:
         input_paths = ["/data/pt_02569/tmp_data/prepared_py/",
                        "/data/pt_02569/tmp_data/ecg_rm_py/",
-                       "/data/p_02569/SSP/"]
+                       "/data/pt_02569/tmp_data/ssp_py/"]
 
     names = ['Prepared', 'PCA', 'SSP']
 

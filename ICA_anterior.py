@@ -1,4 +1,4 @@
-# Run auto method of ICA on the prepared data anteriorly referenced
+# Run auto method of ICA on the prepared data on anteriorly referenced data
 
 import os
 import mne
@@ -12,12 +12,9 @@ def run_ica_anterior(subject, condition, srmr_nr, sampling_rate):
 
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
-    save_path = "../tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"  # Saving to baseline_ica_py
-    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Taking prepared data
-    figure_path = "/data/p_02569/baseline_ICA_images/" + subject_id + "/"
-    cfg_path = "/data/pt_02569/"  # Contains important info about experiment
+    save_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id   # Saving to baseline_ica_py
+    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id   # Taking prepared data
     os.makedirs(save_path, exist_ok=True)
-    os.makedirs(figure_path, exist_ok=True)
 
     # Get the condition information based on the condition read in
     cond_info = get_conditioninfo(condition, srmr_nr)
@@ -29,27 +26,15 @@ def run_ica_anterior(subject, condition, srmr_nr, sampling_rate):
     fname = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
-    # Anterior rereference data
+    # Anterior re-reference data
     if nerve == 1:
         raw_antRef = rereference_data(raw, 'AC')
     elif nerve == 2:
         raw_antRef = rereference_data(raw, 'AL')
 
-    # make a copy to filter
-    raw_filtered = raw_antRef.copy().drop_channels(['ECG'])
-
-    # filtering
-    cfg = loadmat(cfg_path + 'cfg.mat')
-    notch_freq = cfg['notch_freq'][0]
-    esg_bp_freq = cfg['esg_bp_freq'][0]
-
-    raw_filtered.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                        iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    raw_filtered.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-
     # ICA
-    ica = mne.preprocessing.ICA(n_components=len(raw_filtered.ch_names), max_iter='auto', random_state=97)
-    ica.fit(raw_filtered)
+    ica = mne.preprocessing.ICA(n_components=len(raw_antRef.ch_names), max_iter='auto', random_state=97)
+    ica.fit(raw_antRef)
 
     raw_antRef.load_data()
 
@@ -67,12 +52,11 @@ def run_ica_anterior(subject, condition, srmr_nr, sampling_rate):
     # Apply the ica we got from the filtered data onto the unfiltered raw
     ica.apply(raw_antRef)
 
-    raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
-                      iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-    raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
-
     # Save data
     fname = 'anterior_clean_baseline_ica_auto_' + cond_name + '.fif'
     raw_antRef.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
+
+    # Save ecg indices
+    with open(f'anterior_ecg_indices_{cond_name}.txt', 'w') as file:
+        file.write('\n'.join(str(ecg_index) for ecg_index in ecg_indices))
 

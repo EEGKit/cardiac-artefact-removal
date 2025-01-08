@@ -19,12 +19,12 @@ if __name__ == '__main__':
         if cca_flag:
             prep_path = '/data/pt_02569/tmp_data/prepared_py_cca/'
             pca_path = '/data/pt_02569/tmp_data/ecg_rm_py_cca/'
-            ssp_path = '/data/p_02569/SSP_cca/'
+            ssp_path = '/data/pt_02569/tmp_data/ssp_py_cca/'
 
         else:
             prep_path = '/data/pt_02569/tmp_data/prepared_py/'
             pca_path = '/data/pt_02569/tmp_data/ecg_rm_py/'
-            ssp_path = '/data/p_02569/SSP/'
+            ssp_path = '/data/pt_02569/tmp_data/ssp_py/'
 
         file_paths = [prep_path, pca_path, ssp_path]
         count = 0

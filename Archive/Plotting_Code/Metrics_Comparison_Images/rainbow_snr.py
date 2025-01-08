@@ -22,7 +22,7 @@ if __name__ == '__main__':
     input_paths = ["/data/pt_02569/tmp_data/prepared_py/",
                    "/data/pt_02569/tmp_data/ecg_rm_py/",
                    "/data/pt_02569/tmp_data/baseline_ica_py/",
-                   "/data/p_02569/SSP/"]
+                   "/data/pt_02569/tmp_data/ssp_py/"]
 
     names = ['Prepared', 'PCA', 'ICA', 'SSP']
     i = 0

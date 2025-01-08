@@ -63,10 +63,10 @@ if __name__ == '__main__':
                 file_path = '/data/pt_02569/tmp_data/baseline_ica_py/'
                 file_name = 'amplitudes.h5'
             elif method == 'SSP_5':
-                file_path = '/data/p_02569/SSP/'
+                file_path = '/data/pt_02569/tmp_data/ssp_py/'
                 file_name = 'amplitudes_5.h5'
             elif method == 'SSP_6':
-                file_path = '/data/p_02569/SSP/'
+                file_path = '/data/pt_02569/tmp_data/ssp_py/'
                 file_name = 'amplitudes_6.h5'
 
             keywords = ['amp_med', 'amp_tib']

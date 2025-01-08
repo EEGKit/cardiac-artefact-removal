@@ -28,7 +28,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/PSD_Plots_Dataset1/"
+    image_path = "/data/p_02569/Images/PSD_Plots_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     methods = [False, False, False]  # Can't do ICA when cca_flag = True
@@ -60,46 +60,36 @@ if __name__ == '__main__':
 
                     if method == 'Prep':
                         if cca_flag:
-                            input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + "/esg/prepro/"
+                            input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id
                             epochs = mne.read_epochs(
                                 f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                                 , preload=True)
                             evoked = epochs[trigger_name].average()
                             evoked_list.append(evoked)
                         else:
-                            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+                            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
                             raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif", preload=True)
-                            mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                            raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                                       method='iir',
-                                       iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                            raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                             evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                             evoked.reorder_channels(esg_chans)
                             evoked_list.append(evoked)
 
                     elif method == 'PCA':
                         if cca_flag:
-                            input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + "/esg/prepro/"
+                            input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id
                             fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                             epochs = mne.read_epochs(input_path + fname, preload=True)
                             evoked = epochs[trigger_name].average()
                             evoked_list.append(evoked)
                         else:
-                            input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+                            input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
                             fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                             raw = mne.io.read_raw_fif(input_path + fname, preload=True)
-                            mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                            raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                                       method='iir',
-                                       iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                            raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                             evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                             evoked.reorder_channels(esg_chans)
                             evoked_list.append(evoked)
 
                     elif method == 'ICA':
-                        input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+                        input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
                         fname = f"clean_baseline_ica_auto_{cond_name}.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
@@ -145,13 +135,13 @@ if __name__ == '__main__':
                     subject_id = f'sub-{str(subject).zfill(3)}'
 
                     if cca_flag:
-                        input_path = f"/data/p_02569/SSP_cca/{subject_id}/{n} projections/"
+                        input_path = f"/data/pt_02569/tmp_data/ssp_py_cca/{subject_id}/{n} projections/"
                         epochs = mne.read_epochs(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
                         evoked = epochs[trigger_name].average()
                         evoked_list.append(evoked)
 
                     else:
-                        input_path = f"/data/p_02569/SSP/{subject_id}/{n} projections/"
+                        input_path = f"/data/pt_02569/tmp_data/ssp_py/{subject_id}/{n} projections/"
                         raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
                         evoked.reorder_channels(esg_chans)

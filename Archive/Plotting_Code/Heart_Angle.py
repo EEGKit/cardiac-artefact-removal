@@ -48,7 +48,7 @@ if __name__ == '__main__':
         for subj in subjects:
             subject_id = f'sub-{str(subj).zfill(3)}'
 
-            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
             raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr1000_{cond_name}_withqrs.fif", preload=True)
 
             # Extract the stimulus event times
@@ -58,7 +58,7 @@ if __name__ == '__main__':
             stim_times = np.asarray([stim_event[0]/sampling_rate for stim_event in stim_events])
 
             # Get the R-peak timings
-            input_path_m = "/data/pt_02569/tmp_data/prepared/" + subject_id + "/esg/prepro/"
+            input_path_m = "/data/pt_02569/tmp_data/prepared/" + subject_id
             fname_m = f"raw_{sampling_rate}_spinal_{cond_name}"
             matdata = loadmat(input_path_m + fname_m + '.mat')
             QRS_times = matdata['QRSevents'][0]/sampling_rate

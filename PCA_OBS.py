@@ -19,14 +19,13 @@ def PCA_OBS(data, **kwargs):
     pca_info = PCAInfo()
 
     # Check all necessary arguments sent in
-    required_kws = ["debug_mode", "qrs", "filter_coords", "sr", "savename", "ch_names", "sub_nr", "condition",
+    required_kws = ["debug_mode", "qrs", "sr", "savename", "ch_names", "sub_nr", "condition",
                     "current_channel"]
     assert all([kw in kwargs.keys() for kw in required_kws]), "Error. Some KWs not passed into PCA_OBS."
 
     # Extract all kwargs
     debug_mode = kwargs['debug_mode']
     qrs = kwargs['qrs']
-    filter_coords = kwargs['filter_coords']
     sr = kwargs['sr']
     ch_names = kwargs['ch_names']
     sub_nr = kwargs['sub_nr']
@@ -36,14 +35,6 @@ def PCA_OBS(data, **kwargs):
         savename = kwargs['savename']
 
     fs = sr
-
-    # Standard delay between QRS peak and artifact
-    delay = 0
-
-    Gwindow = 2
-    GHW = np.floor(Gwindow / 2).astype('int')
-    rcount = 0
-    firstplot = 1
 
     # set to baseline
     data = data.reshape(-1, 1)
@@ -58,9 +49,6 @@ def PCA_OBS(data, **kwargs):
     for idx in qrs[0]:
         if idx < len(peakplot[0, :]):
             peakplot[0, idx] = 1  # logical indexed locations of qrs events
-    # sh = np.zeros((1, delay))
-    # np1 = len(peakplot)
-    # peakplot = [sh, peakplot[0:np1 - delay]] # shifts indexed array by the delay - skipped here since delay=0
 
     peak_idx = np.nonzero(peakplot)[1]  # Selecting indices along columns
     peak_idx = peak_idx.reshape(-1, 1)
@@ -86,14 +74,11 @@ def PCA_OBS(data, **kwargs):
     steps = 1 * pa
     peak_count = pa
 
-    # Filter channel
-    eegchan = filtfilt(filter_coords, 1, data)
-
     # build PCA matrix(heart-beat-epochs x window-length)
     pcamat = np.zeros((peak_count - 1, 2*peak_range+1))  # [epoch x time]
     # picking out heartbeat epochs
     for p in range(1, peak_count):
-        pcamat[p-1, :] = eegchan[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range+1]
+        pcamat[p-1, :] = data[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range+1]
 
     # detrending matrix(twice)
     pcamat = detrend(pcamat, type='constant', axis=1)  # [epoch x time] - detrended along the epoch
@@ -192,7 +177,7 @@ def PCA_OBS(data, **kwargs):
                 print(f'Cannot fit first ECG epoch. Reason: {e}')
 
         # Deals with last edge of data
-        elif p == peak_count:
+        elif p == peak_count - 1:
             print('On last section - almost there!')
             try:
                 pre_range = math.floor((peak_idx[p] - peak_idx[p - 1]) / 2)
@@ -239,7 +224,6 @@ def PCA_OBS(data, **kwargs):
         if plotChannel == 1:
             fig = plt.figure()
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), data[:].T, zorder=0)
-            plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), eegchan[:].T, 'r', zorder=5)
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), fitted_art[:].T, 'g', zorder=10)
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), (np.subtract(data[:], fitted_art[:])).T, 'm', zorder=15)
             plt.legend(['raw data', 'filtered', 'fitted_art', 'clean'], loc='upper right').set_zorder(20)
@@ -255,6 +239,7 @@ def PCA_OBS(data, **kwargs):
 
     # data -= fitted_art
 
+    # There is a one sample delay between the R-peak timings detected in matlab and the python data - account for it here
     data_ = np.zeros(len(data))
     data_[0] = data[0]
     data_[1:] = data[1:] - fitted_art[:-1]

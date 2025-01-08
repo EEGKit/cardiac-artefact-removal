@@ -18,13 +18,12 @@ def PCA_OBS_fittedart(data, **kwargs):
     pca_info = PCAInfo()
 
     # Check all necessary arguments sent in
-    required_kws = ["debug_mode", "qrs", "filter_coords", "sr", "savename", "ch_names", "sub_nr", "condition", "current_channel"]
+    required_kws = ["debug_mode", "qrs", "sr", "savename", "ch_names", "sub_nr", "condition", "current_channel"]
     assert all([kw in kwargs.keys() for kw in required_kws]), "Error. Some KWs not passed into PCA_OBS."
 
    # Extract all kwargs - more elegant ways to do this
     debug_mode = kwargs['debug_mode']
     qrs = kwargs['qrs']
-    filter_coords = kwargs['filter_coords']
     sr = kwargs['sr']
     ch_names = kwargs['ch_names']
     sub_nr = kwargs['sub_nr']
@@ -88,15 +87,12 @@ def PCA_OBS_fittedart(data, **kwargs):
     steps = 1 * pa
     peak_count = pa
 
-    # Filter channel
-    eegchan = filtfilt(filter_coords, 1, data)
-
     # build PCA matrix(heart - beat - epoch x window - length)
     pcamat = np.zeros((peak_count - 1, 2*peak_range+1)) # [epoch x time]
     # dpcamat = pcamat # [epoch x time]
     # picking out heartbeat epochs
     for p in range(1, peak_count):
-        pcamat[p-1, :] = eegchan[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range+1]
+        pcamat[p-1, :] = data[0, peak_idx[p, 0] - peak_range: peak_idx[p, 0] + peak_range+1]
 
     # detrending matrix(twice - why?)
     pcamat = detrend(pcamat, type='constant', axis=1) # [epoch x time] - detrended along the epoch
@@ -157,7 +153,7 @@ def PCA_OBS_fittedart(data, **kwargs):
                 print(f'Cannot fit first ECG epoch. Reason: {e}')
 
         # Deals with last edge of data
-        elif p == peak_count:
+        elif p == peak_count - 1:
             print('On last section - almost there!')
             try:
                 pre_range = math.floor((peak_idx[p] - peak_idx[p - 1]) / 2)

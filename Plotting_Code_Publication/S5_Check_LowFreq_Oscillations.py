@@ -33,7 +33,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S140', 'S33', 'S3', 'AL', 'L40', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/LowFreqOscillations_Dataset1/"
+    image_path = "/data/p_02569/Images/LowFreqOscillations_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     ############################################################################################
@@ -62,13 +62,9 @@ if __name__ == '__main__':
             ##########################################################################
             # Uncleaned Data
             ##########################################################################
-            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
             raw_prep = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                                            , preload=True)
-            mne.add_reference_channels(raw_prep, ref_channels=['TH6'], copy=False)  # Modifying in place
-            raw_prep.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_prep.ch_names),
-                            method='iir', iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-            raw_prep.notch_filter(freqs=notch_freq, n_jobs=len(raw_prep.ch_names), method='fir', phase='zero')
             raw_prep = raw_prep.pick_channels(channel)
             events, event_ids = mne.events_from_annotations(raw_prep)
             event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
@@ -98,13 +94,9 @@ if __name__ == '__main__':
             ###################################################################
             # PCA_OBS
             ###################################################################
-            input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+            input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
             fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
             raw_pca = mne.io.read_raw_fif(input_path + fname, preload=True)
-            mne.add_reference_channels(raw_pca, ref_channels=['TH6'], copy=False)  # Modifying in place
-            raw_pca.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_pca.ch_names),
-                       method='iir', iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-            raw_pca.notch_filter(freqs=notch_freq, n_jobs=len(raw_pca.ch_names), method='fir', phase='zero')
             raw_pca = raw_pca.pick_channels(channel)
             events, event_ids = mne.events_from_annotations(raw_pca)
             event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
@@ -130,7 +122,7 @@ if __name__ == '__main__':
             ##########################################################################
             # SSP6
             ##########################################################################
-            input_path = f"/data/p_02569/SSP/{subject_id}/6 projections/"
+            input_path = f"/data/pt_02569/tmp_data/ssp_py/{subject_id}/6 projections/"
             raw_ssp6 = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif", preload=True)
             # raw_ssp6 = raw_ssp6.pick_channels(channel)
             events, event_ids = mne.events_from_annotations(raw_ssp6)
@@ -215,7 +207,7 @@ if __name__ == '__main__':
     #         ################################################################################
     #         # Uncleaned
     #         ###############################################################################
-    #         input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+    #         input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
     #         fname = f"epochs_{cond_name}.fif"
     #         epochs = mne.read_epochs(input_path+fname, preload=True)
     #         evoked = epochs.average()
@@ -225,7 +217,7 @@ if __name__ == '__main__':
     #         ##############################################################################
     #         # PCA_OBS
     #         ##############################################################################
-    #         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + "/esg/prepro/"
+    #         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
     #         fname = f"epochs_{cond_name}.fif"
     #         epochs = mne.read_epochs(input_path + fname, preload=True)
     #         evoked = epochs.average()
@@ -235,7 +227,7 @@ if __name__ == '__main__':
     #         ##############################################################################
     #         # ICA
     #         ##############################################################################
-    #         input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+    #         input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
     #         fname = f"epochs_{cond_name}.fif"
     #         epochs = mne.read_epochs(input_path + fname, preload=True)
     #         evoked = epochs.average()
@@ -245,7 +237,7 @@ if __name__ == '__main__':
     #         #############################################################################
     #         # SSP 6
     #         #############################################################################
-    #         input_path = f"/data/p_02569/SSP/{subject_id}/6 projections/"
+    #         input_path = f"/data/pt_02569/tmp_data/ssp_py/{subject_id}/6 projections/"
     #         fname = f"epochs_{cond_name}.fif"
     #         epochs = mne.read_epochs(input_path + fname, preload=True)
     #         evoked = epochs.average()

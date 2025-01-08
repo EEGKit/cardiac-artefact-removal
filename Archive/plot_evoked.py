@@ -31,7 +31,7 @@ if __name__ == '__main__':
     if PCA_flag:
         for subject in subjects:
             subject_id = f'sub-{str(subject).zfill(3)}'
-            figure_path = "/data/p_02569/Evoked_images/" + subject_id + "/"
+            figure_path = "/data/p_02569/Images/Evoked_images/" + subject_id + "/"
             os.makedirs(figure_path, exist_ok=True)
 
             for cond_name in cond_names:
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
                 # Load epochs resulting from PCA OBS cleaning - the raw data in this folder has not been rereferenced
                 # which is why I instead load the epoched data
-                input_path = "/data/pt_02569/tmp_data/epoched_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/epoched_py/" + subject_id
                 epochs = mne.read_epochs(f"{input_path}epo_clean_{cond_name}.fif")
 
                 if reduced_epochs:
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     if ICA_flag:
         for subject in subjects:
             subject_id = f'sub-{str(subject).zfill(3)}'
-            figure_path = "/data/p_02569/Evoked_images/" + subject_id + "/"
+            figure_path = "/data/p_02569/Images/Evoked_images/" + subject_id + "/"
             os.makedirs(figure_path, exist_ok=True)
 
             for cond_name in cond_names:
@@ -85,7 +85,7 @@ if __name__ == '__main__':
                     channels = ['S6', 'SC6', 'S14']
 
                 # Load epochs resulting from ICA cleaning
-                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
                 raw = mne.io.read_raw_fif(f"{input_path}clean_baseline_ica_auto_{cond_name}.fif")
 
                 evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
                 for n in np.arange(5, 21):
                     # Load epochs resulting from SSP cleaning
-                    input_path = "/data/p_02569/SSP/" + subject_id + "/" + str(n) + " projections/"
+                    input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + "/" + str(n) + " projections/"
                     raw = mne.io.read_raw_fif(f"{input_path}ssp_cleaned_{cond_name}.fif")
 
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)

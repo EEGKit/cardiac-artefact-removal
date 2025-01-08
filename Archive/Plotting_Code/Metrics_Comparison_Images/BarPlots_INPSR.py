@@ -17,7 +17,7 @@ if __name__ == '__main__':
     prep_path = '/data/pt_02569/tmp_data/prepared_py/'
     pca_path = '/data/pt_02569/tmp_data/ecg_rm_py/'
     ica_path = '/data/pt_02569/tmp_data/baseline_ica_py/'
-    ssp_path = '/data/p_02569/SSP/'
+    ssp_path = '/data/pt_02569/tmp_data/ssp_py/'
 
     ################################# Make Dataframe ###################################
     # Necessary information to get relavant channel data

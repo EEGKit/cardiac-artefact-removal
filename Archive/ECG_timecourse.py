@@ -24,7 +24,7 @@ if __name__ == '__main__':
     iv_baseline = [-150 / 1000, -50 / 1000]
     iv_epoch = [-200 / 1000, 200 / 1000]
 
-    image_path = "/data/p_02569/ECGGrandAverage_Dataset1/"
+    image_path = "/data/p_02569/Images/ECGGrandAverage_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     # For the ECG channels of interest
@@ -42,14 +42,9 @@ if __name__ == '__main__':
         for subject in subjects:  # All subjects
             subject_id = f'sub-{str(subject).zfill(3)}'
 
-            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"
+            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
             raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif",
                                       preload=True)
-            # mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-            raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                       method='iir',
-                       iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-            raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
             evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, False)
             evoked = evoked.pick_channels(channel)
             evoked_list.append(evoked)

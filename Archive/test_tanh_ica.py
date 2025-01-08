@@ -34,7 +34,7 @@ if __name__ == '__main__':
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
 
-    image_path = "/data/p_02569/TestTan_Dataset1/"
+    image_path = "/data/p_02569/Images/TestTan_Dataset1/"
     os.makedirs(image_path, exist_ok=True)
 
     if run_ica:
@@ -42,9 +42,9 @@ if __name__ == '__main__':
             for condition in conditions:
                 # Set paths
                 subject_id = f'sub-{str(subject).zfill(3)}'
-                save_path = "../tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"  # Saving to baseline_ica_py
-                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Taking prepared data
-                figure_path = "/data/p_02569/baseline_ICA_images/" + subject_id + "/"
+                save_path = "../tmp_data/baseline_ica_py/" + subject_id   # Saving to baseline_ica_py
+                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id   # Taking prepared data
+                figure_path = "/data/p_02569/Images/baseline_ICA_images/" + subject_id + "/"
                 cfg_path = "/data/pt_02569/"  # Contains important info about experiment
                 os.makedirs(save_path, exist_ok=True)
                 os.makedirs(figure_path, exist_ok=True)
@@ -67,10 +67,6 @@ if __name__ == '__main__':
                 notch_freq = cfg['notch_freq'][0]
                 esg_bp_freq = cfg['esg_bp_freq'][0]
 
-                raw_filtered.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                                    iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                raw_filtered.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-
                 # ICA
                 ica = mne.preprocessing.ICA(n_components=len(raw_filtered.ch_names), max_iter='auto', random_state=97,
                                             method='picard')
@@ -92,14 +88,6 @@ if __name__ == '__main__':
                 # Apply the ica we got from the filtered data onto the unfiltered raw
                 ica.apply(raw)
 
-                # add reference channel to data - average rereferencing
-                mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
-                raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                           iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-                raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-
                 # Save raw data
                 fname = 'testtan_baseline_ica_auto_' + cond_name + '.fif'
                 raw.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
@@ -120,13 +108,13 @@ if __name__ == '__main__':
                 elif cond_name == 'median':
                     channel = ['SC6']
 
-                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
                 fname = f"clean_baseline_ica_auto_{cond_name}.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                 evoked_og = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)
                 evoked_og.reorder_channels(esg_chans)
 
-                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"
+                input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
                 fname = f"testtan_baseline_ica_auto_{cond_name}.fif"
                 raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                 evoked_tan = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_trials)

@@ -13,38 +13,21 @@ def run_ica(subject, condition, srmr_nr, sampling_rate, choose_limited):
 
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
-    save_path = "../tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"  # Saving to baseline_ica_py
-    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Taking prepared data
-    figure_path = "/data/p_02569/baseline_ICA_images/" + subject_id + "/"
-    cfg_path = "/data/pt_02569/"  # Contains important info about experiment
+    save_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id   # Saving to baseline_ica_py
+    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id   # Taking prepared data
     os.makedirs(save_path, exist_ok=True)
-    os.makedirs(figure_path, exist_ok=True)
 
     # Get the condition information based on the condition read in
     cond_info = get_conditioninfo(condition, srmr_nr)
     cond_name = cond_info.cond_name
-    trigger_name = cond_info.trigger_name
-    nerve = cond_info.nerve
 
-    # load cleaned ESG data
+    # load ESG data
     fname = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
-    # make a copy to filter
-    raw_filtered = raw.copy().drop_channels(['ECG'])
-
-    # filtering
-    cfg = loadmat(cfg_path + 'cfg.mat')
-    notch_freq = cfg['notch_freq'][0]
-    esg_bp_freq = cfg['esg_bp_freq'][0]
-
-    raw_filtered.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                        iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    raw_filtered.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-
-    # ICA
-    ica = mne.preprocessing.ICA(n_components=len(raw_filtered.ch_names), max_iter='auto', random_state=97)
-    ica.fit(raw_filtered)
+    # ICA - data already filtered at import stage so fine for ICA now
+    ica = mne.preprocessing.ICA(n_components=len(raw.ch_names), max_iter='auto', random_state=97)
+    ica.fit(raw)
 
     raw.load_data()
 
@@ -65,29 +48,6 @@ def run_ica(subject, condition, srmr_nr, sampling_rate, choose_limited):
     # Apply the ica we got from the filtered data onto the unfiltered raw
     ica.apply(raw)
 
-    # # Fz reference
-    # raw_FzRef = rereference_data(raw, 'Fz-TH6')
-    #
-    # # anterior reference
-    # if nerve == 1:
-    #     raw_antRef = rereference_data(raw, 'AC')
-    # elif nerve == 2:
-    #     raw_antRef = rereference_data(raw, 'AL')
-
-    # add reference channel to data - average rereferencing
-    mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
-    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    # raw_FzRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_FzRef.ch_names), method='iir',
-    #                  iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    # raw_antRef.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_antRef.ch_names), method='iir',
-    #                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-    # raw_FzRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_FzRef.ch_names), method='fir', phase='zero')
-    # raw_antRef.notch_filter(freqs=notch_freq, n_jobs=len(raw_antRef.ch_names), method='fir', phase='zero')
-
     # Save raw data
     if choose_limited:
         fname = 'clean_baseline_ica_auto_' + cond_name + '_lim.fif'
@@ -95,8 +55,8 @@ def run_ica(subject, condition, srmr_nr, sampling_rate, choose_limited):
     else:
         fname = 'clean_baseline_ica_auto_' + cond_name + '.fif'
         raw.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
-    # fname = 'clean_baseline_ica_auto_antRef_' + cond_name + '.fif'
-    # raw_antRef.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
-    # fname = 'clean_baseline_ica_auto_FzRef_' + cond_name + '.fif'
-    # raw_FzRef.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
+
+        # Save ecg indices
+        with open(f'ecg_indices_{cond_name}.txt', 'w') as file:
+            file.write('\n'.join(str(ecg_index) for ecg_index in ecg_indices))
 

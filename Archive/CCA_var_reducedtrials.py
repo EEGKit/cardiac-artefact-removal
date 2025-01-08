@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
                     # Want the SNR
                     # Load epochs resulting from CCA on prepared
-                    input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id
                     epochs = mne.read_epochs(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs{no}.fif"
                                              , preload=True)
                     channel = df.loc[subject_id, f"Prep_{cond_name}"]
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
                     # Want the SNR
                     # Load epochs resulting from CCA on prepared
-                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + "/esg/prepro/"
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id
                     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs{no}.fif"
                     epochs = mne.read_epochs(input_path + fname, preload=True)
                     channel = df.loc[subject_id, f"PCA_{cond_name}"]
@@ -209,7 +209,7 @@ if __name__ == '__main__':
 
                         # Want the SNR
                         # Load epochs resulting from CCA on SSP
-                        input_path = f"/data/p_02569/SSP_cca/{subject_id}/{n} projections/"
+                        input_path = f"/data/pt_02569/tmp_data/ssp_py_cca/{subject_id}/{n} projections/"
                         epochs = mne.read_epochs(f"{input_path}ssp_cleaned_{cond_name}{no}.fif", preload=True)
                         channel = df.loc[subject_id, f"SSP{n}_{cond_name}"]
                         inv = df.loc[subject_id, f"SSP{n}_{cond_name}_inv"]
@@ -242,11 +242,11 @@ if __name__ == '__main__':
             dataset_keywords = [a for a in dir(savesnr) if not a.startswith('__')]
 
             if std:
-                fn = f"/data/p_02569/SSP_cca/variance{no}_std.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py_cca/variance{no}_std.h5"
             elif mean:
-                fn = f"/data/p_02569/SSP_cca/variance{no}_mean.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py_cca/variance{no}_mean.h5"
             else:
-                fn = f"/data/p_02569/SSP_cca/variance{no}.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py_cca/variance{no}.h5"
             with h5py.File(fn, "w") as outfile:
                 for keyword in dataset_keywords:
                     outfile.create_dataset(keyword, data=getattr(savesnr, keyword))
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     keywords = ['var_med', 'var_tib']
     input_paths = ["/data/pt_02569/tmp_data/prepared_py_cca/",
                    "/data/pt_02569/tmp_data/ecg_rm_py_cca/",
-                   "/data/p_02569/SSP_cca/"]
+                   "/data/pt_02569/tmp_data/ssp_py_cca/"]
 
     names = ['Prepared', 'PCA', 'SSP']
 

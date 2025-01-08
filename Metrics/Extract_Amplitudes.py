@@ -72,7 +72,7 @@ if __name__ == '__main__':
                         file_path = "/data/pt_02569/tmp_data/baseline_ica_py/"
                         file_name = f'clean_baseline_ica_auto_{cond_name}.fif'
                     elif method == 'SSP_5' or method == 'SSP_6':
-                        file_path = "/data/p_02569/SSP/"
+                        file_path = "/data/pt_02569/tmp_data/ssp_py/"
                         file_name = f'ssp_cleaned_{cond_name}.fif'
 
                     if method == 'SSP_5':
@@ -80,17 +80,10 @@ if __name__ == '__main__':
                     elif method == 'SSP_6':
                         input_path = file_path + subject_id + '/6 projections/'
                     else:
-                        input_path = file_path + subject_id + "/esg/prepro/"
+                        input_path = file_path + subject_id
 
                     raw = mne.io.read_raw_fif(f"{input_path}{file_name}", preload=True)
 
-                    if method == 'Prep' or method == 'PCA':
-                        # add reference channel to data
-                        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-
-                        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                     # Form epochs
                     events, event_ids = mne.events_from_annotations(raw)

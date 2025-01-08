@@ -4,7 +4,8 @@
 # 2) removes the stimulus artifact iv: -1.5 to 1.5 ms, for ESG use -7 to 7s
 # 3) downsample the signal to 1000 Hz, r peak detection performed, save location of r-peaks separately
 # 4) Append mne raws of the same condition
-# 5) saves the new raw structure and the QRS events detected
+# 5) Highpass and notch filter
+# 6) saves the new raw structure and the QRS events detected
 # Emma Bailey, November 2021
 ##########################################################################################
 
@@ -23,9 +24,9 @@ import numpy as np
 def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation):
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
-    save_path = "../tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Saving to prepared_py
+    save_path = "../tmp_data/prepared_py/" + subject_id   # Saving to prepared_py
     input_path = "/data/p_02068/SRMR1_experiment/bids/" + subject_id + "/eeg/"  # Taking data from the bids folder
-    # cfg_path = "/data/pt_02569/"  # Contains important info about experiment
+    cfg_path = "/data/pt_02569/"  # Contains important info about experiment
     montage_path = '/data/pt_02068/cfg/'
     montage_name = 'standard-10-5-cap385_added_mastoids.elp'
     os.makedirs(save_path, exist_ok=True)
@@ -58,6 +59,12 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
         cond_files = glob.glob(search)
         cond_files = sorted(cond_files)  # Arrange in order from lowest to highest value
         nblocks = len(cond_files)
+
+        # Read relevant vars from cfg file
+        # Both in ms - MNE works with seconds
+        cfg = loadmat(cfg_path + 'cfg.mat')
+        notch_freq = cfg['notch_freq'][0]
+        esg_bp_freq = cfg['esg_bp_freq'][0]
 
         # Find out which channels are which, include ECG, exclude EOG
         eeg_chans, esg_chans, bipolar_chans = get_channels(subject_nr=subject, includesEcg=True, includesEog=False,
@@ -148,14 +155,8 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
             else:
                 mne.concatenate_raws([raw_concat, raw])
 
-        # Detect ECG events
-        ecg_events, ch_ecg, average_pulse = mne.preprocessing.find_ecg_events(raw_concat, event_id=999, ch_name='ECG',
-                                                                              tstart=0, l_freq=5,
-                                                                              h_freq=35, qrs_threshold='auto',
-                                                                              filter_length='5s')
-
         # Read .mat file with QRS events
-        input_path_m = "/data/pt_02569/tmp_data/prepared/"+subject_id+"/esg/prepro/"
+        input_path_m = "/data/pt_02569/tmp_data/prepared/"+subject_id
         fname_m = f"raw_{sampling_rate}_spinal_{cond_name}"
         matdata = loadmat(input_path_m + fname_m + '.mat')
         QRSevents_m = matdata['QRSevents'][0]
@@ -182,12 +183,12 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
                 raw_concat.annotations.append(qrs_event, duration, description, ch_names=[eeg_chans] * len(QRSevents_m))
                 fname_save = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg_pchip.fif'
 
+        # Filter and make sure reference channel is included
+        mne.add_reference_channels(raw_concat, ref_channels=['TH6'], copy=False)  # Modifying in place
+
+        raw_concat.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw_concat.ch_names), method='iir',
+                                 iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
+        raw_concat.notch_filter(freqs=notch_freq, n_jobs=len(raw_concat.ch_names), method='fir', phase='zero')
+
         # Save data without stim artefact and downsampled to 1000
         raw_concat.save(os.path.join(save_path, fname_save), fmt='double', overwrite=True)
-
-        # Save detected QRS events if we're looking at correcting spinal data
-        if esg_flag:
-            dataset_keyword = 'QRS'
-            fn = save_path + 'noStimart_sr%s_%s_withqrs.h5' % (srate_basic, cond_name)
-            with h5py.File(fn, "w") as outfile:
-                outfile.create_dataset(dataset_keyword, data=ecg_events[:, 0])

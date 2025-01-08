@@ -10,15 +10,11 @@ from get_esg_channels import get_esg_channels
 
 
 def run_ica_separatepatches(subject, condition, srmr_nr, sampling_rate):
-
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
-    save_path = "../tmp_data/baseline_ica_py/" + subject_id + "/esg/prepro/"  # Saving to baseline_ica_py
-    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + "/esg/prepro/"  # Taking prepared data
-    figure_path = "/data/p_02569/baseline_ICA_images/" + subject_id + "/"
-    cfg_path = "/data/pt_02569/"  # Contains important info about experiment
+    save_path = "/data/pt_02569//tmp_data/baseline_ica_py/" + subject_id   # Saving to baseline_ica_py
+    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id   # Taking prepared data
     os.makedirs(save_path, exist_ok=True)
-    os.makedirs(figure_path, exist_ok=True)
 
     # Get the condition information based on the condition read in
     cond_info = get_conditioninfo(condition, srmr_nr)
@@ -32,18 +28,9 @@ def run_ica_separatepatches(subject, condition, srmr_nr, sampling_rate):
     fname = f'noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif'
     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
 
-    # Make a filtered copy
-    raw_filtered = raw.copy().drop_channels(['ECG'])
-    cfg = loadmat(cfg_path + 'cfg.mat')
-    notch_freq = cfg['notch_freq'][0]
-    esg_bp_freq = cfg['esg_bp_freq'][0]
-    raw_filtered.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-                        iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-    raw_filtered.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
-
     # ICA
     # Perform ica separately for lumbar and cervical channels
-    # Only process one patch for median or tibial and ignore for the rest of analysis
+    # Only process one patch for median or tibial
     if cond_name == 'median':
         channels = cervical_chans
     elif cond_name == 'tibial':
@@ -52,14 +39,10 @@ def run_ica_separatepatches(subject, condition, srmr_nr, sampling_rate):
     channels.append('ECG')  # Needed as we use ECG to find bad channels
 
     raw_patch = raw.copy().pick_channels(channels)
-    raw_filtered_patch = raw_filtered.copy().pick_channels(channels)
 
-    # Drop the channels we've select to run from the overall raw
-    raw = raw.drop_channels(channels)
-
-    ica = mne.preprocessing.ICA(n_components=len(raw_filtered_patch.ch_names), max_iter='auto',
+    ica = mne.preprocessing.ICA(n_components=len(raw_patch.ch_names), max_iter='auto',
                                 random_state=97)
-    ica.fit(raw_filtered_patch)
+    ica.fit(raw_patch)
 
     raw_patch.load_data()
 
@@ -74,18 +57,14 @@ def run_ica_separatepatches(subject, condition, srmr_nr, sampling_rate):
     # print(ica.exclude)
     # ica.plot_scores(ecg_scores)
 
-    # Apply the ica we got from the filtered data onto the unfiltered raw
+    # Apply the ica
     ica.apply(raw_patch)
-
-    raw.add_channels([raw_patch])  # Add back the channels I removed
-
-    # Filter
-    raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names), method='iir',
-               iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-
-    raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
     # Save data
     fname = 'separated_clean_baseline_ica_auto_' + cond_name + '.fif'
-    raw.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
+    raw_patch.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
+
+    # Save ecg indices
+    with open(f'separated_ecg_indices_{cond_name}.txt', 'w') as file:
+        file.write('\n'.join(str(ecg_index) for ecg_index in ecg_indices))
 

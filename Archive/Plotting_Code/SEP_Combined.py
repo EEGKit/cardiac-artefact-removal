@@ -67,21 +67,21 @@ if __name__ == '__main__':
 
                     if method == 'Uncleaned':
                         data_path = '/data/pt_02569/tmp_data/prepared_py/' + subject_id + \
-                                    '/esg/prepro/epochs_' + cond_name + '.fif'
+                                    '/epochs_' + cond_name + '.fif'
 
                     elif method == 'PCA':
                         data_path_raw = '/data/pt_02569/tmp_data/ecg_rm_py/' + subject_id + \
-                                    '/esg/prepro/data_clean_ecg_spinal_' + cond_name + '_withqrs.fif'
+                                    '/data_clean_ecg_spinal_' + cond_name + '_withqrs.fif'
 
                         data_path_epochs = '/data/pt_02569/tmp_data/ecg_rm_py/' + subject_id + \
-                                        '/esg/prepro/epochs_' + cond_name + '.fif'
+                                        '/epochs_' + cond_name + '.fif'
 
                     elif method == 'ICA':
                         data_path = '/data/pt_02569/tmp_data/baseline_ica_py/' + subject_id + \
-                                    '/esg/prepro/epochs_' + cond_name + '.fif'
+                                    '/epochs_' + cond_name + '.fif'
 
                     elif method == 'SSP6':
-                        data_path = "/data/p_02569/SSP/" + subject_id + f"/6 projections/epochs_" + cond_name + ".fif"
+                        data_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + f"/6 projections/epochs_" + cond_name + ".fif"
 
                     # for PCA - want to interpolate the hump for the TFR plot
                     if method == 'PCA':
@@ -94,11 +94,6 @@ if __name__ == '__main__':
                         mne.preprocessing.fix_stim_artifact(raw, events=events, event_id=event_dict[trigger_name],
                                                             tmin=tstart_esg,
                                                             tmax=tmax_esg, mode='linear', stim_channel=None)
-                        mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                        raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                                   method='iir',
-                                   iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                        raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
                         events, event_ids = mne.events_from_annotations(raw)
                         event_id_dict = {key: value for key, value in event_ids.items() if key == trigger_name}
                         epochs_interp = mne.Epochs(raw, events, event_id=event_id_dict, tmin=iv_epoch[0], tmax=iv_epoch[1],

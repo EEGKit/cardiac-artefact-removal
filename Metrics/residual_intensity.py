@@ -78,7 +78,7 @@ if __name__ == '__main__':
                             subject_id = f'sub-{str(subject).zfill(3)}'
 
                             # Want the RMS of the data, load data
-                            input_path = "/data/p_02569/SSP/" + subject_id
+                            input_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id
                             savename = input_path + "/" + str(n) + " projections/"
                             raw = mne.io.read_raw_fif(f"{savename}ssp_cleaned_{cond_name}.fif")
                             evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                     saveres.res_tib = globals()[f"res_tib_SSP_{n}"]
                     dataset_keywords = [a for a in dir(saveres) if not a.startswith('__')]
 
-                    fn = f"/data/p_02569/SSP/res_{n}.h5"
+                    fn = f"/data/pt_02569/tmp_data/ssp_py/res_{n}.h5"
 
                     with h5py.File(fn, "w") as outfile:
                         for keyword in dataset_keywords:
@@ -153,17 +153,8 @@ if __name__ == '__main__':
                             file_path = "/data/pt_02569/tmp_data/baseline_ica_py/"
                             file_name = f"separated_clean_baseline_ica_auto_{cond_name}.fif"
 
-                        input_path = file_path + subject_id + "/esg/prepro/"
+                        input_path = file_path + subject_id
                         raw = mne.io.read_raw_fif(f"{input_path}{file_name}", preload=True)
-
-                        if (method == 'Prep' or method == 'PCA' or method == 'PCA Tukey' or method == 'PCA PCHIP' or
-                                method == 'PCA Tukey PCHIP'):
-                            # add reference channel to data
-                            mne.add_reference_channels(raw, ref_channels=['TH6'], copy=False)  # Modifying in place
-                            raw.filter(l_freq=esg_bp_freq[0], h_freq=esg_bp_freq[1], n_jobs=len(raw.ch_names),
-                                       method='iir',
-                                       iir_params={'order': 2, 'ftype': 'butter'}, phase='zero')
-                            raw.notch_filter(freqs=notch_freq, n_jobs=len(raw.ch_names), method='fir', phase='zero')
 
                         evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
 
@@ -211,7 +202,7 @@ if __name__ == '__main__':
                    'ICA': "/data/pt_02569/tmp_data/baseline_ica_py/",
                    'ICA-Anterior': "/data/pt_02569/tmp_data/baseline_ica_py/",
                    'ICA-Separate': "/data/pt_02569/tmp_data/baseline_ica_py/",
-                   'SSP': "/data/p_02569/SSP/"}
+                   'SSP': "/data/pt_02569/tmp_data/ssp_py/"}
 
     # All files are 36x39 dimensions - n_subjects x n_channels
     keywords = ['res_med', 'res_tib']
@@ -230,7 +221,7 @@ if __name__ == '__main__':
         if name == 'SSP':
             # SSP
             for n in np.arange(1, 21):  # 5, 21
-                fn = f"/data/p_02569/SSP/res_{n}.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/res_{n}.h5"
                 with h5py.File(fn, "r") as infile:
                     # Get the data
                     res_med = infile[keywords[0]][()]
@@ -286,7 +277,7 @@ if __name__ == '__main__':
         if name == 'SSP':
             # SSP
             for n in np.arange(1, 21):  # 5, 21
-                fn = f"/data/p_02569/SSP/res_{n}.h5"
+                fn = f"/data/pt_02569/tmp_data/ssp_py/res_{n}.h5"
                 with h5py.File(fn, "r") as infile:
                     # Get the data
                     res_med = infile[keywords[0]][()]
