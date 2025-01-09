@@ -5,7 +5,7 @@ import numpy as np
 import h5py
 from scipy.io import loadmat
 from SNR_functions import *
-from epoch_data import rereference_data
+from reref_data import rereference_data
 import matplotlib.pyplot as plt
 
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
                     elif method == 'SSP_6':
                         input_path = file_path + subject_id + '/6 projections/'
                     else:
-                        input_path = file_path + subject_id
+                        input_path = file_path + subject_id + "/"
 
                     raw = mne.io.read_raw_fif(f"{input_path}{file_name}", preload=True)
 

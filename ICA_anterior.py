@@ -5,15 +5,15 @@ import mne
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 from get_conditioninfo import *
-from epoch_data import rereference_data
+from reref_data import rereference_data
 
 
 def run_ica_anterior(subject, condition, srmr_nr, sampling_rate):
 
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
-    save_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id   # Saving to baseline_ica_py
-    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id   # Taking prepared data
+    save_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id  + '/' # Saving to baseline_ica_py
+    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id  + '/' # Taking prepared data
     os.makedirs(save_path, exist_ok=True)
 
     # Get the condition information based on the condition read in
@@ -33,7 +33,7 @@ def run_ica_anterior(subject, condition, srmr_nr, sampling_rate):
         raw_antRef = rereference_data(raw, 'AL')
 
     # ICA
-    ica = mne.preprocessing.ICA(n_components=len(raw_antRef.ch_names), max_iter='auto', random_state=97)
+    ica = mne.preprocessing.ICA(n_components=len(raw_antRef.ch_names) - 1, max_iter='auto', random_state=97)
     ica.fit(raw_antRef)
 
     raw_antRef.load_data()
@@ -57,6 +57,6 @@ def run_ica_anterior(subject, condition, srmr_nr, sampling_rate):
     raw_antRef.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
 
     # Save ecg indices
-    with open(f'anterior_ecg_indices_{cond_name}.txt', 'w') as file:
+    with open(f'{save_path}anterior_ecg_indices_{cond_name}.txt', 'w') as file:
         file.write('\n'.join(str(ecg_index) for ecg_index in ecg_indices))
 

@@ -20,9 +20,9 @@ def rm_heart_artefact(subject, condition, srmr_nr, sampling_rate, pchip):
     trigger_name = cond_info.trigger_name
 
     # Setting paths
-    input_path = "/data/pt_02569/tmp_data/prepared_py/"+subject_id
-    input_path_m = "/data/pt_02569/tmp_data/prepared/"+subject_id
-    save_path = "/data/pt_02569/tmp_data/ecg_rm_py/"+subject_id
+    input_path = "/data/pt_02569/tmp_data/prepared_py/"+subject_id + '/'
+    input_path_m = "/data/pt_02569/Python_Cardiac/QRS_Timing/"+subject_id + '/'
+    save_path = "/data/pt_02569/tmp_data/ecg_rm_py/"+subject_id + '/'
     os.makedirs(save_path, exist_ok=True)
 
     figure_path = save_path

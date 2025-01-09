@@ -9,7 +9,7 @@ import numpy as np
 import h5py
 from scipy.io import loadmat
 from SNR_functions import *
-from epoch_data import rereference_data
+from reref_data import rereference_data
 
 if __name__ == '__main__':
     reduced_epochs = False  # Use a smaller number of epochs to calculate the SNR
@@ -167,7 +167,7 @@ if __name__ == '__main__':
                             file_path = "/data/pt_02569/tmp_data/baseline_ica_py/"
                             file_name = f"separated_clean_baseline_ica_auto_{cond_name}.fif"
 
-                        input_path = file_path + subject_id
+                        input_path = file_path + subject_id + "/"
                         raw = mne.io.read_raw_fif(f"{input_path}{file_name}", preload=True)
 
                         if ant_ref:

@@ -53,7 +53,7 @@ for subject in subjects:
         # # Uncleaned
         # ############################################################
         # # Load epochs resulting from PCA OBS cleaning - the raw data in this folder has not been rereferenced
-        # input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
+        # input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'
         # raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr1000_{cond_name}_withqrs.fif", preload=True)
         # # add reference channel to data
         # raw.pick_channels(channels)
@@ -63,7 +63,7 @@ for subject in subjects:
         # PCA_OBS
         ##################################################################
         # Some editing here to avoid plotting fit_end and fit_start
-        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
+        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + '/'
         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
         raw.pick_channels(channels)
@@ -73,7 +73,7 @@ for subject in subjects:
         #############################################################################
         # PCA_Tukey
         ############################################################################
-        input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id
+        input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + '/'
         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
         data_tukey = raw.get_data(tmin=tmin, tmax=tmax)

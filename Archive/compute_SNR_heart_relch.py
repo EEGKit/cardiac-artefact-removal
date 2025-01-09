@@ -6,7 +6,7 @@ import numpy as np
 import h5py
 from Metrics.SNR_functions import calculate_heart_SNR_evoked_ch, evoked_from_raw
 from scipy.io import loadmat
-from epoch_data import rereference_data
+from reref_data import rereference_data
 
 
 if __name__ == '__main__':

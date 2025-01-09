@@ -156,7 +156,7 @@ def import_data(subject, condition, srmr_nr, sampling_rate, pchip_interpolation)
                 mne.concatenate_raws([raw_concat, raw])
 
         # Read .mat file with QRS events
-        input_path_m = "/data/pt_02569/tmp_data/prepared/"+subject_id
+        input_path_m = "/data/pt_02569/Python_Cardiac/QRS_Timing/" +subject_id + '/'
         fname_m = f"raw_{sampling_rate}_spinal_{cond_name}"
         matdata = loadmat(input_path_m + fname_m + '.mat')
         QRSevents_m = matdata['QRSevents'][0]

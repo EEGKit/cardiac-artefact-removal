@@ -62,7 +62,7 @@ if __name__ == '__main__':
             ##########################################################################
             # Uncleaned Data
             ##########################################################################
-            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
+            input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'
             raw_prep = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                                            , preload=True)
             raw_prep = raw_prep.pick_channels(channel)
@@ -94,7 +94,7 @@ if __name__ == '__main__':
             ###################################################################
             # PCA_OBS
             ###################################################################
-            input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
+            input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + '/'
             fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
             raw_pca = mne.io.read_raw_fif(input_path + fname, preload=True)
             raw_pca = raw_pca.pick_channels(channel)
@@ -207,7 +207,7 @@ if __name__ == '__main__':
     #         ################################################################################
     #         # Uncleaned
     #         ###############################################################################
-    #         input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
+    #         input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'
     #         fname = f"epochs_{cond_name}.fif"
     #         epochs = mne.read_epochs(input_path+fname, preload=True)
     #         evoked = epochs.average()
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     #         ##############################################################################
     #         # PCA_OBS
     #         ##############################################################################
-    #         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
+    #         input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + '/'
     #         fname = f"epochs_{cond_name}.fif"
     #         epochs = mne.read_epochs(input_path + fname, preload=True)
     #         evoked = epochs.average()
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     #         ##############################################################################
     #         # ICA
     #         ##############################################################################
-    #         input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
+    #         input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + '/'
     #         fname = f"epochs_{cond_name}.fif"
     #         epochs = mne.read_epochs(input_path + fname, preload=True)
     #         evoked = epochs.average()

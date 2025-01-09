@@ -5,7 +5,7 @@ import h5py
 import pandas as pd
 from scipy.io import loadmat
 from SNR_functions import *
-from epoch_data import rereference_data
+from reref_data import rereference_data
 
 if __name__ == '__main__':
     reduced_epochs = False

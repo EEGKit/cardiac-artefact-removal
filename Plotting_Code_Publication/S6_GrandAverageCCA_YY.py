@@ -116,7 +116,7 @@ if __name__ == '__main__':
                 ################################################################################
                 # Fully Uncleaned
                 ################################################################################
-                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
+                input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'
                 fname = f"epochs_{cond_name}.fif"
                 epochs = mne.read_epochs(input_path + fname, preload=True)
                 if reduced_trials:
@@ -128,7 +128,7 @@ if __name__ == '__main__':
                 ################################################################################
                 # Uncleaned CCA
                 ###############################################################################
-                input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id
+                input_path = "/data/pt_02569/tmp_data/prepared_py_cca/" + subject_id + '/'
                 epochs = mne.read_epochs(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                                          , preload=True)
                 channel = df.loc[subject_id, f"Prep_{cond_name}"]
@@ -145,7 +145,7 @@ if __name__ == '__main__':
                 ##############################################################################
                 # PCA_OBS
                 ##############################################################################
-                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py_cca/" + subject_id + '/'
                 fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                 epochs = mne.read_epochs(input_path + fname, preload=True)
                 channel = df.loc[subject_id, f"PCA_{cond_name}"]

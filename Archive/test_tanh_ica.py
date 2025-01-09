@@ -6,7 +6,7 @@ import mne
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 from get_conditioninfo import *
-from epoch_data import rereference_data
+from reref_data import rereference_data
 from Metrics.SNR_functions import evoked_from_raw
 
 

@@ -5,15 +5,15 @@ import mne
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 from get_conditioninfo import *
-from epoch_data import rereference_data
+from reref_data import rereference_data
 from get_esg_channels import get_esg_channels
 
 
 def run_ica_separatepatches(subject, condition, srmr_nr, sampling_rate):
     # Set paths
     subject_id = f'sub-{str(subject).zfill(3)}'
-    save_path = "/data/pt_02569//tmp_data/baseline_ica_py/" + subject_id   # Saving to baseline_ica_py
-    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id   # Taking prepared data
+    save_path = "/data/pt_02569//tmp_data/baseline_ica_py/" + subject_id  + '/' # Saving to baseline_ica_py
+    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'  # Taking prepared data
     os.makedirs(save_path, exist_ok=True)
 
     # Get the condition information based on the condition read in
@@ -40,7 +40,7 @@ def run_ica_separatepatches(subject, condition, srmr_nr, sampling_rate):
 
     raw_patch = raw.copy().pick_channels(channels)
 
-    ica = mne.preprocessing.ICA(n_components=len(raw_patch.ch_names), max_iter='auto',
+    ica = mne.preprocessing.ICA(n_components=len(raw_patch.ch_names) - 1, max_iter='auto',
                                 random_state=97)
     ica.fit(raw_patch)
 
@@ -65,6 +65,6 @@ def run_ica_separatepatches(subject, condition, srmr_nr, sampling_rate):
     raw_patch.save(os.path.join(save_path, fname), fmt='double', overwrite=True)
 
     # Save ecg indices
-    with open(f'separated_ecg_indices_{cond_name}.txt', 'w') as file:
+    with open(f'{save_path}separated_ecg_indices_{cond_name}.txt', 'w') as file:
         file.write('\n'.join(str(ecg_index) for ecg_index in ecg_indices))
 

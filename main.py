@@ -15,28 +15,28 @@ from run_CCA import run_CCA
 
 if __name__ == '__main__':
     n_subjects = 36  # Number of subjects
-    # subjects = np.arange(1, 37)  # 1 through 36 to access subject data
-    subjects = [1]
+    subjects = np.arange(1, 37)  # 1 through 36 to access subject data
+    # subjects = [1]
     srmr_nr = 1  # Experiment Number
     conditions = [2, 3]  # Conditions of interest
     sampling_rate = 1000
 
     ######## Data import ############
-    import_d = True
-    pchip_interpolation = False  # If true import with pchip, otherwise use linear interpolation (linear is standard in this project)
+    import_d = False
+    pchip_interpolation = False  # If true import with pchip, otherwise use linear interpolation (False is standard in this project)
 
     ######## PCA-OBS #########
     heart_removal = True
-    pchip = False  # Whether to use pchip prepared data or not (linear is standard in this project)
+    pchip = False  # Whether to use pchip prepared data or not (False is standard in this project)
     heart_removal_tukey = True  # Fitted artefact multiplied by tukey window
 
-    ######### SSP ########
-    SSP_flag = True
-
     ######### ICA ########
-    ica = True
-    ica_anterior = True  # Run ICA on anteriorly rereferenced data
-    ica_separate_patches = True  # Run ICA on lumbar and cervical patches separately
+    ica = False
+    ica_anterior = False  # Run ICA on anteriorly rereferenced data
+    ica_separate_patches = False  # Run ICA on lumbar and cervical patches separately
+
+    ######### SSP ########
+    SSP_flag = False
 
     ######## CCA for signal enhancement ########
     CCA_flag = False

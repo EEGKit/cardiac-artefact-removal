@@ -89,11 +89,11 @@ if __name__ == '__main__':
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
                 if channel_type == 'ECG' or channel_type == 'Cortical':
-                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'
                     raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs_eeg.fif",
                                               preload=True)
                 elif channel_type == 'Spinal':
-                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'
                     raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif",
                                               preload=True)
 

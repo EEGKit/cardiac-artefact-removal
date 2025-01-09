@@ -8,7 +8,7 @@ from Metrics.SNR_functions import evoked_from_raw
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    reduced_trials = False  # If true, generate images with fewer triggers
+    reduced_trials = False  # If true, use fewer triggers
     longer_time = True
     subjects = np.arange(1, 37)   # 1 through 36 to access subject data
     cond_names = ['median', 'tibial']
@@ -27,9 +27,6 @@ if __name__ == '__main__':
                  'S8', 'S31', 'SC6', 'S12', 'S16', 'S5', 'S30', 'S20', 'S34', 'AC',
                  'S21', 'S25', 'L1', 'S29', 'S14', 'S33', 'S3', 'AL', 'L4', 'S6',
                  'S23']
-
-    save_path = "/data/pt_02569/tmp_data/EvokedLists_Dataset1/"
-    os.makedirs(save_path, exist_ok=True)
 
     methods = [True, True, True]
     method_names = ['Prep', 'PCA', 'ICA']  # Will treat SSP separately since there are multiple
@@ -55,7 +52,7 @@ if __name__ == '__main__':
                     subject_id = f'sub-{str(subject).zfill(3)}'
 
                     if method == 'Prep':
-                        input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
+                        input_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'
                         raw = mne.io.read_raw_fif(f"{input_path}noStimart_sr{sampling_rate}_{cond_name}_withqrs.fif"
                                                   , preload=True)
                         events, event_ids = mne.events_from_annotations(raw)
@@ -65,7 +62,7 @@ if __name__ == '__main__':
                         epochs.save(fname=input_path+f'epochs_{cond_name}.fif', overwrite=True)
 
                     elif method == 'PCA':
-                        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
+                        input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + '/'
                         fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         events, event_ids = mne.events_from_annotations(raw)
@@ -75,7 +72,7 @@ if __name__ == '__main__':
                         epochs.save(fname=input_path + f'epochs_{cond_name}.fif', overwrite=True)
 
                     elif method == 'ICA':
-                        input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id
+                        input_path = "/data/pt_02569/tmp_data/baseline_ica_py/" + subject_id + '/'
                         fname = f"clean_baseline_ica_auto_{cond_name}.fif"
                         raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                         events, event_ids = mne.events_from_annotations(raw)

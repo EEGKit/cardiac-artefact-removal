@@ -226,7 +226,7 @@ def PCA_OBS(data, **kwargs):
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), data[:].T, zorder=0)
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), fitted_art[:].T, 'g', zorder=10)
             plt.plot((np.arange(0, len(fitted_art[0, :]))/fs).reshape(-1, 1), (np.subtract(data[:], fitted_art[:])).T, 'm', zorder=15)
-            plt.legend(['raw data', 'filtered', 'fitted_art', 'clean'], loc='upper right').set_zorder(20)
+            plt.legend(['raw data', 'fitted_art', 'clean'], loc='upper right').set_zorder(20)
             plt.xlabel('time [s]')
             plt.ylabel('amplitude [V]')
             plt.title('Subject ' + sub_nr + ', channel ' + current_channel)

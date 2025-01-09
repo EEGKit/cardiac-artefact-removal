@@ -5,7 +5,7 @@
 import os
 import mne
 from scipy.io import loadmat
-from epoch_data import rereference_data
+from reref_data import rereference_data
 from get_conditioninfo import *
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 def apply_SSP(subject, condition, srmr_nr, sampling_rate):
     # set variables
     subject_id = f'sub-{str(subject).zfill(3)}'
-    load_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id
-    save_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id
+    load_path = "/data/pt_02569/tmp_data/prepared_py/" + subject_id + '/'
+    save_path = "/data/pt_02569/tmp_data/ssp_py/" + subject_id + '/'
     os.makedirs(save_path, exist_ok=True)
 
     # get condition info
@@ -29,12 +29,6 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
     for n in np.arange(1, 21):
         raw = mne.io.read_raw_fif(load_path + fname, preload=True)
 
-        # anterior reference
-        if nerve == 1:
-            raw_antRef = rereference_data(clean_raw, 'AC')
-        elif nerve == 2:
-            raw_antRef = rereference_data(clean_raw, 'AL')
-
         ############################################# SSP ##############################################
         # Normal data
         projs, events = mne.preprocessing.compute_proj_ecg(raw, n_eeg=n, reject=None, n_jobs=len(raw.ch_names),
@@ -44,13 +38,20 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
         clean_raw = raw.copy().add_proj(projs)
         clean_raw = clean_raw.apply_proj()
 
-        # Anteriorly re-referenced data
-        projs_ant, events_ant = mne.preprocessing.compute_proj_ecg(raw_antRef, n_eeg=n, reject=None,
-                                                                   n_jobs=len(raw_antRef.ch_names), ch_name='ECG')
+        # Anteriorly re-referenced data if n = 6
+        if n == 6:
+            # anterior reference
+            if nerve == 1:
+                raw_antRef = rereference_data(raw, 'AC')
+            elif nerve == 2:
+                raw_antRef = rereference_data(raw, 'AL')
 
-        # Apply projections (clean data)
-        clean_raw_antRef = raw_antRef.copy().add_proj(projs_ant)
-        clean_raw_antRef = clean_raw_antRef.apply_proj()
+            projs_ant, events_ant = mne.preprocessing.compute_proj_ecg(raw_antRef, n_eeg=n, reject=None,
+                                                                       n_jobs=len(raw_antRef.ch_names), ch_name='ECG')
+
+            # Apply projections (clean data)
+            clean_raw_antRef = raw_antRef.copy().add_proj(projs_ant)
+            clean_raw_antRef = clean_raw_antRef.apply_proj()
 
         ######################################### Save ##############################################
         savename = save_path + "/" + str(n) + " projections/"
@@ -58,4 +59,6 @@ def apply_SSP(subject, condition, srmr_nr, sampling_rate):
 
         # Save the SSP cleaned data for future comparison
         clean_raw.save(f"{savename}ssp_cleaned_{cond_name}.fif", fmt='double', overwrite=True)
-        clean_raw_antRef.save(f"{savename}ssp_cleaned_{cond_name}_antRef.fif", fmt='double', overwrite=True)
+
+        if n ==6:
+            clean_raw_antRef.save(f"{savename}ssp_cleaned_{cond_name}_antRef.fif", fmt='double', overwrite=True)

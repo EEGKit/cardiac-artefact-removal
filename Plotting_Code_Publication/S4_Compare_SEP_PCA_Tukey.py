@@ -44,8 +44,8 @@ if __name__ == '__main__':
                     full_name = 'Median Nerve Stimulation'
 
                 # Load epochs resulting from SSP cleaning
-                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
-                input_path_tuk = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id
+                input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + '/'
+                input_path_tuk = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + '/'
                 fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                 raw = mne.io.read_raw_fif(f"{input_path}{fname}")
                 raw_tuk = mne.io.read_raw_fif(f"{input_path_tuk}{fname}")
@@ -109,7 +109,7 @@ if __name__ == '__main__':
                 subject_id = f'sub-{str(subject).zfill(3)}'
 
                 if 'PCA' in method_names:
-                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + '/'
                     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
@@ -117,7 +117,7 @@ if __name__ == '__main__':
                     evoked_list_pca.append(evoked)
 
                 if 'PCA MATLAB' in method_names:
-                    input_path = "/data/pt_02569/tmp_data/ecg_rm/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm/" + subject_id + '/'
                     fname = f"cnt_clean_ecg_spinal_{cond_name}.set"
                     raw = mne.io.read_raw_eeglab(input_path + fname, preload=True)
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
@@ -125,7 +125,7 @@ if __name__ == '__main__':
                     evoked_list_mat.append(evoked)
 
                 if 'PCA PCHIP' in method_names:
-                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py/" + subject_id + '/'
                     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
                     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
@@ -133,7 +133,7 @@ if __name__ == '__main__':
                     evoked_list_pchip.append(evoked)
 
                 if 'PCA Tukey' in method_names:
-                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + '/'
                     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs.fif"
                     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)
@@ -141,7 +141,7 @@ if __name__ == '__main__':
                     evoked_list_tukey.append(evoked)
 
                 if 'PCA Tukey PCHIP' in method_names:
-                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id
+                    input_path = "/data/pt_02569/tmp_data/ecg_rm_py_tukey/" + subject_id + '/'
                     fname = f"data_clean_ecg_spinal_{cond_name}_withqrs_pchip.fif"
                     raw = mne.io.read_raw_fif(input_path + fname, preload=True)
                     evoked = evoked_from_raw(raw, iv_epoch, iv_baseline, trigger_name, reduced_epochs)

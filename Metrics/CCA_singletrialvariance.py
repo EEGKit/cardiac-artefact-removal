@@ -11,7 +11,7 @@ from SNR_functions import *
 import pandas as pd
 from invert import invert
 from scipy.stats import variation
-from epoch_data import rereference_data
+from reref_data import rereference_data
 import matplotlib.pyplot as plt
 
 

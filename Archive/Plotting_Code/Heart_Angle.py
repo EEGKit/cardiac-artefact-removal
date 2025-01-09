@@ -58,7 +58,7 @@ if __name__ == '__main__':
             stim_times = np.asarray([stim_event[0]/sampling_rate for stim_event in stim_events])
 
             # Get the R-peak timings
-            input_path_m = "/data/pt_02569/tmp_data/prepared/" + subject_id
+            input_path_m = "/data/pt_02569/Python_Cardiac/QRS_Timing/"+subject_id + '/'
             fname_m = f"raw_{sampling_rate}_spinal_{cond_name}"
             matdata = loadmat(input_path_m + fname_m + '.mat')
             QRS_times = matdata['QRSevents'][0]/sampling_rate
